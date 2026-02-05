@@ -17,7 +17,7 @@ export default function LandingPage() {
       <div className="fixed inset-0 scanlines pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-12 max-w-lg text-center">
+      <div className="relative z-10 flex flex-col items-center gap-8 max-w-lg text-center">
         {/* Logo / Title */}
         <div className="space-y-4">
           <h1
@@ -39,12 +39,46 @@ export default function LandingPage() {
           />
         </div>
 
-        {/* Subtitle */}
+        {/* Tagline */}
         <p
-          className="text-lg md:text-xl tracking-widest"
+          className="text-sm md:text-base tracking-widest"
           style={{ color: '#e0e8f0' }}
         >
-          Tap. Pay. Settle.
+          Cash to Crypto. No wallet needed.
+        </p>
+
+        {/* 3-step flow */}
+        <div className="flex gap-4 items-center">
+          {[
+            { step: '1', label: 'Insert Cash', color: '#ffd700' },
+            { step: '2', label: 'Choose Destination', color: '#667eea' },
+            { step: '3', label: 'Receive USDC', color: '#78ffd6' },
+          ].map((item, i) => (
+            <div key={i} className="flex flex-col items-center gap-2">
+              <div
+                className="w-8 h-8 flex items-center justify-center text-[10px] font-bold"
+                style={{
+                  backgroundColor: '#0f0f24',
+                  border: `2px solid ${item.color}`,
+                  color: item.color,
+                  boxShadow: `0 0 8px ${item.color}40`,
+                }}
+              >
+                {item.step}
+              </div>
+              <p className="text-[7px] uppercase tracking-wider" style={{ color: item.color }}>
+                {item.label}
+              </p>
+              {i < 2 && (
+                <div className="hidden" /> // arrows handled by flex gap
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Value prop */}
+        <p className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+          No KYC. No gas fees. No waiting.
         </p>
 
         {/* Decorative pixel art element - holographic */}
@@ -66,14 +100,19 @@ export default function LandingPage() {
         {/* CTA Button */}
         <Link href="/app">
           <ArcadeButton size="lg" variant="primary">
-            Start Session
+            Start Demo
           </ArcadeButton>
         </Link>
 
-        {/* Footer hint */}
-        <p className="text-[8px] uppercase tracking-widest mt-8" style={{ color: '#7a7a9a' }}>
-          Touch to begin
-        </p>
+        {/* Footer */}
+        <div className="space-y-2 mt-4">
+          <p className="text-[7px] uppercase tracking-wider" style={{ color: '#667eea' }}>
+            Powered by Yellow Network + Circle Arc
+          </p>
+          <p className="text-[7px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            Built for tienditas, festivals & events
+          </p>
+        </div>
       </div>
     </div>
   )

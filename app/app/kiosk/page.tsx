@@ -14,22 +14,22 @@ export default function KioskPage() {
         >
           Kiosk Mode
         </h1>
-        <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-          Get started in seconds
+        <p className="text-[8px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
+          Cash to Crypto ATM
         </p>
       </div>
 
       {/* Options */}
       <div className="flex flex-col gap-6 w-full max-w-xs">
-        <Link href="/app/kiosk/new-user" className="w-full">
+        <Link href="/app/kiosk/buy" className="w-full">
           <ArcadeButton size="lg" variant="primary" className="w-full">
-            New User
+            Buy Crypto
           </ArcadeButton>
         </Link>
 
-        <Link href="/app/kiosk/scan" className="w-full">
+        <Link href="/app/kiosk/claim" className="w-full">
           <ArcadeButton size="lg" variant="secondary" className="w-full">
-            I Have a Wallet
+            I Have a PIN
           </ArcadeButton>
         </Link>
       </div>
