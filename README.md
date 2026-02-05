@@ -1,20 +1,56 @@
-# Ki0xk Payment Kiosk
+# Ki0xk Kiosk UI
 
-Touch-first kiosk interface for Ki0xk physical crypto ATMs. Built with Next.js 16, React 19, shadcn/ui, and Tailwind CSS v4. Retro arcade-themed with holographic glows, scanlines, coin-drop animations, and NFC pulse effects. Designed for events, festivals, and retail where users insert cash and receive USDC to their wallet.
+Touch-first interface for Ki0xk physical crypto ATMs. Designed for tablets mounted inside kiosk enclosures where users insert cash and receive USDC.
 
-## Tech Stack
+Built with Next.js 16, React 19, Tailwind CSS v4, and shadcn/ui. Retro arcade aesthetic with holographic glows, scanlines, and pixel art styling.
 
-| Layer | Technology |
-|-------|------------|
-| Framework | Next.js 16.0.10, React 19.2.0, TypeScript 5 |
-| Styling | Tailwind CSS 4.1.9, CSS custom properties, custom keyframe animations |
-| UI Components | shadcn/ui (New York style), 30+ Radix UI primitives, Lucide icons |
-| State | React Context + `useReducer` (`lib/state.tsx`) |
-| Forms | React Hook Form + Zod validation |
-| Font | Press Start 2P (Google Fonts) — pixel arcade aesthetic |
-| Animations | tw-animate-css, custom CSS keyframes (coin-drop, nfc-pulse, holo-sweep) |
+> Cash in, crypto out. No wallet needed.
 
-## Getting Started
+---
+
+## How It Works
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌────────────────────┐
+│  Insert      │ ──▶ │   Ki0xk Kiosk    │ ──▶ │  User gets USDC    │
+│  Cash/Coins  │     │   (tablet UI)    │     │  on any EVM chain  │
+└─────────────┘     └──────────────────┘     └────────────────────┘
+                            │
+                   ┌────────┴────────┐
+                   │                 │
+             QR Scan / ENS      Print PIN
+             (has wallet)     (no wallet)
+```
+
+### Buy Crypto Flow
+
+| Step | Screen | Action |
+|------|--------|--------|
+| 1 | Select Asset | Choose USDC |
+| 2 | Insert Coins | Tap coin buttons (1/2/5 pesos) — simulates Arduino coinslot |
+| 3 | Confirm Amount | Review fee breakdown (0.001%) |
+| 4 | Processing | Session opens on Yellow Network |
+| 5 | Choose Destination | QR scan, ENS name, NFC (coming soon), or Print PIN |
+| 6 | Select Chain | Pick from 7 testnets (Base, Ethereum, Arbitrum, Polygon, Optimism, Avalanche, Linea) |
+| 7 | Settling | Bridge via Circle Arc CCTP |
+| 8 | Done | Receipt with TX hash |
+
+### I Have a PIN Flow (First-Timers)
+
+| Step | Screen | Action |
+|------|--------|--------|
+| 1 | Enter PIN | 6-digit PIN from receipt |
+| 2 | Enter Wallet ID | 6-character alphanumeric code (0-9 + A-D) |
+| 3 | Show Balance | Display stored USDC amount |
+| 4 | Choose Destination | QR scan or ENS name |
+| 5 | Select Chain | Pick destination network |
+| 6 | Done | USDC claimed to wallet |
+
+**No KYC. No gas fees. No seed phrases. No waiting.**
+
+---
+
+## Quick Start
 
 ```bash
 pnpm install
@@ -23,80 +59,149 @@ pnpm build        # Production build
 pnpm lint         # ESLint
 ```
 
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16, React 19, TypeScript 5 |
+| Styling | Tailwind CSS v4, CSS custom properties, custom keyframes |
+| UI Components | shadcn/ui (New York style), Radix UI primitives, Lucide icons |
+| State | React Context + `useReducer` (`lib/state.tsx`) |
+| QR Scanner | html5-qrcode (dynamic import, SSR-safe) |
+| Font | Press Start 2P (Google Fonts) — pixel arcade aesthetic |
+| Animations | tw-animate-css, custom CSS (coin-drop, nfc-pulse, holo-sweep, tilt-warning) |
+
+---
+
 ## Routes
 
-### Kiosk Mode (cash-to-crypto ATM)
+### Kiosk Mode (Cash-to-Crypto ATM)
 
 | Route | Purpose |
 |-------|---------|
-| `/` | Landing page — "Ki0xk" title, "Start Session" CTA |
-| `/app` | Mode selector — Kiosk Mode or Festival Mode |
-| `/app/kiosk` | Kiosk menu — New User or I Have a Wallet |
-| `/app/kiosk/new-user` | Wallet creation with progress bar animation |
-| `/app/kiosk/scan` | Wallet access via ENS input, NFC tap, or QR scan |
-| `/app/kiosk/wallet` | Display loaded wallet identity, address, and balance |
-| `/app/kiosk/add-balance` | Top-up USDC with preset amounts or numeric keypad |
+| `/` | Landing — value prop, "Start Demo" CTA |
+| `/app` | Mode selector — Kiosk or Festival |
+| `/app/kiosk` | Menu — "Buy Crypto" or "I Have a PIN" |
+| `/app/kiosk/buy` | Buy Crypto flow (12-step state machine) |
+| `/app/kiosk/claim` | Claim PIN flow (9-step state machine) |
 
-### Festival Mode (wristband payments)
+### Festival Mode (Wristband Payments)
 
 | Route | Purpose |
 |-------|---------|
 | `/app/festival` | Festival mode selector — Admin or Public |
-| `/app/festival/admin` | Admin panel — load cards via NFC + PIN (demo: `1234`) |
-| `/app/festival/public` | Public user flow — pay vendors or recharge balance |
+| `/app/festival/admin` | Load NFC cards via PIN (demo: `1234`) |
+| `/app/festival/public` | Pay vendors or recharge balance |
 
-## Architecture
+### Legacy Redirects
 
-### State Management
+| Old Route | Redirects To |
+|-----------|-------------|
+| `/app/kiosk/new-user` | `/app/kiosk/buy` |
+| `/app/kiosk/add-balance` | `/app/kiosk/buy` |
+| `/app/kiosk/scan` | `/app/kiosk` |
+| `/app/kiosk/wallet` | `/app/kiosk` |
 
-Global state via `Ki0xkProvider` context wrapping `/app` routes:
+---
 
-```
-Ki0xkState {
-  sessionActive: boolean
-  balanceUSDC:   number
-  ensName:       string
-  address:       string
-  cardId:        string | null
-}
-```
+## Components
 
-Actions: `START_SESSION`, `END_SESSION`, `SET_BALANCE`, `ADD_BALANCE`, `SUBTRACT_BALANCE`, `SET_CARD_ID`, `RESET`.
-
-Pages combine global state (session/balance) with local `useState` for UI step navigation. Festival pages use union-typed step state machines:
-
-```typescript
-type Step = 'idle' | 'tap' | 'scanning' | 'menu' | 'pay' | 'recharge' | ...
-```
-
-### Mock API Layer
-
-All async operations go through `lib/mock.ts` — simulated delays returning mock data. These are the integration points for the real backend:
-
-| Function | Delay | Returns |
-|----------|-------|---------|
-| `mockCreateWallet()` | 1.5s | Random ENS name + address |
-| `mockScanNFC()` | 2.0s | NFC card ID |
-| `mockPayment(amount)` | 1.5s | Transaction ID, vendor, remaining balance |
-| `mockTopUp(amount)` | 1.8s | Transaction ID, new balance |
-| `mockUpdateCard(cardId, amount)` | 1.2s | Success confirmation |
-
-### Path Aliases
-
-`@/*` maps to project root (e.g., `@/components/ki0xk/ArcadeButton`).
-
-## Custom Components (`components/ki0xk/`)
+### Kiosk Components (`components/ki0xk/`)
 
 | Component | Description |
 |-----------|-------------|
-| `ArcadeButton` | Retro button with inset shadows and color-specific glow. Variants: `primary` (gold), `secondary` (dark), `accent` (cyan), `danger` (red). Sizes: `sm`, `md`, `lg`. |
-| `CoinAnimation` | Full-screen overlay with 5 falling coins (staggered delays) and amount display. Triggers on `isAnimating` prop. |
-| `Modal` | Centered dialog with backdrop blur, holographic gradient border, and colored corner squares. |
-| `NFCIndicator` | NFC icon with dynamic SVG waves. States: `ready` (gray), `scanning` (purple + ping rings), `success` (cyan), `error` (red). |
-| `NumericKeypad` | 3x4 grid (1-9, CLEAR, 0, DELETE) with glowing display. Supports `isPin` mode for masked input. |
-| `PixelFrame` | Arcade cabinet-style frame wrapping `/app` routes. Holographic gradient border, corner squares, scanlines overlay, pixel-grid background. |
-| `ProgressBar` | 10-segment bar with holographic color gradient. Auto-increments when `isAnimating` is true, fires `onComplete` at 100%. |
-| `Toast` | Top-center notification. Types: `success` (cyan glow), `error` (red glow). Auto-dismisses after configurable duration. |
+| `CoinSlotSimulator` | Three coin buttons (1/2/5 pesos) with running total, simulated Arduino JSON output |
+| `OnScreenKeyboard` | Full QWERTY + numbers for tablet. CAPS toggle, `.eth` shortcut, `0x` prefix, `←` backspace. Wide rectangle layout |
+| `ChainSelector` | Vertical list of 7 testnet chains with radio selection |
+| `QrScanner` | Camera QR reader via html5-qrcode. Validates Ethereum addresses and ENS names |
+| `PinDisplay` | 6-digit PIN in gold boxes, 6-char wallet ID in purple boxes, red tilting "save this PIN" warning |
+| `PinKeypad` | Phone-style 3x4 grid (0-9, *, #) with masked display for PIN entry |
+| `WalletIdKeypad` | 4x4 grid (0-9, A-D) matching physical keypad for wallet ID entry |
+
+### Shared Components
+
+| Component | Description |
+|-----------|-------------|
+| `ArcadeButton` | Retro button with glow. Variants: primary (gold), secondary (dark), accent (cyan), danger (red) |
+| `CoinAnimation` | Falling coins overlay with staggered delays |
+| `NumericKeypad` | 3x4 numeric grid with optional PIN masking |
+| `NFCIndicator` | NFC icon with animated SVG waves (ready/scanning/success/error) |
+| `PixelFrame` | Arcade cabinet frame wrapping all `/app` routes. Holographic border, scanlines, pixel grid |
+| `ProgressBar` | 10-segment bar with holographic gradient. Auto-increments, fires `onComplete` |
+| `Modal` | Dialog with backdrop blur and holographic border |
+| `Toast` | Top-center notification (success/error) with auto-dismiss |
+
+---
+
+## State Management
+
+Global state via `Ki0xkProvider` context wrapping `/app` routes:
+
+```typescript
+Ki0xkState {
+  sessionId              // Yellow Network session
+  totalDepositedPesos    // Cash inserted
+  totalDepositedUSDC     // Converted value
+  coinInsertions[]       // Each coin event {pesos, usdc, timestamp}
+  destinationAddress     // QR/ENS destination
+  destinationChain       // Selected chain key
+  destinationMethod      // 'qr' | 'ens' | 'nfc' | 'pin'
+  settlementResult       // Bridge result {amount, fee, txHash, chain}
+  pinData                // {pin, walletId, amount}
+  balanceUSDC            // Current session balance
+  // + legacy fields for festival mode
+}
+```
+
+Buy and Claim pages use local step state machines:
+
+```typescript
+type BuyStep = 'select-asset' | 'insert-coins' | 'confirm-amount' | 'processing'
+             | 'balance-confirmed' | 'choose-destination' | 'qr-scan' | 'ens-input'
+             | 'select-chain' | 'settling' | 'done' | 'pin-generated'
+```
+
+---
+
+## Mock API Layer
+
+All async operations go through `lib/mock.ts` — shaped to match the [Ki0xk backend](https://github.com/Ki0xk/kiosk) return types for seamless future integration:
+
+| Function | Simulates | Returns |
+|----------|-----------|---------|
+| `mockStartSession()` | Opening Yellow channel | `{sessionId, channelId}` |
+| `mockDepositToSession()` | Recording coin insert | `{newBalance, totalDeposited}` |
+| `mockEndSession()` | Yellow close + Arc bridge | `{settledAmount, fee, bridgeTxHash}` |
+| `mockSessionToPin()` | PIN wallet creation | `{pin, walletId, amount}` |
+| `mockLookupPinWallet()` | PIN wallet lookup | `{amount}` |
+| `mockClaimPinWallet()` | Claim + bridge | `{amount, bridgeResult}` |
+| `simulateCoinInsert()` | Arduino JSON event | `{type:'coin', pulses, value}` |
+
+---
+
+## Constants
+
+Derived from the [Ki0xk backend](https://github.com/Ki0xk/kiosk):
+
+```
+Coin Denominations (from Arduino Coinslot):
+  1-2 pulses  → 1 peso  → $0.01 USDC
+  5-10 pulses → 2 pesos → $0.02 USDC
+  11-16 pulses → 5 pesos → $0.05 USDC
+
+Fee Rate: 0.001% (FEE_RATE = 0.00001)
+
+Wallet ID: 6 alphanumeric chars (0-9 + A-D)
+PIN: 6 numeric digits (0-9)
+
+Supported Chains (via Arc Bridge CCTP):
+  Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia,
+  Polygon Amoy, Optimism Sepolia, Avalanche Fuji, Linea Sepolia
+```
+
+---
 
 ## Design System
 
@@ -104,36 +209,88 @@ All async operations go through `lib/mock.ts` — simulated delays returning moc
 
 | Token | Hex | Role |
 |-------|-----|------|
-| `--holo-gold` | `#ffd700` | Primary actions, headings |
-| `--holo-cyan` | `#78ffd6` | Accent, success states |
-| `--holo-purple` | `#667eea` | Secondary, focus rings, borders |
+| `--holo-gold` | `#ffd700` | Primary actions, headings, PIN display |
+| `--holo-cyan` | `#78ffd6` | Accent, success, coin totals |
+| `--holo-purple` | `#667eea` | Secondary, focus, wallet ID display |
 | `--holo-deep-purple` | `#764ba2` | Gradients |
-| `--holo-pink` | `#f093fb` | Decorative gradients |
-| `--background` | `#0a0a1a` | Page background |
+| `--holo-pink` | `#f093fb` | Decorative gradients, fees |
+| `--background` | `#0a0a1a` | Dark navy page background |
 | `--card` | `#0f0f24` | Panel backgrounds |
-| `--border` | `#2a2a4a` | Dividers |
-| `--muted-foreground` | `#7a7a9a` | Secondary text |
+| `--border` | `#2a2a4a` | Dividers, inactive borders |
+| `--muted-foreground` | `#7a7a9a` | Secondary text, labels |
 | `--foreground` | `#e0e8f0` | Primary text |
 
 ### Visual Effects (CSS classes)
 
 | Class | Effect |
 |-------|--------|
-| `.scanlines` | Repeating horizontal line overlay (CRT monitor) |
+| `.scanlines` | CRT monitor horizontal line overlay |
 | `.pixel-grid` | 16px grid background pattern |
 | `.pixel-border` | Multi-layer inset/outset shadow border |
 | `.holo-border` | 5-color gradient border image |
 | `.holo-shimmer` | Subtle holographic background gradient |
 | `.holo-sweep` | Animated gradient sweep (3s loop) |
+| `.tilt-warning` | Red tilting animation for PIN warning |
 | `.glow-*` | Box-shadow glows (gold, cyan, purple, pink) |
 | `.text-glow-*` | Text-shadow glows (gold, cyan, purple, pink) |
-| `.coin-animation` | Falling coin keyframe (0.8s, translateY + rotate) |
+| `.coin-animation` | Falling coin keyframe (0.8s) |
 | `.nfc-pulse` | Breathing scale animation (1.5s loop) |
-| `.touch-active` | Scale down to 0.95 on `:active` |
+| `.touch-active` | Scale down on `:active` for touch feedback |
 
 ### Layout
 
-The app renders inside a `PixelFrame` constrained to `max-w-2xl`, `aspect-[3/4]` (portrait arcade cabinet), and `max-h-[90vh]`. Viewport is locked: no user scaling, `maximum-scale=1`.
+The app renders inside a `PixelFrame` constrained to `max-w-2xl`, `aspect-[3/4]` (portrait tablet), and `max-h-[90vh]`. The `OnScreenKeyboard` uses a wide rectangle layout (`max-w-2xl`) optimized for landscape tablet touchscreen.
+
+---
+
+## Backend Integration
+
+This UI is designed to pair with the [Ki0xk Kiosk backend](https://github.com/Ki0xk/kiosk). Currently all operations use mock functions (`lib/mock.ts`). To connect to the real backend:
+
+1. Replace `mock*` calls with HTTP/WebSocket calls to the backend
+2. Mock return shapes already match backend types — no UI changes needed
+3. Connect `CoinSlotSimulator` to real Arduino serial events via WebSocket
+4. QR scanner already validates Ethereum addresses and ENS names
+
+---
+
+## Project Structure
+
+```
+ki0xk-payment-kiosk/
+├── app/
+│   ├── page.tsx                    # Landing page
+│   ├── globals.css                 # Theme, animations, effects
+│   └── app/
+│       ├── kiosk/
+│       │   ├── page.tsx            # Kiosk menu (Buy Crypto / I Have a PIN)
+│       │   ├── buy/page.tsx        # Buy Crypto flow (12-step)
+│       │   └── claim/page.tsx      # Claim PIN flow (9-step)
+│       └── festival/               # Festival mode (unchanged)
+├── components/
+│   ├── ki0xk/                      # Custom kiosk components
+│   └── ui/                         # shadcn/ui components
+├── lib/
+│   ├── constants.ts                # Coins, chains, fees, wallet ID config
+│   ├── state.tsx                   # Global state provider + reducer
+│   └── mock.ts                     # Mock API (backend-shaped returns)
+└── styles/
+    └── globals.css                 # shadcn/ui base theme
+```
+
+---
+
+## Hackathon
+
+Part of **Ki0xk**, built for HackMoney.
+
+| Sponsor | Integration | Purpose |
+|---------|-------------|---------|
+| **Yellow Network** | Nitrolite state channels | Session-based off-chain accounting |
+| **Circle Arc** | Bridge Kit / CCTP | Cross-chain USDC settlement to 7 chains |
+| **ENS** | On-screen keyboard + resolution | Human-readable wallet addresses |
+
+---
 
 ## License
 
