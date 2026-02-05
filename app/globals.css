@@ -295,6 +295,20 @@
   }
 }
 
+/* Tilt warning animation for PIN display */
+@keyframes tilt-warning {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-1.5deg); }
+  30% { transform: rotate(1.5deg); }
+  45% { transform: rotate(-1deg); }
+  60% { transform: rotate(1deg); }
+  75% { transform: rotate(0deg); }
+}
+
+.tilt-warning {
+  animation: tilt-warning 2s ease-in-out infinite;
+}
+
 .holo-sweep {
   background: linear-gradient(
     90deg,

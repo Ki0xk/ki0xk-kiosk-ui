@@ -10,19 +10,20 @@ interface OnScreenKeyboardProps {
   maxLength?: number
 }
 
-const rows = [
+const letterRows = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
   ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
   ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
 ]
 
+const numberRow = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+
 export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Type here...', maxLength = 42 }: OnScreenKeyboardProps) {
-  const [shift, setShift] = useState(false)
+  const [caps, setCaps] = useState(false)
 
   const handleKey = (key: string) => {
     if (value.length < maxLength) {
-      onChange(value + (shift ? key.toUpperCase() : key.toLowerCase()))
-      if (shift) setShift(false)
+      onChange(value + (caps ? key.toUpperCase() : key.toLowerCase()))
     }
   }
 
@@ -43,8 +44,8 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
       case 'CLR':
         onChange('')
         break
-      case 'SHIFT':
-        setShift(!shift)
+      case 'CAPS':
+        setCaps(!caps)
         break
     }
   }
@@ -60,9 +61,11 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
     `,
   })
 
+  const displayKey = (key: string) => caps ? key.toUpperCase() : key.toLowerCase()
+
   return (
-    <div className="w-full">
-      {/* Display */}
+    <div className="w-full max-w-2xl mx-auto">
+      {/* Display field */}
       <div
         className="mb-3 p-3 border-2 text-left min-h-[44px] flex items-center"
         style={{
@@ -82,93 +85,113 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
         </p>
       </div>
 
-      {/* Keyboard rows */}
-      <div className="flex flex-col gap-1">
-        {/* Row 1: QWERTYUIOP */}
-        <div className="flex gap-1 justify-center">
-          {rows[0].map((key) => (
+      {/* Keyboard — wide rectangle layout for tablet */}
+      <div className="flex flex-col gap-[3px]">
+        {/* Row 0: Numbers */}
+        <div className="flex gap-[3px] justify-center">
+          {numberRow.map((n) => (
             <button
-              key={key}
-              onClick={() => handleKey(key)}
-              className="flex-1 min-w-0 py-2 text-[9px] uppercase transition-all touch-active"
+              key={n}
+              onClick={() => { if (value.length < maxLength) onChange(value + n) }}
+              className="flex-1 min-w-0 py-[10px] text-[10px] transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
             >
-              {shift ? key : key.toLowerCase()}
+              {n}
+            </button>
+          ))}
+        </div>
+
+        {/* Row 1: QWERTYUIOP */}
+        <div className="flex gap-[3px] justify-center">
+          {letterRows[0].map((key) => (
+            <button
+              key={key}
+              onClick={() => handleKey(key)}
+              className="flex-1 min-w-0 py-[10px] text-[10px] transition-all touch-active"
+              style={keyStyle()}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
+            >
+              {displayKey(key)}
             </button>
           ))}
         </div>
 
         {/* Row 2: ASDFGHJKL */}
-        <div className="flex gap-1 justify-center px-3">
-          {rows[1].map((key) => (
+        <div className="flex gap-[3px] justify-center px-4">
+          {letterRows[1].map((key) => (
             <button
               key={key}
               onClick={() => handleKey(key)}
-              className="flex-1 min-w-0 py-2 text-[9px] uppercase transition-all touch-active"
+              className="flex-1 min-w-0 py-[10px] text-[10px] transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
             >
-              {shift ? key : key.toLowerCase()}
+              {displayKey(key)}
             </button>
           ))}
         </div>
 
-        {/* Row 3: SHIFT + ZXCVBNM + DEL */}
-        <div className="flex gap-1 justify-center">
+        {/* Row 3: CAPS + ZXCVBNM + ← */}
+        <div className="flex gap-[3px] justify-center">
           <button
-            onClick={() => handleSpecial('SHIFT')}
-            className="px-2 py-2 text-[8px] uppercase transition-all touch-active"
+            onClick={() => handleSpecial('CAPS')}
+            className="px-3 py-[10px] text-[9px] uppercase transition-all touch-active flex items-center gap-1"
             style={{
               ...keyStyle(true),
-              borderColor: shift ? '#667eea' : '#2a2a4a',
-              color: shift ? '#667eea' : '#7a7a9a',
+              borderColor: caps ? '#ffd700' : '#2a2a4a',
+              color: caps ? '#ffd700' : '#7a7a9a',
+              backgroundColor: caps ? 'rgba(255, 215, 0, 0.1)' : '#141430',
+              boxShadow: caps
+                ? '0 0 8px rgba(255, 215, 0, 0.2), inset -1px -1px 0px 0px rgba(0,0,0,0.3)'
+                : 'inset -1px -1px 0px 0px rgba(0,0,0,0.3), 1px 1px 0px 0px rgba(0,0,0,0.3)',
             }}
           >
-            SHIFT
+            {caps ? '\u2B06 CAPS' : '\u21E7 caps'}
           </button>
-          {rows[2].map((key) => (
+          {letterRows[2].map((key) => (
             <button
               key={key}
               onClick={() => handleKey(key)}
-              className="flex-1 min-w-0 py-2 text-[9px] uppercase transition-all touch-active"
+              className="flex-1 min-w-0 py-[10px] text-[10px] transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
             >
-              {shift ? key : key.toLowerCase()}
+              {displayKey(key)}
             </button>
           ))}
           <button
             onClick={() => handleSpecial('DEL')}
-            className="px-2 py-2 text-[8px] uppercase transition-all touch-active"
+            className="px-4 py-[10px] text-lg transition-all touch-active"
             style={keyStyle(true)}
           >
-            DEL
+            {'\u2190'}
           </button>
         </div>
 
-        {/* Row 4: Special keys */}
-        <div className="flex gap-1">
+        {/* Row 4: Special keys — 0x, SPACE, .eth, CLR */}
+        <div className="flex gap-[3px]">
           <button
             onClick={() => handleSpecial('0X')}
-            className="px-3 py-2 text-[8px] uppercase transition-all touch-active"
+            className="px-3 py-[10px] text-[9px] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             0x
           </button>
           <button
             onClick={() => handleSpecial('SPACE')}
-            className="flex-1 py-2 text-[8px] uppercase transition-all touch-active"
+            className="flex-1 py-[10px] text-[9px] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             SPACE
           </button>
           <button
             onClick={() => handleSpecial('.ETH')}
-            className="px-3 py-2 text-[8px] transition-all touch-active"
+            className="px-4 py-[10px] text-[9px] transition-all touch-active"
             style={{
               ...keyStyle(),
               color: '#78ffd6',
@@ -179,30 +202,14 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
           </button>
           <button
             onClick={() => handleSpecial('CLR')}
-            className="px-3 py-2 text-[8px] uppercase transition-all touch-active"
+            className="px-3 py-[10px] text-[9px] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             CLR
           </button>
         </div>
 
-        {/* Numbers row */}
-        <div className="flex gap-1 justify-center">
-          {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((n) => (
-            <button
-              key={n}
-              onClick={() => { if (value.length < maxLength) onChange(value + n) }}
-              className="flex-1 min-w-0 py-2 text-[9px] transition-all touch-active"
-              style={keyStyle()}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-
-        {/* Submit button */}
+        {/* Confirm button */}
         <button
           onClick={onSubmit}
           disabled={!value}

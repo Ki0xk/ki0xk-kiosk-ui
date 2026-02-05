@@ -121,13 +121,13 @@ export default function ClaimPage() {
             Enter Wallet ID
           </h1>
           <p className="text-[8px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
-            4-character code from your receipt
+            6-character code from your receipt
           </p>
         </div>
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center">
-          <WalletIdKeypad value={walletId} onChange={setWalletId} maxLength={4} />
+          <WalletIdKeypad value={walletId} onChange={setWalletId} maxLength={6} />
         </div>
 
         {/* Error message */}
@@ -145,7 +145,7 @@ export default function ClaimPage() {
             size="md"
             variant="primary"
             onClick={handleWalletIdSubmit}
-            disabled={walletId.length !== 4 || isProcessing}
+            disabled={walletId.length !== 6 || isProcessing}
             className="w-full"
           >
             {isProcessing ? 'Looking Up...' : 'Submit'}
@@ -368,10 +368,10 @@ export default function ClaimPage() {
             className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
-            Enter Address
+            Enter ENS
           </h1>
           <p className="text-[8px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
-            ENS name or wallet address
+            Type ENS or address
           </p>
         </div>
 

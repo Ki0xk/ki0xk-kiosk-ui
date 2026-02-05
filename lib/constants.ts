@@ -53,7 +53,7 @@ export const SUPPORTED_ASSETS = [
 // Wallet ID charset (0-9 + A-D for 4x4 physical keypad compatibility)
 // ============================================================================
 export const WALLET_ID_CHARS = '0123456789ABCD'
-export const WALLET_ID_LENGTH = 4
+export const WALLET_ID_LENGTH = 6
 
 // ============================================================================
 // Legacy constants (kept for festival mode)

@@ -14,7 +14,7 @@ const keys = [
   'CLR', '0', 'DEL', 'D',
 ]
 
-export function WalletIdKeypad({ value, onChange, maxLength = 4 }: WalletIdKeypadProps) {
+export function WalletIdKeypad({ value, onChange, maxLength = 6 }: WalletIdKeypadProps) {
   const handlePress = (key: string) => {
     if (key === 'CLR') {
       onChange('')

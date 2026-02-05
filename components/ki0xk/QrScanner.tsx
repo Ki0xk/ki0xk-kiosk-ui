@@ -77,8 +77,29 @@ export function QrScanner({ onScan, onError, onClose }: QrScannerProps) {
           borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700) 1',
         }}
       >
-        {/* Scanner container */}
-        <div id="qr-reader-container" className="w-full h-full" />
+        {/* Scanner container — hide library's duplicate canvas element */}
+        <div id="qr-reader-container" className="w-full h-full qr-scanner-container" />
+
+        {/* Hide html5-qrcode's internal scan region + canvas that causes double image */}
+        <style>{`
+          #qr-reader-container video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+          }
+          #qr-reader-container canvas {
+            display: none !important;
+          }
+          #qr-reader-container img {
+            display: none !important;
+          }
+          #qr-reader-container > div:nth-child(2) {
+            display: none !important;
+          }
+          #qr-shaded-region {
+            display: none !important;
+          }
+        `}</style>
 
         {/* Corner brackets overlay */}
         <div className="absolute inset-0 pointer-events-none">

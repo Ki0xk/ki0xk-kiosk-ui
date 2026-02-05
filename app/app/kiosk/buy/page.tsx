@@ -390,7 +390,7 @@ export default function BuyPage() {
       try {
         const result = await mockSessionToPin(
           state.sessionId ?? '',
-          state.balanceUSDC.toFixed(6)
+          state.balanceUSDC.toFixed(2)
         )
         dispatch(actions.setPinData({
           pin: result.pin,
@@ -516,10 +516,10 @@ export default function BuyPage() {
             className="text-lg"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
-            Enter Address
+            Enter ENS
           </h1>
           <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Type wallet address or ENS name
+            Type ENS or address
           </p>
         </div>
 
