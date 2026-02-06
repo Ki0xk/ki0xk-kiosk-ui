@@ -22,6 +22,11 @@ const envSchema = z.object({
   SERIAL_PORT: z.string().default('/dev/ttyUSB0'),
   SERIAL_BAUD: z.coerce.number().default(115200),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  CIRCLE_API_KEY: z
+    .string()
+    .transform((v) => (v === '' ? undefined : v))
+    .pipe(z.string().optional())
+    .optional(),
 })
 
 export type ServerConfig = z.infer<typeof envSchema>

@@ -90,3 +90,30 @@ export async function apiClaimPinWallet(
 }> {
   return post('/api/pin/claim', { walletId, pin, destination, targetChainKey })
 }
+
+// Faucet / balance helpers
+export async function apiGetBalances(): Promise<{
+  arc: { usdc: string; usdcRaw: string }
+  yellow: { asset: string; amount: string; raw: string }
+  wallet: string
+  timestamp: number
+}> {
+  const res = await fetch('/api/faucet')
+  if (!res.ok) throw new Error('Failed to fetch balances')
+  return res.json()
+}
+
+export async function apiClaimFaucet(): Promise<{
+  claims: {
+    yellow: { success: boolean; message: string }
+    circle: { success: boolean; message: string }
+  }
+  balances: {
+    arc: { usdc: string; usdcRaw: string }
+    yellow: { asset: string; amount: string; raw: string }
+    wallet: string
+    timestamp: number
+  }
+}> {
+  return post('/api/faucet', {})
+}

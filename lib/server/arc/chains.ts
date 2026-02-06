@@ -11,7 +11,7 @@ export const SUPPORTED_CHAINS: Record<string, ChainInfo> = {
   arc: {
     name: 'Arc Testnet',
     bridgeKitName: 'Arc_Testnet',
-    chainId: 0,
+    chainId: 1115511126,
     isTestnet: true,
     explorerUrl: 'https://explorer.arc.network',
     rpcUrl: 'https://rpc-testnet.arc.network',

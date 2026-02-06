@@ -1,9 +1,29 @@
 import { BridgeKit } from '@circle-fin/bridge-kit'
 import { createViemAdapterFromPrivateKey } from '@circle-fin/adapter-viem-v2'
+import { createPublicClient, http, formatUnits, erc20Abi, type Chain, type PublicClient } from 'viem'
 import { getServerConfig } from '../config'
+import { getKioskAddress } from '../wallet'
 import { logger } from '../logger'
 import { calculateFee, type FeeBreakdown } from './fees'
 import { SUPPORTED_CHAINS, type ChainInfo } from './chains'
+
+const ARC_USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as const
+
+let _arcClient: PublicClient | null = null
+
+function getArcPublicClient(): PublicClient {
+  if (!_arcClient) {
+    const arc = SUPPORTED_CHAINS['arc']
+    const chain: Chain = {
+      id: arc.chainId,
+      name: arc.name,
+      nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+      rpcUrls: { default: { http: [arc.rpcUrl] } },
+    }
+    _arcClient = createPublicClient({ chain, transport: http(arc.rpcUrl) })
+  }
+  return _arcClient
+}
 
 let _bridgeKit: BridgeKit | null = null
 
@@ -38,8 +58,18 @@ export interface ArcBalance {
 
 export async function getArcBalance(): Promise<ArcBalance> {
   try {
-    logger.debug('Checking Arc balance...')
-    return { usdc: '0.00', usdcRaw: 0n }
+    logger.debug('Checking Arc USDC balance...')
+    const client = getArcPublicClient()
+    const address = getKioskAddress() as `0x${string}`
+    const raw = await client.readContract({
+      address: ARC_USDC_ADDRESS,
+      abi: erc20Abi,
+      functionName: 'balanceOf',
+      args: [address],
+    }) as bigint
+    const usdc = formatUnits(raw, 6)
+    logger.debug('Arc balance', { usdc, raw: raw.toString() })
+    return { usdc, usdcRaw: raw }
   } catch (error) {
     logger.error('Failed to get Arc balance', { error: error as object })
     return { usdc: '0.00', usdcRaw: 0n }
