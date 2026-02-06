@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKi0xk, actions } from '@/lib/state'
 import { SUPPORTED_ASSETS, SUPPORTED_CHAINS, calculateFee, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
-import { mockStartSession, mockDepositToSession, mockEndSession, mockSessionToPin } from '@/lib/mock'
+import { apiStartSession, apiDepositToSession, apiEndSession, apiSessionToPin } from '@/lib/api-client'
+import { getMode, getModeFeatures } from '@/lib/mode'
+import { useCoinEvents } from '@/hooks/use-coin-events'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { CoinSlotSimulator } from '@/components/ki0xk/CoinSlotSimulator'
 import { QrScanner } from '@/components/ki0xk/QrScanner'
@@ -109,7 +111,7 @@ export default function BuyPage() {
     const handleCoinInserted = (pesos: number, usdc: number) => {
       dispatch(actions.insertCoin(pesos, usdc))
       // Fire-and-forget deposit to session
-      mockDepositToSession(
+      apiDepositToSession(
         state.sessionId ?? 'pending',
         usdc.toFixed(6)
       ).catch(() => {})
@@ -126,7 +128,7 @@ export default function BuyPage() {
             Insert Coins
           </h1>
           <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Tap a coin to simulate insertion
+            {getModeFeatures().useSimulatedCoins ? 'Tap a coin to simulate insertion' : 'Insert coins into the slot'}
           </p>
         </div>
 
@@ -271,7 +273,7 @@ export default function BuyPage() {
   if (step === 'processing') {
     const handleProcessingComplete = async () => {
       try {
-        const result = await mockStartSession()
+        const result = await apiStartSession()
         dispatch(actions.setSessionId(result.sessionId))
         setStep('balance-confirmed')
       } catch {
@@ -388,9 +390,8 @@ export default function BuyPage() {
     const handlePrintPin = async () => {
       setIsProcessing(true)
       try {
-        const result = await mockSessionToPin(
-          state.sessionId ?? '',
-          state.balanceUSDC.toFixed(2)
+        const result = await apiSessionToPin(
+          state.sessionId ?? ''
         )
         dispatch(actions.setPinData({
           pin: result.pin,
@@ -631,11 +632,10 @@ export default function BuyPage() {
   if (step === 'settling') {
     const handleSettleComplete = async () => {
       try {
-        const result = await mockEndSession(
+        const result = await apiEndSession(
           state.sessionId ?? '',
           destinationAddress,
-          selectedChain,
-          state.balanceUSDC
+          selectedChain
         )
         dispatch(actions.setSettlementResult({
           success: result.success,

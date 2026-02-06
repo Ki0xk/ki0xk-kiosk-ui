@@ -6,6 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ['serialport', 'ws', '@serialport/parser-readline'],
 }
 
 export default nextConfig

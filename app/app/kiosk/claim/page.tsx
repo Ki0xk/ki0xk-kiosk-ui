@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKi0xk, actions } from '@/lib/state'
 import { SUPPORTED_CHAINS, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
-import { mockLookupPinWallet, mockClaimPinWallet } from '@/lib/mock'
+import { apiLookupPinWallet, apiClaimPinWallet } from '@/lib/api-client'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { PinKeypad } from '@/components/ki0xk/PinKeypad'
 import { WalletIdKeypad } from '@/components/ki0xk/WalletIdKeypad'
@@ -96,7 +96,7 @@ export default function ClaimPage() {
       setIsProcessing(true)
       setError('')
       try {
-        const result = await mockLookupPinWallet(walletId, pin)
+        const result = await apiLookupPinWallet(walletId, pin)
         if (result.success) {
           setWalletAmount(result.amount)
           setStep('show-balance')
@@ -476,7 +476,7 @@ export default function ClaimPage() {
   if (step === 'settling') {
     const handleSettlingComplete = async () => {
       try {
-        const result = await mockClaimPinWallet(walletId, pin, destinationAddress, selectedChain)
+        const result = await apiClaimPinWallet(walletId, pin, destinationAddress, selectedChain)
         if (result.success) {
           setClaimResult({
             amount: result.amount,
