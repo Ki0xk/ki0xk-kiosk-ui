@@ -25,6 +25,7 @@ export interface SettlementResult {
   settledAmount: string
   fee: FeeBreakdown
   bridgeTxHash?: string
+  explorerUrl?: string
   destinationChain: string
   message: string
 }

@@ -16,7 +16,8 @@ const envSchema = z.object({
     .default('0x036CbD53842c5426634e7929541eC2318f3dCF7e'),
   FEE_RECIPIENT_ADDRESS: z
     .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid address format')
+    .transform((v) => (v === '' ? undefined : v))
+    .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid address format').optional())
     .optional(),
   SERIAL_PORT: z.string().default('/dev/ttyUSB0'),
   SERIAL_BAUD: z.coerce.number().default(115200),

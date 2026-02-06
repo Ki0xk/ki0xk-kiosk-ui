@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKi0xk, actions } from '@/lib/state'
 import { SUPPORTED_ASSETS, SUPPORTED_CHAINS, calculateFee, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
 import { apiStartSession, apiDepositToSession, apiEndSession, apiSessionToPin } from '@/lib/api-client'
 import { getMode, getModeFeatures } from '@/lib/mode'
 import { useCoinEvents } from '@/hooks/use-coin-events'
+import { QRCodeSVG } from 'qrcode.react'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { CoinSlotSimulator } from '@/components/ki0xk/CoinSlotSimulator'
 import { QrScanner } from '@/components/ki0xk/QrScanner'
@@ -18,10 +19,9 @@ import { CoinAnimation } from '@/components/ki0xk/CoinAnimation'
 
 type BuyStep =
   | 'select-asset'
+  | 'processing'
   | 'insert-coins'
   | 'confirm-amount'
-  | 'processing'
-  | 'balance-confirmed'
   | 'choose-destination'
   | 'qr-scan'
   | 'ens-input'
@@ -38,6 +38,8 @@ export default function BuyPage() {
   const [selectedChain, setSelectedChain] = useState<ChainKey>(DEFAULT_CHAIN)
   const [destinationAddress, setDestinationAddress] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const sessionStarting = useRef(false)
+  const settlingStarted = useRef(false)
 
   // ──────────────────────────────────────────────────────────────────────────
   // select-asset
@@ -88,7 +90,7 @@ export default function BuyPage() {
           <ArcadeButton
             size="md"
             variant="primary"
-            onClick={() => setStep('insert-coins')}
+            onClick={() => setStep('processing')}
             className="w-full"
           >
             Next
@@ -105,16 +107,61 @@ export default function BuyPage() {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // insert-coins
+  // processing — start session BEFORE coins
+  // ──────────────────────────────────────────────────────────────────────────
+  if (step === 'processing') {
+    const handleProcessingComplete = async () => {
+      if (sessionStarting.current) return
+      sessionStarting.current = true
+      try {
+        const result = await apiStartSession()
+        dispatch(actions.setSessionId(result.sessionId))
+        setStep('insert-coins')
+      } catch {
+        sessionStarting.current = false
+        // stay on processing — user can retry
+      }
+    }
+
+    return (
+      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+        {/* Title area */}
+        <div className="text-center">
+          <h1
+            className="text-lg"
+            style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+          >
+            Processing
+          </h1>
+          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+            Starting session...
+          </p>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+          <div className="w-full max-w-xs">
+            <ProgressBar progress={0} isAnimating onComplete={handleProcessingComplete} />
+          </div>
+
+          <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            Connecting to kiosk...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // insert-coins — session already exists at this point
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'insert-coins') {
     const handleCoinInserted = (pesos: number, usdc: number) => {
       dispatch(actions.insertCoin(pesos, usdc))
-      // Fire-and-forget deposit to session
-      apiDepositToSession(
-        state.sessionId ?? 'pending',
-        usdc.toFixed(6)
-      ).catch(() => {})
+      // Fire-and-forget deposit to session (only if session exists)
+      if (state.sessionId) {
+        apiDepositToSession(state.sessionId, usdc.toFixed(6)).catch(() => {})
+      }
     }
 
     return (
@@ -248,7 +295,7 @@ export default function BuyPage() {
           <ArcadeButton
             size="md"
             variant="primary"
-            onClick={() => setStep('processing')}
+            onClick={() => setStep('choose-destination')}
             className="w-full"
           >
             Confirm
@@ -261,122 +308,6 @@ export default function BuyPage() {
             className="w-full"
           >
             Add More
-          </ArcadeButton>
-        </div>
-      </div>
-    )
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // processing
-  // ──────────────────────────────────────────────────────────────────────────
-  if (step === 'processing') {
-    const handleProcessingComplete = async () => {
-      try {
-        const result = await apiStartSession()
-        dispatch(actions.setSessionId(result.sessionId))
-        setStep('balance-confirmed')
-      } catch {
-        // stay on processing — user can retry
-      }
-    }
-
-    return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
-        {/* Title area */}
-        <div className="text-center">
-          <h1
-            className="text-lg"
-            style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
-          >
-            Processing
-          </h1>
-          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Starting session...
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          <div className="w-full max-w-xs">
-            <ProgressBar progress={0} isAnimating onComplete={handleProcessingComplete} />
-          </div>
-
-          <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Opening ClearNode channel...
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // balance-confirmed
-  // ──────────────────────────────────────────────────────────────────────────
-  if (step === 'balance-confirmed') {
-    return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
-        {/* Title area */}
-        <div className="text-center">
-          <h1
-            className="text-lg"
-            style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
-          >
-            Balance Confirmed
-          </h1>
-          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Funds ready to send
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          {/* Checkmark icon */}
-          <div
-            className="w-20 h-20 flex items-center justify-center"
-            style={{
-              border: '4px solid #78ffd6',
-              boxShadow: '0 0 12px rgba(120, 255, 214, 0.4), 0 0 24px rgba(120, 255, 214, 0.15)',
-            }}
-          >
-            <span className="text-3xl" style={{ color: '#78ffd6' }}>{'\u2713'}</span>
-          </div>
-
-          {/* Amount */}
-          <p
-            className="text-2xl"
-            style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
-          >
-            ${state.balanceUSDC.toFixed(2)} USDC
-          </p>
-
-          {/* Session ID */}
-          <div
-            className="px-4 py-2 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span className="text-[8px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
-              Session:{' '}
-            </span>
-            <span className="text-[9px] font-mono" style={{ color: '#667eea' }}>
-              {state.sessionId}
-            </span>
-          </div>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('choose-destination')}
-            className="w-full"
-          >
-            Choose Destination
           </ArcadeButton>
         </div>
       </div>
@@ -631,6 +562,8 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'settling') {
     const handleSettleComplete = async () => {
+      if (settlingStarted.current) return
+      settlingStarted.current = true
       try {
         const result = await apiEndSession(
           state.sessionId ?? '',
@@ -642,12 +575,13 @@ export default function BuyPage() {
           settledAmount: result.settledAmount,
           fee: result.fee,
           bridgeTxHash: result.bridgeTxHash,
+          explorerUrl: result.explorerUrl,
           destinationChain: result.destinationChain,
           message: result.message,
         }))
         setStep('done')
       } catch {
-        // stay on settling
+        settlingStarted.current = false
       }
     }
 
@@ -796,6 +730,25 @@ export default function BuyPage() {
               </span>
               <span className="text-[8px] font-mono" style={{ color: '#ffd700' }}>
                 {truncateHash(result.bridgeTxHash)}
+              </span>
+            </div>
+          )}
+
+          {/* QR Code for explorer link */}
+          {result?.explorerUrl && (
+            <div className="flex flex-col items-center gap-2 p-3 border-2" style={{
+              backgroundColor: '#0f0f24',
+              borderColor: '#2a2a4a',
+              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
+            }}>
+              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                Scan to verify on explorer
+              </span>
+              <div className="bg-white p-2 rounded">
+                <QRCodeSVG value={result.explorerUrl} size={120} />
+              </div>
+              <span className="text-[7px] font-mono break-all text-center" style={{ color: '#667eea' }}>
+                {result.explorerUrl}
               </span>
             </div>
           )}

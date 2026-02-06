@@ -45,6 +45,7 @@ export async function apiEndSession(
   settledAmount: string
   fee: { grossAmount: number; fee: number; netAmount: number; feePercentage: string }
   bridgeTxHash?: string
+  explorerUrl?: string
   destinationChain: string
   message: string
 }> {
@@ -84,7 +85,7 @@ export async function apiClaimPinWallet(
 ): Promise<{
   success: boolean
   amount: string
-  bridgeResult?: { success: boolean; txHash?: string; txStatus?: string }
+  bridgeResult?: { success: boolean; txHash?: string; txStatus?: string; explorerUrl?: string }
   message: string
 }> {
   return post('/api/pin/claim', { walletId, pin, destination, targetChainKey })

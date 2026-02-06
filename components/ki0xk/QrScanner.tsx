@@ -12,19 +12,37 @@ interface QrScannerProps {
 export function QrScanner({ onScan, onError, onClose }: QrScannerProps) {
   const [status, setStatus] = useState<'loading' | 'scanning' | 'error'>('loading')
   const [errorMsg, setErrorMsg] = useState('')
-  const scannerRef = useRef<unknown>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const onScanRef = useRef(onScan)
+  const onErrorRef = useRef(onError)
+  const scannerRunning = useRef(false)
+  const cancelled = useRef(false)
+
+  onScanRef.current = onScan
+  onErrorRef.current = onError
 
   useEffect(() => {
-    let html5QrCode: { stop: () => Promise<void>; start: (...args: unknown[]) => Promise<void> } | null = null
+    cancelled.current = false
+    let html5QrCode: { stop: () => Promise<void>; start: (...args: unknown[]) => Promise<void>; getState: () => number } | null = null
+
+    const stopScanner = async () => {
+      if (html5QrCode && scannerRunning.current) {
+        scannerRunning.current = false
+        try {
+          await html5QrCode.stop()
+        } catch {
+          // Already stopped or never started — safe to ignore
+        }
+      }
+    }
 
     const startScanner = async () => {
       try {
-        // Dynamic import to avoid SSR issues
         const { Html5Qrcode } = await import('html5-qrcode')
 
+        if (cancelled.current) return
+
         html5QrCode = new Html5Qrcode('qr-reader-container')
-        scannerRef.current = html5QrCode
 
         await html5QrCode.start(
           { facingMode: 'environment' },
@@ -33,37 +51,40 @@ export function QrScanner({ onScan, onError, onClose }: QrScannerProps) {
             qrbox: { width: 200, height: 200 },
           },
           (decodedText: string) => {
-            // Validate: Ethereum address (0x + 40 hex) or ENS name (contains .)
             const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(decodedText)
             const isEns = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/.test(decodedText)
 
             if (isEthAddress || isEns) {
-              onScan(decodedText)
-              // Stop scanner after successful scan
-              html5QrCode?.stop().catch(() => {})
+              stopScanner()
+              onScanRef.current(decodedText)
             }
           },
-          () => {
-            // QR code not found in frame — this is normal, just keep scanning
-          },
+          () => {},
         )
 
+        if (cancelled.current) {
+          await stopScanner()
+          return
+        }
+
+        scannerRunning.current = true
         setStatus('scanning')
       } catch (err) {
+        if (cancelled.current) return
         const msg = err instanceof Error ? err.message : 'Camera access denied'
         setErrorMsg(msg)
         setStatus('error')
-        onError?.(msg)
+        onErrorRef.current?.(msg)
       }
     }
 
     startScanner()
 
     return () => {
-      const scanner = scannerRef.current as { stop: () => Promise<void> } | null
-      scanner?.stop().catch(() => {})
+      cancelled.current = true
+      stopScanner()
     }
-  }, [onScan, onError])
+  }, [])
 
   return (
     <div className="w-full flex flex-col items-center gap-4">

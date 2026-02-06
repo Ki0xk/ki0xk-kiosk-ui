@@ -1,15 +1,12 @@
-import { getClearNode } from './clearnode'
-import { bridgeToChain, getArcBalance, type BridgeResult } from './arc/bridge'
+import { bridgeToChain, type BridgeResult } from './arc/bridge'
 import { calculateFee, type FeeBreakdown } from './arc/fees'
 import { getChainByKey } from './arc/chains'
 import { logger } from './logger'
 import { getServerConfig } from './config'
-import { getKioskAddress } from './wallet'
+import { resolveAddress } from './ens'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 
-const YTEST_USD_TOKEN = '0xDB9F293e3898c9E5536A3be1b0C56c89d2b32DEb'
-const BASE_SEPOLIA_CHAIN_ID = 84532
 const PIN_WALLET_FILE = './pin-wallets.json'
 
 export interface PinWallet {
@@ -32,8 +29,6 @@ export interface SettlementResult {
   success: boolean
   yellowRecorded: boolean
   bridgeResult?: BridgeResult
-  fallbackPin?: string
-  fallbackId?: string
   message: string
 }
 
@@ -117,6 +112,10 @@ export function lookupPinWallet(
   return { success: true, amount: wallet.amount, message: `Wallet ${walletId} found` }
 }
 
+/**
+ * Claim PIN wallet — verify PIN and bridge real USDC via Arc (Circle CCTP).
+ * Matches original kiosk settlement flow.
+ */
 export async function claimPinWallet(
   walletId: string,
   pin: string,
@@ -134,47 +133,32 @@ export async function claimPinWallet(
   const chainInfo = getChainByKey(targetChainKey)
   if (!chainInfo) throw new Error(`Unsupported chain: ${targetChainKey}`)
 
-  wallet.destination = destination
+  // Resolve ENS if needed
+  const resolvedDestination = await resolveAddress(destination)
+
+  wallet.destination = resolvedDestination
   wallet.targetChain = targetChainKey
   savePinWallets(wallets)
 
   const feeBreakdown = calculateFee(parseFloat(wallet.amount))
 
-  logger.info('Claiming PIN wallet with channel settlement', {
+  logger.info('Claiming PIN wallet via Arc Bridge', {
     walletId,
-    destination,
+    destination: resolvedDestination,
     chain: chainInfo.name,
     amount: wallet.amount,
   })
 
-  let channelId: string | null = null
-
   try {
-    const clearNode = getClearNode()
-    await clearNode.ensureConnected()
-
-    logger.info('Opening Yellow channel for settlement...')
-    channelId = await clearNode.createChannel(YTEST_USD_TOKEN, BASE_SEPOLIA_CHAIN_ID)
-    logger.info('Channel opened', { channelId })
-
-    logger.info('Bridging via Arc...', { destination, chain: chainInfo.name })
+    // Bridge real USDC via Arc (Circle CCTP)
     const config = getServerConfig()
     const feeRecipient = config.FEE_RECIPIENT_ADDRESS || undefined
     const bridgeResult = await bridgeToChain(
-      destination,
+      resolvedDestination,
       targetChainKey,
       wallet.amount,
       feeRecipient
     )
-
-    if (channelId) {
-      const exists = await clearNode.channelExists(channelId)
-      if (exists) {
-        try {
-          await clearNode.closeChannel(channelId, getKioskAddress())
-        } catch {}
-      }
-    }
 
     if (bridgeResult.success) {
       wallet.status = 'SETTLED'
@@ -205,13 +189,6 @@ export async function claimPinWallet(
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     logger.error('Settlement failed', { walletId, error: errorMsg })
-
-    if (channelId) {
-      try {
-        const clearNode = getClearNode()
-        await clearNode.closeChannel(channelId, getKioskAddress())
-      } catch {}
-    }
 
     wallet.status = 'PENDING_BRIDGE'
     wallet.bridgeAttempts++

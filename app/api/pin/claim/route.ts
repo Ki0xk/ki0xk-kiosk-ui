@@ -22,6 +22,7 @@ export async function POST(request: Request) {
             success: result.bridgeResult.success,
             txHash: result.bridgeResult.txHash,
             txStatus: result.bridgeResult.txStatus,
+            explorerUrl: result.bridgeResult.explorerUrl,
           }
         : undefined,
       message: result.message,
