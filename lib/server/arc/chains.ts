@@ -11,10 +11,10 @@ export const SUPPORTED_CHAINS: Record<string, ChainInfo> = {
   arc: {
     name: 'Arc Testnet',
     bridgeKitName: 'Arc_Testnet',
-    chainId: 1115511126,
+    chainId: 5042002,
     isTestnet: true,
-    explorerUrl: 'https://explorer.arc.network',
-    rpcUrl: 'https://rpc-testnet.arc.network',
+    explorerUrl: 'https://testnet.arcscan.app',
+    rpcUrl: 'https://rpc.testnet.arc.network',
   },
   base: {
     name: 'Base Sepolia',

@@ -133,7 +133,7 @@ async function claimCircleFaucet(address: string): Promise<{ success: boolean; m
       body: JSON.stringify({
         address,
         blockchain: 'ARC-TESTNET',
-        native: true,
+        native: false,
         usdc: true,
       }),
     })

@@ -68,6 +68,17 @@ function ModeLabel() {
   )
 }
 
+function AutoFundOnStartup() {
+  const [done, setDone] = useState(false)
+  useEffect(() => {
+    if (done) return
+    setDone(true)
+    // Trigger /api/status once on mount — this runs autoFundIfNeeded() server-side
+    fetch('/api/status').catch(() => {})
+  }, [done])
+  return null
+}
+
 export default function AppLayout({
   children,
 }: {
@@ -75,6 +86,7 @@ export default function AppLayout({
 }) {
   return (
     <Ki0xkProvider>
+      <AutoFundOnStartup />
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-2xl aspect-[3/4] max-h-[90vh]">
           <PixelFrame>
