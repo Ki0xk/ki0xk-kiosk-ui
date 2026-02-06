@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKi0xk, actions } from '@/lib/state'
 import { SUPPORTED_CHAINS, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
-import { mockLookupPinWallet, mockClaimPinWallet } from '@/lib/mock'
+import { apiLookupPinWallet, apiClaimPinWallet } from '@/lib/api-client'
+import { QRCodeSVG } from 'qrcode.react'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { PinKeypad } from '@/components/ki0xk/PinKeypad'
 import { WalletIdKeypad } from '@/components/ki0xk/WalletIdKeypad'
@@ -37,10 +38,13 @@ export default function ClaimPage() {
   const [error, setError] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
 
+  const claimingStarted = useRef(false)
+
   // Settlement result stored locally for done screen
   const [claimResult, setClaimResult] = useState<{
     amount: string
     txHash: string
+    explorerUrl?: string
   } | null>(null)
 
   // ── enter-pin ──────────────────────────────────────────────────────────
@@ -96,7 +100,7 @@ export default function ClaimPage() {
       setIsProcessing(true)
       setError('')
       try {
-        const result = await mockLookupPinWallet(walletId, pin)
+        const result = await apiLookupPinWallet(walletId, pin)
         if (result.success) {
           setWalletAmount(result.amount)
           setStep('show-balance')
@@ -475,20 +479,25 @@ export default function ClaimPage() {
   // ── settling ───────────────────────────────────────────────────────────
   if (step === 'settling') {
     const handleSettlingComplete = async () => {
+      if (claimingStarted.current) return
+      claimingStarted.current = true
       try {
-        const result = await mockClaimPinWallet(walletId, pin, destinationAddress, selectedChain)
+        const result = await apiClaimPinWallet(walletId, pin, destinationAddress, selectedChain)
         if (result.success) {
           setClaimResult({
             amount: result.amount,
             txHash: result.bridgeResult?.txHash || '0x' + '0'.repeat(64),
+            explorerUrl: result.bridgeResult?.explorerUrl,
           })
           setStep('done')
         } else {
           setError(result.message)
+          claimingStarted.current = false
           setStep('show-balance')
         }
       } catch {
         setError('Claim failed. Please try again.')
+        claimingStarted.current = false
         setStep('show-balance')
       }
     }
@@ -537,6 +546,8 @@ export default function ClaimPage() {
     const truncatedTxHash = claimResult?.txHash
       ? claimResult.txHash.slice(0, 10) + '...' + claimResult.txHash.slice(-8)
       : ''
+
+    const explorerLink = claimResult?.explorerUrl || null
 
     return (
       <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
@@ -601,7 +612,7 @@ export default function ClaimPage() {
             </div>
 
             {/* TX Hash */}
-            <div>
+            <div className="mb-4">
               <p className="text-[7px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
                 TX Hash
               </p>
@@ -609,6 +620,21 @@ export default function ClaimPage() {
                 {truncatedTxHash}
               </p>
             </div>
+
+            {/* QR Code for explorer link */}
+            {explorerLink && (
+              <>
+                <div className="mb-3" style={{ borderTop: '1px solid #2a2a4a' }} />
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-[7px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+                    Scan to verify on-chain
+                  </p>
+                  <div className="bg-white p-2 rounded">
+                    <QRCodeSVG value={explorerLink} size={120} />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
