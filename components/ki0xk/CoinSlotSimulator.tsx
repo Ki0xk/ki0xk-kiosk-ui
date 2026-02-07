@@ -65,7 +65,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
             boxShadow: 'inset 2px 2px 0px 0px rgba(0,0,0,0.3), 0 0 8px rgba(102, 126, 234, 0.2)',
           }}
         >
-          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
             Total Inserted
           </p>
           <p className="text-lg" style={{ color: '#ffd700', textShadow: '0 0 8px rgba(255, 215, 0, 0.4)' }}>
@@ -90,7 +90,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
               style={{ backgroundColor: arduinoConnected ? '#78ffd6' : '#ef4444' }}
             />
             <span
-              className="text-[11px] uppercase tracking-widest"
+              className="text-[0.6875rem] uppercase tracking-widest"
               style={{ color: arduinoConnected ? '#78ffd6' : '#ef4444' }}
             >
               {arduinoConnected ? 'Arduino Connected' : 'Arduino Disconnected'}
@@ -105,7 +105,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
           >
             INSERT COIN
           </p>
-          <p className="text-[10px] uppercase tracking-widest mt-2" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.625rem] uppercase tracking-widest mt-2" style={{ color: '#7a7a9a' }}>
             Waiting for physical coin...
           </p>
         </div>
@@ -116,7 +116,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
             className="mt-4 p-2 border text-center"
             style={{ backgroundColor: '#0a0a1a', borderColor: '#2a2a4a' }}
           >
-            <p className="text-[10px] font-mono" style={{ color: '#78ffd6' }}>
+            <p className="text-[0.625rem] font-mono" style={{ color: '#78ffd6' }}>
               {lastEvent}
             </p>
           </div>
@@ -142,7 +142,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
           boxShadow: 'inset 2px 2px 0px 0px rgba(0,0,0,0.3), 0 0 8px rgba(102, 126, 234, 0.2)',
         }}
       >
-        <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.6875rem] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
           Total Inserted
         </p>
         <p className="text-lg" style={{ color: '#ffd700', textShadow: '0 0 8px rgba(255, 215, 0, 0.4)' }}>
@@ -180,10 +180,10 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
             >
               ${coin.pesos}
             </div>
-            <span className="text-[11px] uppercase" style={{ color: '#e0e8f0' }}>
+            <span className="text-[0.6875rem] uppercase" style={{ color: '#e0e8f0' }}>
               {coin.label}
             </span>
-            <span className="text-[10px]" style={{ color: '#78ffd6' }}>
+            <span className="text-[0.625rem]" style={{ color: '#78ffd6' }}>
               ${coin.usdc.toFixed(2)} USDC
             </span>
           </button>
@@ -199,7 +199,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
             borderColor: '#2a2a4a',
           }}
         >
-          <p className="text-[10px] font-mono" style={{ color: '#78ffd6' }}>
+          <p className="text-[0.625rem] font-mono" style={{ color: '#78ffd6' }}>
             {lastEvent}
           </p>
         </div>

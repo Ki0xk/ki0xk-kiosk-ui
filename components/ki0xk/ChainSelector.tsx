@@ -37,7 +37,7 @@ export function ChainSelector({ selectedChain, onSelect }: ChainSelectorProps) {
               >
                 {chain.name}
               </span>
-              <span className="text-[10px]" style={{ color: '#7a7a9a' }}>
+              <span className="text-[0.625rem]" style={{ color: '#7a7a9a' }}>
                 Chain ID: {chain.chainId}
               </span>
             </div>
@@ -51,7 +51,7 @@ export function ChainSelector({ selectedChain, onSelect }: ChainSelectorProps) {
               }}
             >
               {isSelected && (
-                <span className="text-[11px]" style={{ color: '#0a0a1a' }}>
+                <span className="text-[0.6875rem]" style={{ color: '#0a0a1a' }}>
                   +
                 </span>
               )}

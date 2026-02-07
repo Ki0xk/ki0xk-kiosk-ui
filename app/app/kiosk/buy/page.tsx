@@ -109,7 +109,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <a
             href="/app/kiosk"
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -122,14 +122,14 @@ export default function BuyPage() {
           </h1>
           <button
             onClick={() => setStep('processing')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Next ›
           </button>
         </div>
 
-        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.6875rem] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
           Select asset to purchase
         </p>
 
@@ -151,7 +151,7 @@ export default function BuyPage() {
               >
                 {asset.name}
               </p>
-              <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
+              <p className="text-[0.6875rem] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
                 Stablecoin - $1.00 USD
               </p>
             </button>
@@ -188,7 +188,7 @@ export default function BuyPage() {
           >
             Processing
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Starting session...
           </p>
         </div>
@@ -199,7 +199,7 @@ export default function BuyPage() {
             <ProgressBar progress={0} isAnimating onComplete={handleProcessingComplete} />
           </div>
 
-          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Connecting to kiosk...
           </p>
         </div>
@@ -225,7 +225,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('select-asset')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -239,14 +239,14 @@ export default function BuyPage() {
           <button
             onClick={() => setStep('confirm-amount')}
             disabled={state.totalDepositedUSDC <= 0}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: state.totalDepositedUSDC > 0 ? '#ffd700' : '#3a3a5a', borderColor: state.totalDepositedUSDC > 0 ? '#ffd700' : '#3a3a5a' }}
           >
             Next ›
           </button>
         </div>
 
-        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.6875rem] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
           {getModeFeatures().useSimulatedCoins ? 'Tap a coin to simulate insertion' : 'Insert coins into the slot'}
         </p>
 
@@ -274,7 +274,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('insert-coins')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Add More
@@ -287,14 +287,14 @@ export default function BuyPage() {
           </h1>
           <button
             onClick={() => setStep('choose-destination')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Next ›
           </button>
         </div>
 
-        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.6875rem] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
           Review fee breakdown
         </p>
 
@@ -309,7 +309,7 @@ export default function BuyPage() {
               boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
             }}
           >
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Gross Amount
             </span>
             <span className="text-sm" style={{ color: '#e0e8f0' }}>
@@ -326,7 +326,7 @@ export default function BuyPage() {
               boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
             }}
           >
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Fee ({fee.feePercentage})
             </span>
             <span className="text-sm" style={{ color: '#f093fb' }}>
@@ -343,7 +343,7 @@ export default function BuyPage() {
               boxShadow: '0 0 8px rgba(120, 255, 214, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
             }}
           >
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
+            <span className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
               Net Amount
             </span>
             <span
@@ -387,7 +387,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('confirm-amount')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -467,7 +467,7 @@ export default function BuyPage() {
           >
             Scan QR
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Point camera at wallet QR code
           </p>
         </div>
@@ -496,7 +496,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -538,7 +538,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('choose-destination')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -554,7 +554,7 @@ export default function BuyPage() {
               dispatch(actions.setDestination(destinationAddress, selectedChain, 'qr'))
               setStep('settling')
             }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Send ›
@@ -569,10 +569,10 @@ export default function BuyPage() {
             borderColor: '#2a2a4a',
           }}
         >
-          <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+          <span className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
             Sending to:{' '}
           </span>
-          <span className="text-[13px] font-mono" style={{ color: '#78ffd6' }}>
+          <span className="text-[0.8125rem] font-mono" style={{ color: '#78ffd6' }}>
             {destinationAddress.length > 20
               ? destinationAddress.slice(0, 10) + '...' + destinationAddress.slice(-8)
               : destinationAddress}
@@ -628,7 +628,7 @@ export default function BuyPage() {
           >
             Settling
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Sending to {SUPPORTED_CHAINS[selectedChain].name}...
           </p>
         </div>
@@ -639,7 +639,7 @@ export default function BuyPage() {
             <ProgressBar progress={0} isAnimating onComplete={handleSettleComplete} />
           </div>
 
-          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Bridging ${state.balanceUSDC.toFixed(2)} USDC...
           </p>
         </div>
@@ -673,7 +673,7 @@ export default function BuyPage() {
               dispatch(actions.reset())
               router.push('/app/kiosk')
             }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
@@ -696,10 +696,10 @@ export default function BuyPage() {
                 className="flex items-center justify-between px-2 py-1.5 border"
                 style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
               >
-                <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                <span className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                   {row.label}
                 </span>
-                <span className="text-[13px]" style={{ color: row.color }}>
+                <span className="text-[0.8125rem]" style={{ color: row.color }}>
                   {row.value}
                 </span>
               </div>
@@ -712,7 +712,7 @@ export default function BuyPage() {
               className="flex flex-col items-center justify-center gap-1 px-3 border"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              <span className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                 Verify
               </span>
               <div className="bg-white p-1.5">
@@ -754,7 +754,7 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('choose-destination')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -775,16 +775,16 @@ export default function BuyPage() {
             <p className="text-sm uppercase tracking-wider" style={{ color: '#667eea' }}>
               {nfcProcessing ? 'Processing...' : nfcConnected ? 'Ready — tap your card' : 'Waiting for NFC...'}
             </p>
-            <p className="text-[11px]" style={{ color: '#78ffd6' }}>
+            <p className="text-[0.6875rem]" style={{ color: '#78ffd6' }}>
               Any NFC chip works — metro card, wristband, sticker, badge
             </p>
-            <p className="text-[10px]" style={{ color: '#7a7a9a' }}>
+            <p className="text-[0.625rem]" style={{ color: '#7a7a9a' }}>
               Your card becomes a crypto wallet instantly
             </p>
           </div>
 
           {nfcError && (
-            <p className="text-[13px] text-center px-4" style={{ color: '#ef4444' }}>
+            <p className="text-[0.8125rem] text-center px-4" style={{ color: '#ef4444' }}>
               {nfcError}
             </p>
           )}
@@ -797,7 +797,7 @@ export default function BuyPage() {
               boxShadow: '0 0 8px rgba(120, 255, 214, 0.15)',
             }}
           >
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Amount to save:{' '}
             </span>
             <span
@@ -858,7 +858,7 @@ export default function BuyPage() {
               if (inConfirm) { setNfcPinConfirm(''); setNfcPinStage('enter') }
               else { setStep('choose-destination') }
             }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -873,7 +873,7 @@ export default function BuyPage() {
             <button
               onClick={() => { setNfcPinConfirm(''); setNfcError(''); setNfcPinStage('confirm') }}
               disabled={nfcPin.length < 4}
-              className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
               style={{ color: nfcPin.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: nfcPin.length >= 4 ? '#ffd700' : '#3a3a5a' }}
             >
               Next ›
@@ -882,7 +882,7 @@ export default function BuyPage() {
             <button
               onClick={handleSave}
               disabled={nfcProcessing || nfcPinConfirm.length < 4}
-              className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
               style={{ color: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#ffd700' : '#3a3a5a' }}
             >
               {nfcProcessing ? 'Wait...' : 'Save ›'}
@@ -900,13 +900,13 @@ export default function BuyPage() {
               boxShadow: '0 0 8px rgba(102, 126, 234, 0.15)',
             }}
           >
-            <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+            <span className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
               Card:{' '}
             </span>
             <span className="text-sm font-mono" style={{ color: '#667eea' }}>
               {nfcCardId.length > 12 ? nfcCardId.slice(0, 6) + '...' + nfcCardId.slice(-4) : nfcCardId}
             </span>
-            <span className="text-[11px] ml-2" style={{ color: '#78ffd6' }}>
+            <span className="text-[0.6875rem] ml-2" style={{ color: '#78ffd6' }}>
               (card removed OK)
             </span>
           </div>
@@ -919,7 +919,7 @@ export default function BuyPage() {
           />
 
           {nfcError && (
-            <p className="text-[13px] text-center" style={{ color: '#ef4444' }}>
+            <p className="text-[0.8125rem] text-center" style={{ color: '#ef4444' }}>
               {nfcError}
             </p>
           )}
@@ -948,14 +948,14 @@ export default function BuyPage() {
               dispatch(actions.reset())
               router.push('/app/kiosk')
             }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
           </button>
         </div>
         {nfcIsNewCard && (
-          <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#ffd700' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest text-center" style={{ color: '#ffd700' }}>
             Take a photo of this screen!
           </p>
         )}
@@ -966,7 +966,7 @@ export default function BuyPage() {
             className="flex items-center justify-between px-3 py-1.5 border"
             style={{ backgroundColor: '#0f0f24', borderColor: '#667eea' }}
           >
-            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Card</span>
+            <span className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Card</span>
             <span className="text-sm font-mono" style={{ color: '#667eea' }}>
               {nfcCardId.length > 12 ? nfcCardId.slice(0, 6) + '...' + nfcCardId.slice(-4) : nfcCardId}
             </span>
@@ -978,7 +978,7 @@ export default function BuyPage() {
               className="flex items-center justify-between px-3 py-1.5 border"
               style={{ backgroundColor: '#0f0f24', borderColor: '#ffd700' }}
             >
-              <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>PIN</span>
+              <span className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>PIN</span>
               <span
                 className="text-sm font-mono tracking-[0.3em]"
                 style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.4)' }}
@@ -993,7 +993,7 @@ export default function BuyPage() {
             className="flex items-center justify-between px-3 py-1.5 border"
             style={{ backgroundColor: '#0f0f24', borderColor: '#78ffd6' }}
           >
-            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Balance</span>
+            <span className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Balance</span>
             <span
               className="text-sm"
               style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}
@@ -1007,14 +1007,14 @@ export default function BuyPage() {
             className="px-3 py-2 border space-y-1"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <p className="text-[11px]" style={{ color: '#f093fb' }}>
+            <p className="text-[0.6875rem]" style={{ color: '#f093fb' }}>
               Your NFC card is now a crypto wallet!
             </p>
-            <p className="text-[10px]" style={{ color: '#7a7a9a' }}>
+            <p className="text-[0.625rem]" style={{ color: '#7a7a9a' }}>
               Tap at any Ki0xk kiosk to check balance, top up, or withdraw USDC.
             </p>
             {nfcIsNewCard && (
-              <p className="text-[10px]" style={{ color: '#ffd700' }}>
+              <p className="text-[0.625rem]" style={{ color: '#ffd700' }}>
                 Remember your PIN — you need it to spend or withdraw.
               </p>
             )}

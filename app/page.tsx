@@ -66,7 +66,7 @@ export default function LandingPage() {
               >
                 {item.step}
               </div>
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: item.color }}>
+              <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: item.color }}>
                 {item.label}
               </p>
               {i < 2 && (
@@ -77,7 +77,7 @@ export default function LandingPage() {
         </div>
 
         {/* Value prop */}
-        <p className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
           No KYC. No gas fees. No waiting.
         </p>
 
@@ -106,10 +106,10 @@ export default function LandingPage() {
 
         {/* Footer */}
         <div className="space-y-2 mt-4">
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: '#667eea' }}>
+          <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#667eea' }}>
             Powered by Yellow Network + Circle Arc
           </p>
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Built for tienditas, festivals & events
           </p>
         </div>

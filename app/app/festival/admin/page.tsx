@@ -226,7 +226,7 @@ export default function FestivalAdminPage() {
         <div className="flex items-center justify-between px-1">
           <Link
             href="/app/festival"
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -240,14 +240,14 @@ export default function FestivalAdminPage() {
           <button
             onClick={handleAdminPinSubmit}
             disabled={adminPin.length < 4}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: adminPin.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: adminPin.length >= 4 ? '#ffd700' : '#3a3a5a' }}
           >
             Login ›
           </button>
         </div>
 
-        <p className="text-[11px] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
           Enter admin PIN to continue
         </p>
 
@@ -286,7 +286,7 @@ export default function FestivalAdminPage() {
               if (tab === 'gateway') fetchGatewayBalance()
               if (tab === 'stats') fetchStats()
             }}
-            className="flex-1 p-2 border-2 text-[11px] uppercase tracking-wider transition-all"
+            className="flex-1 p-2 border-2 text-[0.6875rem] uppercase tracking-wider transition-all"
             style={{
               borderColor: activeTab === tab ? '#ffd700' : '#2a2a4a',
               backgroundColor: activeTab === tab ? 'rgba(255, 215, 0, 0.1)' : '#0f0f24',
@@ -312,7 +312,7 @@ export default function FestivalAdminPage() {
                   borderWidth: '2px',
                 }}
               >
-                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Amount to Load</p>
+                <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Amount to Load</p>
                 <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
                   ${topUpAmount || '0'} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
                 </p>
@@ -360,7 +360,7 @@ export default function FestivalAdminPage() {
                 >
                   Tap Card
                 </h2>
-                <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                   {'Hold attendant\'s card near reader to load $'}{topUpAmount}
                 </p>
               </div>
@@ -380,7 +380,7 @@ export default function FestivalAdminPage() {
                 >
                   New Card: {cardWalletId}
                 </h2>
-                <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                   Set a PIN for this card
                 </p>
               </div>
@@ -399,7 +399,7 @@ export default function FestivalAdminPage() {
                 Set PIN & Load
               </ArcadeButton>
 
-              <p className="text-[11px] uppercase text-center" style={{ color: '#ef4444' }}>
+              <p className="text-[0.6875rem] uppercase text-center" style={{ color: '#ef4444' }}>
                 Remember this PIN — it cannot be recovered
               </p>
             </div>
@@ -430,7 +430,7 @@ export default function FestivalAdminPage() {
                 <h2 className="text-sm" style={{ color: '#78ffd6' }}>Card Updated</h2>
 
                 <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
                   <p className="text-sm" style={{ color: '#667eea' }}>{topUpResult.walletId}</p>
                 </div>
 
@@ -439,7 +439,7 @@ export default function FestivalAdminPage() {
                 </p>
 
                 {isNewCard && (
-                  <p className="text-[11px] uppercase" style={{ color: '#ef4444' }}>
+                  <p className="text-[0.6875rem] uppercase" style={{ color: '#ef4444' }}>
                     Remind attendant to REMEMBER their PIN
                   </p>
                 )}
@@ -475,7 +475,7 @@ export default function FestivalAdminPage() {
                 >
                   Check Balance
                 </h2>
-                <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                   Tap a card to view its balance
                 </p>
               </div>
@@ -497,7 +497,7 @@ export default function FestivalAdminPage() {
 
               <div className="text-center space-y-3 w-full max-w-xs">
                 <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
                   <p className="text-sm" style={{ color: '#667eea' }}>{checkedCard.walletId}</p>
                 </div>
 
@@ -510,7 +510,7 @@ export default function FestivalAdminPage() {
                     borderWidth: '2px',
                   }}
                 >
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
                   <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
                     ${checkedCard.balance} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
                   </p>
@@ -518,11 +518,11 @@ export default function FestivalAdminPage() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                    <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
+                    <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
                     <p className="text-sm" style={{ color: '#78ffd6' }}>${checkedCard.totalLoaded}</p>
                   </div>
                   <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                    <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
+                    <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
                     <p className="text-sm" style={{ color: '#f093fb' }}>${checkedCard.totalSpent}</p>
                   </div>
                 </div>
@@ -558,7 +558,7 @@ export default function FestivalAdminPage() {
       {activeTab === 'gateway' && (
         <div className="flex flex-col gap-3 flex-1">
           <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Gateway Balance</p>
+            <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Gateway Balance</p>
             <p className="text-xl" style={{ color: '#ffd700' }}>
               {gatewayLoading ? '...' : gatewayBalance !== null ? `$${gatewayBalance}` : '—'}
               <span className="text-xs ml-1" style={{ color: '#7a7a9a' }}>USDC</span>
@@ -570,7 +570,7 @@ export default function FestivalAdminPage() {
           </ArcadeButton>
 
           <div className="border-t-2 pt-3 mt-2" style={{ borderColor: '#2a2a4a' }}>
-            <p className="text-[11px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Deposit to Gateway</p>
+            <p className="text-[0.6875rem] uppercase mb-2" style={{ color: '#7a7a9a' }}>Deposit to Gateway</p>
 
             <div className="grid grid-cols-3 gap-2 mb-3">
               {['1', '5', '10'].map((preset) => (
@@ -601,7 +601,7 @@ export default function FestivalAdminPage() {
 
             {depositResult && (
               <p
-                className="text-[11px] mt-2 break-all"
+                className="text-[0.6875rem] mt-2 break-all"
                 style={{ color: depositResult.startsWith('Failed') ? '#ef4444' : '#78ffd6' }}
               >
                 {depositResult}
@@ -618,26 +618,26 @@ export default function FestivalAdminPage() {
             <>
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Cards</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Cards</p>
                   <p className="text-lg" style={{ color: '#667eea' }}>{stats.totalCards}</p>
                 </div>
                 <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Balance</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Balance</p>
                   <p className="text-lg" style={{ color: '#ffd700' }}>${stats.totalBalance}</p>
                 </div>
                 <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Loaded</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Loaded</p>
                   <p className="text-lg" style={{ color: '#78ffd6' }}>${stats.totalLoaded}</p>
                 </div>
                 <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                  <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Spent</p>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Spent</p>
                   <p className="text-lg" style={{ color: '#f093fb' }}>${stats.totalSpent}</p>
                 </div>
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>Loading stats...</p>
+              <p className="text-[0.6875rem] uppercase" style={{ color: '#7a7a9a' }}>Loading stats...</p>
             </div>
           )}
 
@@ -648,7 +648,7 @@ export default function FestivalAdminPage() {
       )}
 
       {/* Back link */}
-      <Link href="/app/festival" className="text-center mt-1 inline-block px-2 py-0.5 border text-[11px] uppercase tracking-wider mx-auto" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+      <Link href="/app/festival" className="text-center mt-1 inline-block px-2 py-0.5 border text-[0.6875rem] uppercase tracking-wider mx-auto" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
         ‹ Back
       </Link>
     </div>

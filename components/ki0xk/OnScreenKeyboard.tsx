@@ -139,7 +139,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
         <div className="flex gap-[3px] justify-center">
           <button
             onClick={() => handleSpecial('CAPS')}
-            className="px-3 py-[6px] text-[13px] uppercase transition-all touch-active flex items-center gap-1"
+            className="px-3 py-[6px] text-[0.8125rem] uppercase transition-all touch-active flex items-center gap-1"
             style={{
               ...keyStyle(true),
               borderColor: caps ? '#ffd700' : '#2a2a4a',
@@ -177,21 +177,21 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
         <div className="flex gap-[3px]">
           <button
             onClick={() => handleSpecial('0X')}
-            className="px-3 py-[6px] text-[13px] uppercase transition-all touch-active"
+            className="px-3 py-[6px] text-[0.8125rem] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             0x
           </button>
           <button
             onClick={() => handleSpecial('SPACE')}
-            className="flex-1 py-[6px] text-[13px] uppercase transition-all touch-active"
+            className="flex-1 py-[6px] text-[0.8125rem] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             SPACE
           </button>
           <button
             onClick={() => handleSpecial('.ETH')}
-            className="px-4 py-[6px] text-[13px] transition-all touch-active"
+            className="px-4 py-[6px] text-[0.8125rem] transition-all touch-active"
             style={{
               ...keyStyle(),
               color: '#78ffd6',
@@ -202,7 +202,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
           </button>
           <button
             onClick={() => handleSpecial('CLR')}
-            className="px-3 py-[6px] text-[13px] uppercase transition-all touch-active"
+            className="px-3 py-[6px] text-[0.8125rem] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             CLR

@@ -26,17 +26,17 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
       <div className="flex items-center justify-between px-1 mb-1">
         <button
           onClick={handlePrint}
-          className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+          className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
           style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
         >
           Print
         </button>
-        <p className="text-[13px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+        <p className="text-[0.8125rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
           Receipt
         </p>
         <button
           onClick={onDone}
-          className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+          className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
           style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
         >
           Done ›
@@ -53,7 +53,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
       <div className="flex-1 flex flex-col items-center gap-2 min-h-0">
         {/* PIN */}
         <div>
-          <p className="text-[11px] uppercase tracking-widest text-center mb-1" style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest text-center mb-1" style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}>
             Your PIN
           </p>
           <div className="flex gap-1.5 justify-center">
@@ -77,7 +77,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
 
         {/* Wallet ID */}
         <div>
-          <p className="text-[11px] uppercase tracking-widest text-center mb-1" style={{ color: '#667eea', textShadow: '0 0 8px rgba(102, 126, 234, 0.4)' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest text-center mb-1" style={{ color: '#667eea', textShadow: '0 0 8px rgba(102, 126, 234, 0.4)' }}>
             Wallet ID
           </p>
           <div className="flex gap-1.5 justify-center">
@@ -107,7 +107,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
             borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700) 1',
           }}
         >
-          <p className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
             Amount
           </p>
           <p className="text-lg" style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}>
@@ -125,7 +125,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
           }}
         >
           <p
-            className="text-[11px] uppercase tracking-wider font-bold"
+            className="text-[0.6875rem] uppercase tracking-wider font-bold"
             style={{
               color: '#ef4444',
               textShadow: '0 0 8px rgba(239, 68, 68, 0.5)',

@@ -149,7 +149,6 @@ export default function FestivalPublicPage() {
     try {
       const info = await apiGetCardBalance(walletId)
       if (info.exists) {
-        // Fetch full info for loaded/spent
         const { apiGetCardInfo } = await import('@/lib/api-client')
         const full = await apiGetCardInfo(walletId).catch(() => null)
         setCheckedBalance({
@@ -279,23 +278,34 @@ export default function FestivalPublicPage() {
     }
   }
 
+  // ============================================================
   // IDLE
+  // ============================================================
   if (flow === 'idle') {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-        <div className="text-center space-y-2">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        <div className="flex items-center justify-between px-1">
+          <Link
+            href="/app/festival"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </Link>
           <h1
-            className="text-xl"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Festival Terminal
           </h1>
-          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Choose an action
-          </p>
+          <span className="w-12" />
         </div>
 
-        <div className="flex flex-col gap-4 w-full max-w-xs">
+        <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+          Choose an action
+        </p>
+
+        <div className="flex-1 flex flex-col gap-4 justify-center w-full max-w-xs mx-auto">
           <ArcadeButton size="lg" variant="accent" onClick={startPayment} className="w-full">
             Pay
           </ArcadeButton>
@@ -306,25 +316,36 @@ export default function FestivalPublicPage() {
             Check Balance
           </ArcadeButton>
         </div>
-
-        <Link href="/app/festival" className="mt-4">
-          <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
-        </Link>
       </div>
     )
   }
 
+  // ============================================================
   // PAYMENT FLOW
+  // ============================================================
   if (flow === 'payment') {
     // Select merchant
     if (payStep === 'select-merchant') {
       return (
-        <div className="h-full flex flex-col p-4 gap-4">
-          <div className="text-center">
-            <h2 className="text-sm" style={{ color: '#ffd700' }}>Select Merchant</h2>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+            >
+              Select Merchant
+            </h1>
+            <span className="w-12" />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 flex-1">
+          <div className="flex-1 flex flex-col gap-3 justify-center">
             {merchants.map((m) => (
               <button
                 key={m.id}
@@ -333,7 +354,7 @@ export default function FestivalPublicPage() {
                   setCart([])
                   setPayStep('build-cart')
                 }}
-                className="p-4 border-2 text-left transition-all"
+                className="p-3 border-2 text-left transition-all"
                 style={{
                   backgroundColor: '#0f0f24',
                   borderColor: '#2a2a4a',
@@ -341,21 +362,17 @@ export default function FestivalPublicPage() {
                 }}
               >
                 <p className="text-sm" style={{ color: '#f093fb' }}>{m.name}</p>
-                <p className="text-[11px] uppercase mt-1" style={{ color: '#7a7a9a' }}>
+                <p className="text-[0.6875rem] uppercase mt-1" style={{ color: '#7a7a9a' }}>
                   {m.preferredChain}
                 </p>
               </button>
             ))}
             {merchants.length === 0 && (
-              <p className="text-[11px] uppercase text-center" style={{ color: '#7a7a9a' }}>
+              <p className="text-[0.6875rem] uppercase text-center" style={{ color: '#7a7a9a' }}>
                 No merchants configured
               </p>
             )}
           </div>
-
-          <ArcadeButton size="sm" variant="secondary" onClick={goHome} className="w-full">
-            Back
-          </ArcadeButton>
         </div>
       )
     }
@@ -364,13 +381,34 @@ export default function FestivalPublicPage() {
     if (payStep === 'build-cart' && selectedMerchant) {
       const products = MERCHANT_PRODUCTS[selectedMerchant.id] || []
       return (
-        <div className="h-full flex flex-col p-4 gap-3">
-          <div className="text-center">
-            <h2 className="text-sm" style={{ color: '#f093fb' }}>{selectedMerchant.name}</h2>
-            <p className="text-[11px] uppercase mt-1" style={{ color: '#7a7a9a' }}>
-              Build your order
-            </p>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={() => setPayStep('select-merchant')}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
+            >
+              {selectedMerchant.name}
+            </h1>
+            <button
+              onClick={() => setPayStep('tap-card')}
+              disabled={cartTotal <= 0}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: cartTotal > 0 ? '#ffd700' : '#3a3a5a', borderColor: cartTotal > 0 ? '#ffd700' : '#3a3a5a' }}
+            >
+              Pay ›
+            </button>
           </div>
+
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            Build your order
+          </p>
 
           {/* Products */}
           <div className="flex flex-col gap-2 flex-1">
@@ -380,12 +418,12 @@ export default function FestivalPublicPage() {
               return (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between p-3 border-2"
+                  className="flex items-center justify-between p-2 border-2"
                   style={{ backgroundColor: '#0f0f24', borderColor: qty > 0 ? '#667eea' : '#2a2a4a' }}
                 >
                   <div>
                     <p className="text-xs" style={{ color: '#e0e8f0' }}>{p.name}</p>
-                    <p className="text-[11px]" style={{ color: '#ffd700' }}>${p.price}</p>
+                    <p className="text-[0.6875rem]" style={{ color: '#ffd700' }}>${p.price}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -420,7 +458,7 @@ export default function FestivalPublicPage() {
 
           {/* Cart total */}
           <div
-            className="p-3 border-2 text-center"
+            className="p-2 border-2 text-center"
             style={{
               backgroundColor: '#0f0f24',
               borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
@@ -428,29 +466,11 @@ export default function FestivalPublicPage() {
               borderWidth: '2px',
             }}
           >
-            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Order Total</p>
-            <p className="text-xl" style={{ color: '#ffd700' }}>
+            <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Order Total</p>
+            <p className="text-lg" style={{ color: '#ffd700' }}>
               ${cartTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
             </p>
           </div>
-
-          <ArcadeButton
-            size="md"
-            variant="accent"
-            onClick={() => setPayStep('tap-card')}
-            disabled={cartTotal <= 0}
-            className="w-full"
-          >
-            {'Tap to Pay $'}{cartTotal.toFixed(2)}
-          </ArcadeButton>
-
-          <button
-            onClick={() => setPayStep('select-merchant')}
-            className="text-[11px] uppercase tracking-wider text-center"
-            style={{ color: '#7a7a9a' }}
-          >
-            Back
-          </button>
         </div>
       )
     }
@@ -458,17 +478,31 @@ export default function FestivalPublicPage() {
     // Tap card
     if (payStep === 'tap-card') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#f093fb' }}>Tap Your Wristband</h2>
-            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
-              {'Hold near reader to pay $'}{cartTotal.toFixed(2)}
-            </p>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={() => setPayStep('build-cart')}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
+            >
+              Tap Wristband
+            </h1>
+            <span className="w-12" />
           </div>
-          <NFCIndicator status="scanning" />
-          <ArcadeButton size="sm" variant="secondary" onClick={() => setPayStep('build-cart')}>
-            Back
-          </ArcadeButton>
+
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            {'Hold near reader to pay $'}{cartTotal.toFixed(2)}
+          </p>
+
+          <div className="flex-1 flex items-center justify-center">
+            <NFCIndicator status="scanning" />
+          </div>
         </div>
       )
     }
@@ -476,35 +510,43 @@ export default function FestivalPublicPage() {
     // Enter PIN
     if (payStep === 'enter-pin') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#667eea' }}>Enter Your PIN</h2>
-            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
-              Card: {walletId} | Balance: ${cardBalance}
-            </p>
+        <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={() => { setPayStep('tap-card'); setPin('') }}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Cancel
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+            >
+              Enter PIN
+            </h1>
+            <button
+              onClick={() => setPayStep('confirm')}
+              disabled={pin.length < 4}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: pin.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: pin.length >= 4 ? '#ffd700' : '#3a3a5a' }}
+            >
+              Next ›
+            </button>
           </div>
 
-          <div className="w-full max-w-xs">
+          <div
+            className="p-1 border-2 text-center"
+            style={{ backgroundColor: '#0f0f24', borderColor: '#667eea' }}
+          >
+            <span className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+              Card: {walletId} | Balance: ${cardBalance}
+            </span>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <NumericKeypad value={pin} onChange={setPin} maxLength={6} isPin />
           </div>
-
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setPayStep('confirm')}
-            disabled={pin.length < 4}
-            className="w-full max-w-xs"
-          >
-            Continue
-          </ArcadeButton>
-
-          <button
-            onClick={() => { setPayStep('tap-card'); setPin('') }}
-            className="text-[11px] uppercase"
-            style={{ color: '#7a7a9a' }}
-          >
-            Cancel
-          </button>
         </div>
       )
     }
@@ -512,53 +554,62 @@ export default function FestivalPublicPage() {
     // Confirm
     if (payStep === 'confirm') {
       return (
-        <div className="h-full flex flex-col p-4 gap-3 overflow-hidden">
-          <div className="text-center">
-            <h2 className="text-sm" style={{ color: '#ffd700' }}>Confirm Payment</h2>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={() => setPayStep('enter-pin')}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+            >
+              Confirm Payment
+            </h1>
+            <button
+              onClick={handlePaySubmit}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#ffd700', borderColor: '#ffd700' }}
+            >
+              Pay ›
+            </button>
           </div>
 
-          <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Merchant</p>
-            <p className="text-sm" style={{ color: '#f093fb' }}>{selectedMerchant?.name}</p>
+          <div className="flex-1 flex flex-col gap-2 justify-center">
+            <div className="p-2 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Merchant</p>
+              <p className="text-sm" style={{ color: '#f093fb' }}>{selectedMerchant?.name}</p>
+            </div>
+
+            <div className="p-2 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Items</p>
+              {cart.filter((i) => i.qty > 0).map((item) => (
+                <div key={item.productId} className="flex justify-between text-xs mb-1">
+                  <span style={{ color: '#e0e8f0' }}>{item.name} x{item.qty}</span>
+                  <span style={{ color: '#ffd700' }}>${(parseFloat(item.price) * item.qty).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="p-2 border-2 text-center"
+              style={{
+                backgroundColor: '#0f0f24',
+                borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
+                borderStyle: 'solid',
+                borderWidth: '2px',
+              }}
+            >
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total</p>
+              <p className="text-lg" style={{ color: '#ffd700' }}>${cartTotal.toFixed(2)} USDC</p>
+              <p className="text-[0.6875rem] mt-1" style={{ color: '#7a7a9a' }}>
+                Balance after: ${(parseFloat(cardBalance) - cartTotal).toFixed(2)} USDC
+              </p>
+            </div>
           </div>
-
-          <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[11px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Items</p>
-            {cart.filter((i) => i.qty > 0).map((item) => (
-              <div key={item.productId} className="flex justify-between text-xs mb-1">
-                <span style={{ color: '#e0e8f0' }}>{item.name} x{item.qty}</span>
-                <span style={{ color: '#ffd700' }}>${(parseFloat(item.price) * item.qty).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-
-          <div
-            className="p-3 border-2 text-center"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
-              borderStyle: 'solid',
-              borderWidth: '2px',
-            }}
-          >
-            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total</p>
-            <p className="text-xl" style={{ color: '#ffd700' }}>${cartTotal.toFixed(2)} USDC</p>
-            <p className="text-[11px] mt-1" style={{ color: '#7a7a9a' }}>
-              Balance after: ${(parseFloat(cardBalance) - cartTotal).toFixed(2)} USDC
-            </p>
-          </div>
-
-          <ArcadeButton size="md" variant="accent" onClick={handlePaySubmit} className="w-full">
-            Confirm & Pay
-          </ArcadeButton>
-
-          <button
-            onClick={() => setPayStep('enter-pin')}
-            className="text-[11px] uppercase text-center"
-            style={{ color: '#7a7a9a' }}
-          >
-            Back
-          </button>
         </div>
       )
     }
@@ -566,15 +617,26 @@ export default function FestivalPublicPage() {
     // Processing
     if (payStep === 'processing') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#667eea' }}>Processing Payment</h2>
-            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
-              Gateway burn + mint...
-            </p>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <span className="w-12" />
+            <h1
+              className="text-sm"
+              style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+            >
+              Processing
+            </h1>
+            <span className="w-12" />
           </div>
-          <div className="w-full max-w-xs">
-            <ProgressBar progress={0} isAnimating={true} />
+
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            Gateway burn + mint...
+          </p>
+
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-xs">
+              <ProgressBar progress={0} isAnimating={true} />
+            </div>
           </div>
         </div>
       )
@@ -583,31 +645,34 @@ export default function FestivalPublicPage() {
     // Success
     if (payStep === 'success' && payResult) {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4 overflow-hidden">
-          <div
-            className="w-16 h-16 flex items-center justify-center"
-            style={{
-              border: '4px solid #78ffd6',
-              boxShadow: '0 0 12px rgba(120, 255, 214, 0.4)',
-            }}
-          >
-            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="#78ffd6" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <span className="w-12" />
+            <h1
+              className="text-sm"
+              style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
+            >
+              Payment Successful
+            </h1>
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#ffd700', borderColor: '#ffd700' }}
+            >
+              Done ›
+            </button>
           </div>
 
-          <div className="text-center space-y-3 w-full max-w-xs">
-            <h2 className="text-sm" style={{ color: '#78ffd6' }}>Payment Successful</h2>
-
-            <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-              <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Remaining Balance</p>
+          <div className="flex-1 flex flex-col gap-2 justify-center">
+            <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Remaining Balance</p>
               <p className="text-lg" style={{ color: '#ffd700' }}>${payResult.newBalance} USDC</p>
             </div>
 
             {payResult.txHash && (
-              <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>TX Hash</p>
-                <p className="text-[11px] break-all" style={{ color: '#667eea' }}>{payResult.txHash}</p>
+              <div className="p-2 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>TX Hash</p>
+                <p className="text-[0.6875rem] break-all" style={{ color: '#667eea' }}>{payResult.txHash}</p>
               </div>
             )}
 
@@ -616,17 +681,13 @@ export default function FestivalPublicPage() {
                 href={payResult.explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] uppercase underline block"
+                className="text-[0.6875rem] uppercase underline block text-center"
                 style={{ color: '#667eea' }}
               >
                 View on Explorer
               </a>
             )}
           </div>
-
-          <ArcadeButton size="md" variant="primary" onClick={goHome} className="w-full max-w-xs mt-2">
-            Done
-          </ArcadeButton>
         </div>
       )
     }
@@ -634,64 +695,86 @@ export default function FestivalPublicPage() {
     // Error
     if (payStep === 'error') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <h2 className="text-sm" style={{ color: '#ef4444' }}>Payment Failed</h2>
-          <p className="text-sm text-center max-w-xs" style={{ color: '#ef4444' }}>{payError}</p>
-          <ArcadeButton size="md" variant="secondary" onClick={goHome}>
-            Try Again
-          </ArcadeButton>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <span className="w-12" />
+            <h1
+              className="text-sm"
+              style={{ color: '#ef4444' }}
+            >
+              Payment Failed
+            </h1>
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              Retry ›
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm text-center max-w-xs" style={{ color: '#ef4444' }}>{payError}</p>
+          </div>
         </div>
       )
     }
   }
 
+  // ============================================================
   // TOP-UP FLOW
+  // ============================================================
   if (flow === 'topup') {
     // Insert coins
     if (topUpStep === 'insert-coins') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#ffd700' }}>Insert Coins</h2>
-            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
-              Insert coins into the slot
-            </p>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Cancel
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+            >
+              Insert Coins
+            </h1>
+            <button
+              onClick={() => setTopUpStep('tap-card')}
+              disabled={coinTotal <= 0}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: coinTotal > 0 ? '#ffd700' : '#3a3a5a', borderColor: coinTotal > 0 ? '#ffd700' : '#3a3a5a' }}
+            >
+              Next ›
+            </button>
           </div>
 
-          <CoinAnimation isAnimating={showCoinAnim} amount={coinTotal} />
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            Insert coins into the slot
+          </p>
 
-          <div
-            className="p-4 border-2 text-center w-full max-w-xs"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
-              borderStyle: 'solid',
-              borderWidth: '2px',
-            }}
-          >
-            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Inserted</p>
-            <p className="text-2xl" style={{ color: '#ffd700' }}>
-              ${coinTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
-            </p>
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <CoinAnimation isAnimating={showCoinAnim} amount={coinTotal} />
+
+            <div
+              className="p-3 border-2 text-center w-full max-w-xs"
+              style={{
+                backgroundColor: '#0f0f24',
+                borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
+                borderStyle: 'solid',
+                borderWidth: '2px',
+              }}
+            >
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Inserted</p>
+              <p className="text-xl" style={{ color: '#ffd700' }}>
+                ${coinTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
+              </p>
+            </div>
           </div>
-
-          <ArcadeButton
-            size="md"
-            variant="accent"
-            onClick={() => setTopUpStep('tap-card')}
-            disabled={coinTotal <= 0}
-            className="w-full max-w-xs"
-          >
-            {'Tap Card to Add $'}{coinTotal.toFixed(2)}
-          </ArcadeButton>
-
-          <button
-            onClick={goHome}
-            className="text-[11px] uppercase"
-            style={{ color: '#7a7a9a' }}
-          >
-            Cancel
-          </button>
         </div>
       )
     }
@@ -699,17 +782,31 @@ export default function FestivalPublicPage() {
     // Tap card for top-up
     if (topUpStep === 'tap-card') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#f093fb' }}>Tap Your Wristband</h2>
-            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
-              {'Hold near reader to add $'}{coinTotal.toFixed(2)}
-            </p>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={() => setTopUpStep('insert-coins')}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
+            >
+              Tap Wristband
+            </h1>
+            <span className="w-12" />
           </div>
-          <NFCIndicator status="scanning" />
-          <ArcadeButton size="sm" variant="secondary" onClick={() => setTopUpStep('insert-coins')}>
-            Back
-          </ArcadeButton>
+
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            {'Hold near reader to add $'}{coinTotal.toFixed(2)}
+          </p>
+
+          <div className="flex-1 flex items-center justify-center">
+            <NFCIndicator status="scanning" />
+          </div>
         </div>
       )
     }
@@ -717,10 +814,22 @@ export default function FestivalPublicPage() {
     // Processing
     if (topUpStep === 'processing') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-          <h2 className="text-sm" style={{ color: '#667eea' }}>Adding Balance...</h2>
-          <div className="w-full max-w-xs">
-            <ProgressBar progress={0} isAnimating={true} />
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <span className="w-12" />
+            <h1
+              className="text-sm"
+              style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+            >
+              Adding Balance
+            </h1>
+            <span className="w-12" />
+          </div>
+
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-xs">
+              <ProgressBar progress={0} isAnimating={true} />
+            </div>
           </div>
         </div>
       )
@@ -729,27 +838,39 @@ export default function FestivalPublicPage() {
     // Success
     if (topUpStep === 'success') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <div
-            className="w-16 h-16 flex items-center justify-center"
-            style={{
-              border: '4px solid #78ffd6',
-              boxShadow: '0 0 12px rgba(120, 255, 214, 0.4)',
-            }}
-          >
-            <span className="text-2xl" style={{ color: '#78ffd6' }}>+</span>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <span className="w-12" />
+            <h1
+              className="text-sm"
+              style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
+            >
+              Balance Added
+            </h1>
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#ffd700', borderColor: '#ffd700' }}
+            >
+              Done ›
+            </button>
           </div>
 
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#78ffd6' }}>Balance Added</h2>
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <div
+              className="w-16 h-16 flex items-center justify-center"
+              style={{
+                border: '4px solid #78ffd6',
+                boxShadow: '0 0 12px rgba(120, 255, 214, 0.4)',
+              }}
+            >
+              <span className="text-2xl" style={{ color: '#78ffd6' }}>+</span>
+            </div>
+
             <p className="text-lg" style={{ color: '#ffd700' }}>
               New Balance: ${topUpNewBalance} USDC
             </p>
           </div>
-
-          <ArcadeButton size="md" variant="primary" onClick={goHome} className="w-full max-w-xs mt-2">
-            Done
-          </ArcadeButton>
         </div>
       )
     }
@@ -757,60 +878,104 @@ export default function FestivalPublicPage() {
     // Error
     if (topUpStep === 'error') {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <h2 className="text-sm" style={{ color: '#ef4444' }}>Top-Up Failed</h2>
-          <p className="text-sm text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
-          <ArcadeButton size="md" variant="secondary" onClick={goHome}>
-            Try Again
-          </ArcadeButton>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <span className="w-12" />
+            <h1
+              className="text-sm"
+              style={{ color: '#ef4444' }}
+            >
+              Top-Up Failed
+            </h1>
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              Retry ›
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
+          </div>
         </div>
       )
     }
   }
 
+  // ============================================================
   // BALANCE CHECK FLOW
+  // ============================================================
   if (flow === 'balance') {
     if (balanceChecking && !checkedBalance) {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-sm" style={{ color: '#667eea' }}>Check Balance</h2>
-            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
-              Tap your wristband to view balance
-            </p>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+            >
+              Check Balance
+            </h1>
+            <span className="w-12" />
           </div>
-          <NFCIndicator status="scanning" />
-          {balanceError && (
-            <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
-          )}
-          <ArcadeButton size="sm" variant="secondary" onClick={goHome}>
-            Back
-          </ArcadeButton>
+
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            Tap your wristband to view balance
+          </p>
+
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <NFCIndicator status="scanning" />
+            {balanceError && (
+              <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
+            )}
+          </div>
         </div>
       )
     }
 
     if (checkedBalance) {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <div
-            className="w-16 h-16 flex items-center justify-center"
-            style={{
-              border: '4px solid #667eea',
-              boxShadow: '0 0 12px rgba(102, 126, 234, 0.4)',
-            }}
-          >
-            <span className="text-lg" style={{ color: '#667eea' }}>$</span>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={startBalanceCheck}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Scan Again
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+            >
+              Balance
+            </h1>
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#ffd700', borderColor: '#ffd700' }}
+            >
+              Done ›
+            </button>
           </div>
 
-          <div className="text-center space-y-3 w-full max-w-xs">
-            <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-              <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <div className="p-2 border-2 text-center w-full max-w-xs" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
               <p className="text-sm" style={{ color: '#667eea' }}>{checkedBalance.walletId}</p>
             </div>
 
             <div
-              className="p-4 border-2 text-center"
+              className="p-3 border-2 text-center w-full max-w-xs"
               style={{
                 backgroundColor: '#0f0f24',
                 borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
@@ -818,31 +983,22 @@ export default function FestivalPublicPage() {
                 borderWidth: '2px',
               }}
             >
-              <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
-              <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
+              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
+              <p className="text-xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
                 ${checkedBalance.balance} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
               <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
+                <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
                 <p className="text-sm" style={{ color: '#78ffd6' }}>${checkedBalance.totalLoaded}</p>
               </div>
               <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
+                <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
                 <p className="text-sm" style={{ color: '#f093fb' }}>${checkedBalance.totalSpent}</p>
               </div>
             </div>
-          </div>
-
-          <div className="flex gap-3 w-full max-w-xs">
-            <ArcadeButton size="sm" variant="secondary" onClick={startBalanceCheck} className="flex-1">
-              Scan Again
-            </ArcadeButton>
-            <ArcadeButton size="sm" variant="primary" onClick={goHome} className="flex-1">
-              Done
-            </ArcadeButton>
           </div>
         </div>
       )
@@ -850,12 +1006,33 @@ export default function FestivalPublicPage() {
 
     if (balanceError) {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
-          <h2 className="text-sm" style={{ color: '#ef4444' }}>Card Not Found</h2>
-          <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
-          <ArcadeButton size="md" variant="secondary" onClick={startBalanceCheck}>
-            Try Again
-          </ArcadeButton>
+        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={startBalanceCheck}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Retry
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#ef4444' }}
+            >
+              Card Not Found
+            </h1>
+            <button
+              onClick={goHome}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              Home ›
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
+          </div>
         </div>
       )
     }

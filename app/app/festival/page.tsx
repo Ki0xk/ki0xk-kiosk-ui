@@ -10,7 +10,7 @@ export default function FestivalPage() {
       <div className="flex items-center justify-between px-1">
         <Link
           href="/app"
-          className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+          className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
           style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
         >
           ‹ Back
@@ -24,7 +24,7 @@ export default function FestivalPage() {
         <span className="w-12" />
       </div>
 
-      <p className="text-[11px] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+      <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
         Events & Retail
       </p>
 

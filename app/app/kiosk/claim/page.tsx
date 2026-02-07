@@ -73,7 +73,7 @@ export default function ClaimPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setError(''); setPin(''); setStep('enter-wallet-id') }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -87,7 +87,7 @@ export default function ClaimPage() {
           <button
             onClick={handlePinSubmit}
             disabled={pin.length !== 6 || isProcessing}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: pin.length === 6 && !isProcessing ? '#ffd700' : '#3a3a5a', borderColor: pin.length === 6 && !isProcessing ? '#ffd700' : '#3a3a5a' }}
           >
             {isProcessing ? 'Wait...' : 'Submit ›'}
@@ -102,7 +102,7 @@ export default function ClaimPage() {
         {/* Error message */}
         {error && (
           <div className="text-center">
-            <p className="text-[13px] uppercase tracking-wider" style={{ color: '#ef4444' }}>
+            <p className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#ef4444' }}>
               {error}
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function ClaimPage() {
       <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
         {/* iOS-style header: Back | Title | Next */}
         <div className="flex items-center justify-between px-1">
-          <a href="/app/kiosk" className="text-[11px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+          <a href="/app/kiosk" className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
             ‹ Back
           </a>
           <h1
@@ -129,7 +129,7 @@ export default function ClaimPage() {
           <button
             onClick={() => { setError(''); setStep('enter-pin') }}
             disabled={walletId.length !== 6}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: walletId.length === 6 ? '#ffd700' : '#3a3a5a', borderColor: walletId.length === 6 ? '#ffd700' : '#3a3a5a' }}
           >
             Next ›
@@ -158,7 +158,7 @@ export default function ClaimPage() {
               setError('')
               setStep('enter-wallet-id')
             }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -171,7 +171,7 @@ export default function ClaimPage() {
           </h1>
           <button
             onClick={() => setStep('choose-destination')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Claim ›
@@ -182,7 +182,7 @@ export default function ClaimPage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-0">
           {/* Wallet ID display */}
           <div>
-            <p className="text-[11px] uppercase tracking-widest text-center mb-1" style={{ color: '#7a7a9a' }}>
+            <p className="text-[0.6875rem] uppercase tracking-widest text-center mb-1" style={{ color: '#7a7a9a' }}>
               Wallet ID
             </p>
             <div className="flex justify-center gap-1.5">
@@ -214,7 +214,7 @@ export default function ClaimPage() {
               boxShadow: '0 0 16px rgba(102, 126, 234, 0.2)',
             }}
           >
-            <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
+            <p className="text-[0.6875rem] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
               Available Balance
             </p>
             <p
@@ -237,7 +237,7 @@ export default function ClaimPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('show-balance')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -281,7 +281,7 @@ export default function ClaimPage() {
               Tap NFC
             </span>
             <span
-              className="block text-[10px] mt-1 tracking-widest"
+              className="block text-[0.625rem] mt-1 tracking-widest"
               style={{ color: '#7a7a9a', opacity: 0.4 }}
             >
               Coming Soon
@@ -304,7 +304,7 @@ export default function ClaimPage() {
           >
             Scan QR Code
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
             Point camera at your wallet QR
           </p>
         </div>
@@ -331,7 +331,7 @@ export default function ClaimPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -370,7 +370,7 @@ export default function ClaimPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setStep('choose-destination')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
             ‹ Back
@@ -383,7 +383,7 @@ export default function ClaimPage() {
           </h1>
           <button
             onClick={() => setStep('settling')}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Send ›
@@ -398,10 +398,10 @@ export default function ClaimPage() {
             borderColor: '#2a2a4a',
           }}
         >
-          <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+          <span className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
             Sending to:{' '}
           </span>
-          <span className="text-[13px] font-mono" style={{ color: '#78ffd6' }}>
+          <span className="text-[0.8125rem] font-mono" style={{ color: '#78ffd6' }}>
             {destinationAddress.length > 20
               ? destinationAddress.slice(0, 10) + '...' + destinationAddress.slice(-8)
               : destinationAddress}
@@ -452,7 +452,7 @@ export default function ClaimPage() {
           >
             Settling
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[0.6875rem] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
             Processing your claim...
           </p>
         </div>
@@ -464,10 +464,10 @@ export default function ClaimPage() {
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <p className="text-[0.8125rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Claiming {walletAmount} USDC
             </p>
-            <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               {SUPPORTED_CHAINS[selectedChain].name}
             </p>
           </div>
@@ -505,7 +505,7 @@ export default function ClaimPage() {
               dispatch(actions.reset())
               router.push('/app/kiosk')
             }}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
@@ -527,10 +527,10 @@ export default function ClaimPage() {
                 className="flex items-center justify-between px-2 py-1.5 border"
                 style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
               >
-                <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                <span className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                   {row.label}
                 </span>
-                <span className="text-[13px]" style={{ color: row.color }}>
+                <span className="text-[0.8125rem]" style={{ color: row.color }}>
                   {row.value}
                 </span>
               </div>
@@ -543,7 +543,7 @@ export default function ClaimPage() {
               className="flex flex-col items-center justify-center gap-1 px-3 border"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              <span className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                 Verify
               </span>
               <div className="bg-white p-1.5">

@@ -142,7 +142,7 @@ export function QrScanner({ onScan, onError, onClose }: QrScannerProps) {
                 className="w-8 h-8 mx-auto mb-2 animate-spin"
                 style={{ border: '2px solid #2a2a4a', borderTopColor: '#667eea' }}
               />
-              <p className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+              <p className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
                 Starting camera...
               </p>
             </div>
@@ -156,10 +156,10 @@ export function QrScanner({ onScan, onError, onClose }: QrScannerProps) {
               <p className="text-sm uppercase mb-2" style={{ color: '#ef4444' }}>
                 Camera Error
               </p>
-              <p className="text-[11px] mb-3" style={{ color: '#7a7a9a' }}>
+              <p className="text-[0.6875rem] mb-3" style={{ color: '#7a7a9a' }}>
                 {errorMsg || 'Could not access camera'}
               </p>
-              <p className="text-[10px]" style={{ color: '#7a7a9a' }}>
+              <p className="text-[0.625rem]" style={{ color: '#7a7a9a' }}>
                 Try ENS input instead
               </p>
             </div>
@@ -169,7 +169,7 @@ export function QrScanner({ onScan, onError, onClose }: QrScannerProps) {
 
       {/* Status label */}
       {status === 'scanning' && (
-        <p className="text-[11px] uppercase tracking-widest" style={{ color: '#78ffd6' }}>
+        <p className="text-[0.6875rem] uppercase tracking-widest" style={{ color: '#78ffd6' }}>
           Point camera at QR code
         </p>
       )}

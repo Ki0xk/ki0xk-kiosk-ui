@@ -27,7 +27,7 @@ function SerialAutoConnect() {
         style={{ backgroundColor: connected ? '#78ffd6' : '#ef4444' }}
       />
       <span
-        className="text-[11px] uppercase tracking-wider"
+        className="text-[0.6875rem] uppercase tracking-wider"
         style={{ color: connected ? '#78ffd6' : '#ef4444' }}
       >
         {connected ? 'Arduino OK' : 'No Arduino'}
@@ -60,7 +60,7 @@ function NfcStatus() {
         style={{ backgroundColor: '#78ffd6' }}
       />
       <span
-        className="text-[11px] uppercase tracking-wider"
+        className="text-[0.6875rem] uppercase tracking-wider"
         style={{ color: '#78ffd6' }}
       >
         {label}
@@ -79,7 +79,7 @@ function StatusIndicator() {
       {!features.serialEnabled && (
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 animate-pulse" style={{ backgroundColor: '#78ffd6' }} />
-          <span className="text-[11px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
+          <span className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
             Online
           </span>
         </div>
@@ -96,7 +96,7 @@ function ModeLabel() {
     demo_festival: 'Festival',
   }
   return (
-    <span className="text-[10px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+    <span className="text-[0.625rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
       {labels[mode] || 'Online'}
     </span>
   )
@@ -170,7 +170,7 @@ export default function AppLayout({
                 <div className="flex items-center gap-3">
                   <ModeLabel />
                   <span
-                    className="text-[11px] uppercase tracking-wider"
+                    className="text-[0.6875rem] uppercase tracking-wider"
                     style={{ color: '#ffd700', textShadow: '0 0 6px rgba(255, 215, 0, 0.4)' }}
                   >
                     Ki0xk

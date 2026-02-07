@@ -139,6 +139,13 @@
   * {
     @apply border-border outline-ring/50; /* Added outline-ring/50 from Shadcn */
   }
+  html {
+    /* Viewport-relative root font-size: scales all rem-based text with viewport height.
+       At 640px viewport height (10" tablet landscape @1.5x): ~14px
+       At 800px+ (desktop/full tablet): caps at 16px
+       Below 455px: floors at 10px */
+    font-size: clamp(10px, 2.2vh, 16px);
+  }
   body {
     @apply bg-background text-foreground;
   }

@@ -92,8 +92,8 @@ export function PinKeypad({ value, onChange, maxLength = 6 }: PinKeypadProps) {
 
       {/* Key legend */}
       <div className="flex justify-between mt-2 px-1">
-        <p className="text-[10px]" style={{ color: '#7a7a9a' }}>* = Clear</p>
-        <p className="text-[10px]" style={{ color: '#7a7a9a' }}># = Delete</p>
+        <p className="text-[0.625rem]" style={{ color: '#7a7a9a' }}>* = Clear</p>
+        <p className="text-[0.625rem]" style={{ color: '#7a7a9a' }}># = Delete</p>
       </div>
     </div>
   )
