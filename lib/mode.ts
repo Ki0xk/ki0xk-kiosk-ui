@@ -22,7 +22,7 @@ export function getModeFeatures(): ModeFeatures {
     useArduinoSerial: mode === 'demo_kiosk' || mode === 'demo_festival',
     useRealTransfers: true, // always true — all modes do real ClearNode transfers
     serialEnabled: mode === 'demo_kiosk' || mode === 'demo_festival',
-    useRealNFC: mode === 'demo_festival',
+    useRealNFC: mode === 'demo_festival' || mode === 'demo_kiosk',
     useRealGateway: mode === 'demo_festival',
   }
 }

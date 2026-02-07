@@ -4,9 +4,13 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKi0xk, actions } from '@/lib/state'
 import { SUPPORTED_ASSETS, SUPPORTED_CHAINS, calculateFee, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
-import { apiStartSession, apiDepositToSession, apiEndSession, apiSessionToPin } from '@/lib/api-client'
-import { getMode, getModeFeatures } from '@/lib/mode'
+import {
+  apiStartSession, apiDepositToSession, apiEndSession, apiSessionToPin,
+  apiCreateCardWithId, apiSetCardPin, apiTopUpCard, apiGetCardInfo,
+} from '@/lib/api-client'
+import { getModeFeatures } from '@/lib/mode'
 import { useCoinEvents } from '@/hooks/use-coin-events'
+import { useNfcEvents } from '@/hooks/use-nfc-events'
 import { QRCodeSVG } from 'qrcode.react'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { CoinSlotSimulator } from '@/components/ki0xk/CoinSlotSimulator'
@@ -14,8 +18,9 @@ import { QrScanner } from '@/components/ki0xk/QrScanner'
 import { OnScreenKeyboard } from '@/components/ki0xk/OnScreenKeyboard'
 import { ChainSelector } from '@/components/ki0xk/ChainSelector'
 import { PinDisplay } from '@/components/ki0xk/PinDisplay'
+import { NFCIndicator } from '@/components/ki0xk/NFCIndicator'
+import { NumericKeypad } from '@/components/ki0xk/NumericKeypad'
 import { ProgressBar } from '@/components/ki0xk/ProgressBar'
-import { CoinAnimation } from '@/components/ki0xk/CoinAnimation'
 
 type BuyStep =
   | 'select-asset'
@@ -29,6 +34,9 @@ type BuyStep =
   | 'settling'
   | 'done'
   | 'pin-generated'
+  | 'nfc-tap'
+  | 'nfc-pin'
+  | 'nfc-done'
 
 export default function BuyPage() {
   const router = useRouter()
@@ -40,6 +48,55 @@ export default function BuyPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const sessionStarting = useRef(false)
   const settlingStarted = useRef(false)
+
+  // NFC card destination state
+  const [nfcCardId, setNfcCardId] = useState('')
+  const [nfcIsNewCard, setNfcIsNewCard] = useState(false)
+  const [nfcPin, setNfcPin] = useState('')
+  const [nfcPinConfirm, setNfcPinConfirm] = useState('')
+  const [nfcError, setNfcError] = useState('')
+  const [nfcBalance, setNfcBalance] = useState('')
+  const [nfcProcessing, setNfcProcessing] = useState(false)
+
+  const { connected: nfcConnected } = useNfcEvents({
+    enabled: step === 'nfc-tap',
+    onCardTapped: async (uid) => {
+      if (step !== 'nfc-tap') return
+      setNfcCardId(uid)
+      setNfcError('')
+      try {
+        // Check if card already exists
+        const info = await apiGetCardInfo(uid)
+        if (info.success && info.hasPin) {
+          // Existing card with PIN — top up directly
+          setNfcIsNewCard(false)
+          setNfcProcessing(true)
+          const topUpResult = await apiTopUpCard(uid, state.balanceUSDC.toFixed(6))
+          if (topUpResult.success) {
+            setNfcBalance(topUpResult.newBalance)
+            setStep('nfc-done')
+          } else {
+            setNfcError(topUpResult.message || 'Top-up failed')
+          }
+          setNfcProcessing(false)
+        } else {
+          // New card or card without PIN — need PIN setup
+          await apiCreateCardWithId(uid)
+          setNfcIsNewCard(true)
+          setStep('nfc-pin')
+        }
+      } catch {
+        // Card doesn't exist — create it
+        try {
+          await apiCreateCardWithId(uid)
+          setNfcIsNewCard(true)
+          setStep('nfc-pin')
+        } catch (err) {
+          setNfcError(err instanceof Error ? err.message : 'Failed to create card')
+        }
+      }
+    },
+  })
 
   // ──────────────────────────────────────────────────────────────────────────
   // select-asset
@@ -372,22 +429,22 @@ export default function BuyPage() {
             Enter ENS Name
           </ArcadeButton>
 
-          <div className="relative">
-            <ArcadeButton
-              size="lg"
-              variant="secondary"
-              disabled
-              className="w-full"
-            >
-              Tap NFC
-            </ArcadeButton>
-            <span
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[7px] uppercase tracking-widest"
-              style={{ color: '#7a7a9a' }}
-            >
-              Coming Soon
-            </span>
-          </div>
+          <ArcadeButton
+            size="lg"
+            variant="secondary"
+            onClick={() => {
+              setNfcCardId('')
+              setNfcIsNewCard(false)
+              setNfcPin('')
+              setNfcPinConfirm('')
+              setNfcError('')
+              setNfcBalance('')
+              setStep('nfc-tap')
+            }}
+            className="w-full"
+          >
+            Tap NFC Card
+          </ArcadeButton>
 
           <ArcadeButton
             size="lg"
@@ -803,6 +860,347 @@ export default function BuyPage() {
             }}
           />
         </div>
+      </div>
+    )
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // nfc-tap — waiting for NFC card
+  // ──────────────────────────────────────────────────────────────────────────
+  if (step === 'nfc-tap') {
+    return (
+      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+        <div className="text-center">
+          <h1
+            className="text-lg"
+            style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+          >
+            Tap NFC Card
+          </h1>
+          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+            Hold any NFC card near the reader
+          </p>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+          <NFCIndicator scanning={!nfcProcessing} />
+
+          <div className="text-center space-y-2">
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: '#667eea' }}>
+              {nfcProcessing ? 'Processing...' : nfcConnected ? 'Ready — tap your card' : 'Waiting for NFC...'}
+            </p>
+            <p className="text-[8px]" style={{ color: '#7a7a9a' }}>
+              Any NFC card works: subway, ID badge, sticker, phone
+            </p>
+          </div>
+
+          {nfcError && (
+            <p className="text-[9px] text-center px-4" style={{ color: '#ef4444' }}>
+              {nfcError}
+            </p>
+          )}
+
+          <div
+            className="p-3 border-2 text-center"
+            style={{
+              backgroundColor: '#0f0f24',
+              borderColor: '#78ffd6',
+              boxShadow: '0 0 8px rgba(120, 255, 214, 0.15)',
+            }}
+          >
+            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              Amount to save:{' '}
+            </span>
+            <span
+              className="text-sm"
+              style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}
+            >
+              ${state.balanceUSDC.toFixed(6)} USDC
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setStep('choose-destination')}
+          className="w-full text-[8px] uppercase tracking-wider py-2 transition-colors"
+          style={{ color: '#7a7a9a' }}
+        >
+          Back
+        </button>
+      </div>
+    )
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // nfc-pin — set PIN for new NFC card
+  // ──────────────────────────────────────────────────────────────────────────
+  if (step === 'nfc-pin') {
+    const isConfirmStage = nfcPin.length >= 4 && nfcPinConfirm === ''
+    const activeValue = nfcPinConfirm !== '' || isConfirmStage ? nfcPinConfirm : nfcPin
+    const setActiveValue = nfcPinConfirm !== '' || isConfirmStage
+      ? setNfcPinConfirm
+      : setNfcPin
+
+    const handleKeypadChange = (val: string) => {
+      if (nfcPin.length >= 4 && (nfcPinConfirm !== '' || val === '')) {
+        // In confirm stage
+        setNfcPinConfirm(val)
+        setNfcError('')
+      } else if (nfcPin.length < 4 || nfcPinConfirm === '') {
+        setNfcPin(val)
+        setNfcError('')
+        // Reset confirm when PIN changes
+        if (nfcPinConfirm) setNfcPinConfirm('')
+      }
+    }
+
+    const handleConfirmOrSave = async () => {
+      if (nfcPin.length < 4) return
+
+      // Stage 1: PIN entered, move to confirm
+      if (nfcPinConfirm === '') {
+        setNfcPinConfirm('')
+        return // keypad will now target nfcPinConfirm
+      }
+
+      // Stage 2: Check match
+      if (nfcPin !== nfcPinConfirm) {
+        setNfcError('PINs do not match — try again')
+        setNfcPinConfirm('')
+        return
+      }
+
+      // Stage 3: Save
+      setNfcProcessing(true)
+      setNfcError('')
+      try {
+        const pinResult = await apiSetCardPin(nfcCardId, nfcPin)
+        if (!pinResult.success) {
+          setNfcError(pinResult.message || 'Failed to set PIN')
+          setNfcProcessing(false)
+          return
+        }
+        const topUpResult = await apiTopUpCard(nfcCardId, state.balanceUSDC.toFixed(6))
+        if (topUpResult.success) {
+          setNfcBalance(topUpResult.newBalance)
+          setStep('nfc-done')
+        } else {
+          setNfcError(topUpResult.message || 'Top-up failed')
+        }
+      } catch (err) {
+        setNfcError(err instanceof Error ? err.message : 'Failed to save')
+      } finally {
+        setNfcProcessing(false)
+      }
+    }
+
+    const showConfirmStage = nfcPin.length >= 4
+    const confirmReady = showConfirmStage && nfcPinConfirm.length >= 4
+
+    return (
+      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+        <div className="text-center">
+          <h1
+            className="text-lg"
+            style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+          >
+            {showConfirmStage ? 'Confirm PIN' : 'Set Your PIN'}
+          </h1>
+          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+            {showConfirmStage ? 'Re-enter to confirm' : 'Choose a 4+ digit PIN to protect your balance'}
+          </p>
+        </div>
+
+        <div className="flex-1 flex flex-col gap-3">
+          {/* Card ID */}
+          <div
+            className="p-2 border-2 text-center"
+            style={{
+              backgroundColor: '#0f0f24',
+              borderColor: '#667eea',
+              boxShadow: '0 0 8px rgba(102, 126, 234, 0.15)',
+            }}
+          >
+            <span className="text-[8px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+              Card:{' '}
+            </span>
+            <span className="text-[10px] font-mono" style={{ color: '#667eea' }}>
+              {nfcCardId.length > 12 ? nfcCardId.slice(0, 6) + '...' + nfcCardId.slice(-4) : nfcCardId}
+            </span>
+          </div>
+
+          <NumericKeypad
+            value={showConfirmStage ? nfcPinConfirm : nfcPin}
+            onChange={handleKeypadChange}
+            maxLength={6}
+            isPin
+          />
+
+          {nfcError && (
+            <p className="text-[9px] text-center" style={{ color: '#ef4444' }}>
+              {nfcError}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <ArcadeButton
+            size="md"
+            variant="primary"
+            onClick={handleConfirmOrSave}
+            disabled={
+              nfcProcessing ||
+              (!showConfirmStage && nfcPin.length < 4) ||
+              (showConfirmStage && nfcPinConfirm.length < 4)
+            }
+            className="w-full"
+          >
+            {nfcProcessing
+              ? 'Saving...'
+              : confirmReady
+                ? 'Save to Card'
+                : showConfirmStage
+                  ? 'Enter PIN again'
+                  : 'Next'}
+          </ArcadeButton>
+
+          <button
+            onClick={() => {
+              if (showConfirmStage && nfcPinConfirm === '') {
+                // Go back to PIN entry stage
+                setNfcPin('')
+              } else {
+                setStep('choose-destination')
+              }
+            }}
+            className="w-full text-[8px] uppercase tracking-wider py-2 transition-colors"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // nfc-done — balance saved to NFC card
+  // ──────────────────────────────────────────────────────────────────────────
+  if (step === 'nfc-done') {
+    return (
+      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+        <div className="text-center">
+          <h1
+            className="text-lg"
+            style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
+          >
+            Balance Saved
+          </h1>
+          <div
+            className="w-24 h-1 mx-auto mt-2"
+            style={{
+              background: 'linear-gradient(90deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700)',
+            }}
+          />
+          <p className="text-[8px] uppercase tracking-widest mt-2" style={{ color: '#7a7a9a' }}>
+            {nfcIsNewCard ? 'Take a photo of this screen!' : 'Balance added to existing card'}
+          </p>
+        </div>
+
+        <div className="flex-1 flex flex-col gap-3">
+          {/* Card ID */}
+          <div
+            className="flex items-center justify-between p-3 border-2"
+            style={{
+              backgroundColor: '#0f0f24',
+              borderColor: '#667eea',
+              boxShadow: '0 0 8px rgba(102, 126, 234, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
+            }}
+          >
+            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              Card ID
+            </span>
+            <span className="text-sm font-mono" style={{ color: '#667eea' }}>
+              {nfcCardId.length > 12 ? nfcCardId.slice(0, 6) + '...' + nfcCardId.slice(-4) : nfcCardId}
+            </span>
+          </div>
+
+          {/* PIN — only show for new cards */}
+          {nfcIsNewCard && nfcPin && (
+            <div
+              className="flex items-center justify-between p-3 border-2"
+              style={{
+                backgroundColor: '#0f0f24',
+                borderColor: '#ffd700',
+                boxShadow: '0 0 8px rgba(255, 215, 0, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
+              }}
+            >
+              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                Your PIN
+              </span>
+              <span
+                className="text-lg font-mono tracking-[0.3em]"
+                style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.4)' }}
+              >
+                {nfcPin}
+              </span>
+            </div>
+          )}
+
+          {/* Balance */}
+          <div
+            className="flex items-center justify-between p-3 border-2"
+            style={{
+              backgroundColor: '#0f0f24',
+              borderColor: '#78ffd6',
+              boxShadow: '0 0 8px rgba(120, 255, 214, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
+            }}
+          >
+            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              Card Balance
+            </span>
+            <span
+              className="text-sm"
+              style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}
+            >
+              ${nfcBalance} USDC
+            </span>
+          </div>
+
+          {/* How to use info */}
+          <div
+            className="p-3 border-2 space-y-2"
+            style={{
+              backgroundColor: '#0f0f24',
+              borderColor: '#2a2a4a',
+              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
+            }}
+          >
+            <p className="text-[8px] uppercase tracking-widest" style={{ color: '#f093fb' }}>
+              How to use your balance:
+            </p>
+            <p className="text-[8px] leading-relaxed" style={{ color: '#7a7a9a' }}>
+              At any Ki0xk kiosk or festival, tap this same card and enter your PIN to spend or withdraw your USDC balance.
+            </p>
+            {nfcIsNewCard && (
+              <p className="text-[8px] leading-relaxed" style={{ color: '#ffd700' }}>
+                Remember your PIN! You need it to spend your balance.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <ArcadeButton
+          size="md"
+          variant="primary"
+          onClick={() => {
+            dispatch(actions.reset())
+            router.push('/app/kiosk')
+          }}
+          className="w-full"
+        >
+          New Transaction
+        </ArcadeButton>
       </div>
     )
   }
