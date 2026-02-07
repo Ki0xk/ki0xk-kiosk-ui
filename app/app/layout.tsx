@@ -35,11 +35,52 @@ function SerialAutoConnect() {
   )
 }
 
+function NfcAutoConnect() {
+  const features = getModeFeatures()
+  const [nfcConnected, setNfcConnected] = useState(false)
+  const [attempted, setAttempted] = useState(false)
+
+  useEffect(() => {
+    if (!features.useRealNFC || attempted) return
+    setAttempted(true)
+    fetch('/api/hardware/nfc/connect', { method: 'POST' })
+      .then((res) => res.json())
+      .then((data) => { if (data.success) setNfcConnected(true) })
+      .catch(() => {})
+  }, [features.useRealNFC, attempted])
+
+  if (!features.useRealNFC) return null
+
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="w-2 h-2 animate-pulse"
+        style={{ backgroundColor: nfcConnected ? '#78ffd6' : '#ef4444' }}
+      />
+      <span
+        className="text-[8px] uppercase tracking-wider"
+        style={{ color: nfcConnected ? '#78ffd6' : '#ef4444' }}
+      >
+        {nfcConnected ? 'NFC OK' : 'No NFC'}
+      </span>
+    </div>
+  )
+}
+
 function StatusIndicator() {
   const mode = getMode()
   const features = getModeFeatures()
 
-  // In serial modes, show Arduino status instead of generic "System Online"
+  if (features.useRealNFC) {
+    // Festival mode: show both Arduino + NFC
+    return (
+      <div className="flex items-center gap-3">
+        <SerialAutoConnect />
+        <NfcAutoConnect />
+      </div>
+    )
+  }
+
   if (features.serialEnabled) {
     return <SerialAutoConnect />
   }

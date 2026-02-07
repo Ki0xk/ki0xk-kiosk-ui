@@ -6,6 +6,7 @@ export interface ModeFeatures {
   useRealTransfers: boolean
   serialEnabled: boolean
   useRealNFC: boolean
+  useRealGateway: boolean
 }
 
 export function getMode(): AppMode {
@@ -22,5 +23,6 @@ export function getModeFeatures(): ModeFeatures {
     useRealTransfers: true, // always true — all modes do real ClearNode transfers
     serialEnabled: mode === 'demo_kiosk' || mode === 'demo_festival',
     useRealNFC: mode === 'demo_festival',
+    useRealGateway: mode === 'demo_festival',
   }
 }

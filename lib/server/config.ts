@@ -27,6 +27,28 @@ const envSchema = z.object({
     .transform((v) => (v === '' ? undefined : v))
     .pipe(z.string().optional())
     .optional(),
+  // Festival config
+  FESTIVAL_ADMIN_PIN: z.string().min(4).default('1234'),
+  GATEWAY_API_URL: z.string().url().default('https://gateway-api-testnet.circle.com/v1'),
+  // Merchants (env-based)
+  MERCHANT_BEERS_ADDRESS: z
+    .string()
+    .transform((v) => (v === '' ? undefined : v))
+    .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional())
+    .optional(),
+  MERCHANT_BEERS_CHAIN: z.string().default('base_sepolia'),
+  MERCHANT_FOOD_ADDRESS: z
+    .string()
+    .transform((v) => (v === '' ? undefined : v))
+    .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional())
+    .optional(),
+  MERCHANT_FOOD_CHAIN: z.string().default('base_sepolia'),
+  MERCHANT_MERCH_ADDRESS: z
+    .string()
+    .transform((v) => (v === '' ? undefined : v))
+    .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional())
+    .optional(),
+  MERCHANT_MERCH_CHAIN: z.string().default('base_sepolia'),
 })
 
 export type ServerConfig = z.infer<typeof envSchema>

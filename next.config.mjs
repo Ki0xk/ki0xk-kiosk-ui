@@ -6,7 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  serverExternalPackages: ['serialport', 'ws', '@serialport/parser-readline'],
+  serverExternalPackages: ['serialport', 'ws', '@serialport/parser-readline', 'nfc-pcsc'],
 }
 
 export default nextConfig

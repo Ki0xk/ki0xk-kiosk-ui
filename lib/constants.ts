@@ -78,3 +78,42 @@ export const DEMO_ENS_NAMES = [
 ]
 
 export const ADDRESS_PREFIX = '0x'
+
+// ============================================================================
+// Gateway chain options (Circle Gateway — testnet)
+// ============================================================================
+export const GATEWAY_CHAIN_OPTIONS = [
+  { key: 'base_sepolia', name: 'Base Sepolia' },
+  { key: 'ethereum_sepolia', name: 'Ethereum Sepolia' },
+  { key: 'avalanche_fuji', name: 'Avalanche Fuji' },
+  { key: 'sonic_testnet', name: 'Sonic Testnet' },
+  { key: 'sei_atlantic', name: 'Sei Atlantic' },
+  { key: 'hyperevm_testnet', name: 'HyperEVM Testnet' },
+] as const
+
+// ============================================================================
+// Festival merchant products (preset items per merchant)
+// ============================================================================
+export interface Product {
+  id: string
+  name: string
+  price: string
+}
+
+export const MERCHANT_PRODUCTS: Record<string, Product[]> = {
+  beers: [
+    { id: 'beer_small', name: 'Small Beer', price: '0.01' },
+    { id: 'beer_medium', name: 'Medium Beer', price: '0.02' },
+    { id: 'beer_large', name: 'Large Beer', price: '0.05' },
+  ],
+  food: [
+    { id: 'food_snack', name: 'Snack', price: '0.01' },
+    { id: 'food_meal', name: 'Meal', price: '0.02' },
+    { id: 'food_combo', name: 'Combo', price: '0.05' },
+  ],
+  merch: [
+    { id: 'merch_sticker', name: 'Sticker', price: '0.01' },
+    { id: 'merch_tshirt', name: 'T-Shirt', price: '0.02' },
+    { id: 'merch_hoodie', name: 'Hoodie', price: '0.05' },
+  ],
+}

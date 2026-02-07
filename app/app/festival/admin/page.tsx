@@ -1,152 +1,248 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { NumericKeypad } from '@/components/ki0xk/NumericKeypad'
-import { Modal } from '@/components/ki0xk/Modal'
 import { NFCIndicator } from '@/components/ki0xk/NFCIndicator'
 import { ProgressBar } from '@/components/ki0xk/ProgressBar'
-import { mockScanNFC, mockUpdateCard } from '@/lib/mock'
-import { PRESET_AMOUNTS, DEMO_PIN } from '@/lib/constants'
+import { useNfcEvents } from '@/hooks/use-nfc-events'
+import {
+  apiVerifyAdminPin,
+  apiCreateCard,
+  apiSetCardPin,
+  apiWriteNfc,
+  apiTopUpCard,
+  apiGetGatewayBalance,
+  apiDepositToGateway,
+  apiGetCardSummary,
+  apiGetCardInfo,
+} from '@/lib/api-client'
 
-type Step = 'amount' | 'scan' | 'pin' | 'processing' | 'success'
+type AdminStep =
+  | 'pin-entry'
+  | 'dashboard'
+
+type TopUpStep =
+  | 'enter-amount'
+  | 'tap-card'
+  | 'new-card-pin'
+  | 'processing'
+  | 'success'
+  | 'error'
+
+type Tab = 'topup' | 'gateway' | 'stats'
+
+const TOPUP_PRESETS = ['0.10', '0.50', '1.00']
 
 export default function FestivalAdminPage() {
-  const [step, setStep] = useState<Step>('amount')
-  const [amount, setAmount] = useState('')
-  const [pin, setPin] = useState('')
-  const [cardId, setCardId] = useState('')
-  const [showPinModal, setShowPinModal] = useState(false)
-  const [pinError, setPinError] = useState(false)
+  // Admin auth
+  const [adminStep, setAdminStep] = useState<AdminStep>('pin-entry')
+  const [adminPin, setAdminPin] = useState('')
+  const [adminPinError, setAdminPinError] = useState('')
 
-  const handlePresetAmount = (preset: number) => {
-    setAmount(preset.toString())
-  }
+  // Dashboard
+  const [activeTab, setActiveTab] = useState<Tab>('topup')
 
-  const handleScanNFC = async () => {
-    setStep('scan')
+  // Top-up flow
+  const [topUpStep, setTopUpStep] = useState<TopUpStep>('enter-amount')
+  const [topUpAmount, setTopUpAmount] = useState('')
+  const [cardWalletId, setCardWalletId] = useState('')
+  const [newCardPin, setNewCardPin] = useState('')
+  const [isNewCard, setIsNewCard] = useState(false)
+  const [topUpResult, setTopUpResult] = useState<{ walletId: string; balance: string } | null>(null)
+  const [topUpError, setTopUpError] = useState('')
+
+  // Gateway
+  const [gatewayBalance, setGatewayBalance] = useState<string | null>(null)
+  const [gatewayLoading, setGatewayLoading] = useState(false)
+  const [depositAmount, setDepositAmount] = useState('')
+  const [depositLoading, setDepositLoading] = useState(false)
+  const [depositResult, setDepositResult] = useState('')
+
+  // Stats
+  const [stats, setStats] = useState<any>(null)
+
+  // NFC tap handler for top-up flow
+  const handleNfcTap = useCallback(async (uid: string, data?: { walletId: string }) => {
+    if (topUpStep !== 'tap-card') return
+
+    if (data?.walletId) {
+      // Existing card — top up directly
+      setCardWalletId(data.walletId)
+      setIsNewCard(false)
+      setTopUpStep('processing')
+      try {
+        const result = await apiTopUpCard(data.walletId, topUpAmount)
+        if (result.success) {
+          setTopUpResult({ walletId: data.walletId, balance: result.newBalance })
+          setTopUpStep('success')
+        } else {
+          setTopUpError(result.message)
+          setTopUpStep('error')
+        }
+      } catch (err) {
+        setTopUpError(err instanceof Error ? err.message : 'Top-up failed')
+        setTopUpStep('error')
+      }
+    } else {
+      // Blank card — create new card
+      setIsNewCard(true)
+      try {
+        const created = await apiCreateCard()
+        setCardWalletId(created.walletId)
+
+        // Write walletId to NFC card
+        const writeResult = await apiWriteNfc(created.walletId)
+        if (!writeResult.success) {
+          setTopUpError('Failed to write NFC card')
+          setTopUpStep('error')
+          return
+        }
+
+        // Ask attendant to set PIN
+        setTopUpStep('new-card-pin')
+      } catch (err) {
+        setTopUpError(err instanceof Error ? err.message : 'Card creation failed')
+        setTopUpStep('error')
+      }
+    }
+  }, [topUpStep, topUpAmount])
+
+  const { connected: nfcConnected } = useNfcEvents({
+    onCardTapped: handleNfcTap,
+    enabled: topUpStep === 'tap-card',
+  })
+
+  // Admin PIN submit
+  const handleAdminPinSubmit = async () => {
     try {
-      const result = await mockScanNFC()
+      const result = await apiVerifyAdminPin(adminPin)
       if (result.success) {
-        setCardId(result.cardId)
-        setShowPinModal(true)
-        setStep('pin')
+        setAdminStep('dashboard')
+        setAdminPinError('')
+      } else {
+        setAdminPinError('Invalid PIN')
+        setAdminPin('')
       }
     } catch {
-      setStep('amount')
+      setAdminPinError('Auth failed')
+      setAdminPin('')
     }
   }
 
-  const handlePinSubmit = async () => {
-    if (pin !== DEMO_PIN) {
-      setPinError(true)
-      setPin('')
-      return
-    }
-    setPinError(false)
-    setShowPinModal(false)
-    setStep('processing')
+  // New card PIN submit
+  const handleNewCardPinSubmit = async () => {
+    if (newCardPin.length < 4) return
     try {
-      await mockUpdateCard(cardId, parseFloat(amount))
-      setStep('success')
-    } catch {
-      setStep('amount')
+      await apiSetCardPin(cardWalletId, newCardPin)
+      setTopUpStep('processing')
+      const result = await apiTopUpCard(cardWalletId, topUpAmount)
+      if (result.success) {
+        setTopUpResult({ walletId: cardWalletId, balance: result.newBalance })
+        setTopUpStep('success')
+      } else {
+        setTopUpError(result.message)
+        setTopUpStep('error')
+      }
+    } catch (err) {
+      setTopUpError(err instanceof Error ? err.message : 'Failed')
+      setTopUpStep('error')
     }
   }
 
-  const handleReset = () => {
-    setStep('amount')
-    setAmount('')
-    setPin('')
-    setCardId('')
-    setPinError(false)
+  // Gateway
+  const fetchGatewayBalance = async () => {
+    setGatewayLoading(true)
+    try {
+      const result = await apiGetGatewayBalance()
+      setGatewayBalance(result.available)
+    } catch {
+      setGatewayBalance('Error')
+    }
+    setGatewayLoading(false)
   }
 
-  // Success
-  if (step === 'success') {
+  const handleDeposit = async () => {
+    if (!depositAmount) return
+    setDepositLoading(true)
+    setDepositResult('')
+    try {
+      const result = await apiDepositToGateway(depositAmount)
+      if (result.success) {
+        setDepositResult(`Deposited! TX: ${result.depositTxHash}`)
+        fetchGatewayBalance()
+      } else {
+        setDepositResult(`Failed: ${result.error}`)
+      }
+    } catch (err) {
+      setDepositResult(err instanceof Error ? err.message : 'Deposit failed')
+    }
+    setDepositLoading(false)
+  }
+
+  // Stats
+  const fetchStats = async () => {
+    try {
+      const result = await apiGetCardSummary()
+      setStats(result)
+    } catch {}
+  }
+
+  const resetTopUp = () => {
+    setTopUpStep('enter-amount')
+    setTopUpAmount('')
+    setCardWalletId('')
+    setNewCardPin('')
+    setIsNewCard(false)
+    setTopUpResult(null)
+    setTopUpError('')
+  }
+
+  // PIN Entry screen
+  if (adminStep === 'pin-entry') {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-        <div
-          className="w-20 h-20 flex items-center justify-center"
-          style={{
-            border: '4px solid #78ffd6',
-            boxShadow: '0 0 12px rgba(120, 255, 214, 0.4), 0 0 24px rgba(120, 255, 214, 0.15)',
-          }}
-        >
-          <span className="text-3xl" style={{ color: '#78ffd6' }}>OK</span>
-        </div>
-
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-2">
           <h1
             className="text-lg"
-            style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
+            style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            Card Updated
-          </h1>
-          <div className="p-4 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[8px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Card ID</p>
-            <p className="text-[10px]" style={{ color: '#667eea' }}>{cardId}</p>
-          </div>
-          <p className="text-xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
-            +${amount} USDC
-          </p>
-        </div>
-
-        <ArcadeButton size="md" variant="primary" onClick={handleReset} className="mt-4">
-          New Transaction
-        </ArcadeButton>
-      </div>
-    )
-  }
-
-  // Processing
-  if (step === 'processing') {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6 gap-8">
-        <div className="text-center space-y-4">
-          <h1
-            className="text-lg"
-            style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
-          >
-            Updating Card
+            Admin Login
           </h1>
           <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Please wait...
+            Enter admin PIN to continue
           </p>
         </div>
+
         <div className="w-full max-w-xs">
-          <ProgressBar progress={0} isAnimating={true} />
+          <NumericKeypad value={adminPin} onChange={setAdminPin} maxLength={6} isPin />
         </div>
-      </div>
-    )
-  }
 
-  // Scan
-  if (step === 'scan') {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6 gap-8">
-        <div className="text-center space-y-4">
-          <h1
-            className="text-lg"
-            style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
-          >
-            Scanning
-          </h1>
-          <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Hold card near reader
-          </p>
-        </div>
-        <NFCIndicator status="scanning" />
-        <ArcadeButton size="sm" variant="secondary" onClick={() => setStep('amount')}>
-          Cancel
+        {adminPinError && (
+          <p className="text-[10px] uppercase" style={{ color: '#ef4444' }}>{adminPinError}</p>
+        )}
+
+        <ArcadeButton
+          size="md"
+          variant="primary"
+          onClick={handleAdminPinSubmit}
+          disabled={adminPin.length < 4}
+          className="w-full max-w-xs"
+        >
+          Login
         </ArcadeButton>
+
+        <Link href="/app/festival" className="mt-2">
+          <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
+        </Link>
       </div>
     )
   }
 
+  // Dashboard
   return (
-    <div className="h-full flex flex-col p-4 gap-4">
+    <div className="h-full flex flex-col p-3 gap-3 overflow-y-auto">
       {/* Header */}
       <div className="text-center">
         <h1
@@ -155,91 +251,292 @@ export default function FestivalAdminPage() {
         >
           Admin Panel
         </h1>
-        <p className="text-[8px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
-          Load cards with USDC
-        </p>
       </div>
 
-      {/* Amount display */}
-      <div
-        className="p-4 border-2 text-center"
-        style={{
-          backgroundColor: '#0f0f24',
-          borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
-          borderStyle: 'solid',
-          borderWidth: '2px',
-        }}
-      >
-        <p className="text-[8px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Amount to Load</p>
-        <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
-          ${amount || '0'} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
-        </p>
-      </div>
-
-      {/* Preset amounts */}
-      <div className="grid grid-cols-5 gap-2">
-        {PRESET_AMOUNTS.map((preset) => (
+      {/* Tabs */}
+      <div className="flex gap-2">
+        {(['topup', 'gateway', 'stats'] as Tab[]).map((tab) => (
           <button
-            key={preset}
-            onClick={() => handlePresetAmount(preset)}
-            className="p-2 border-2 text-[8px] transition-all touch-active"
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab)
+              if (tab === 'gateway') fetchGatewayBalance()
+              if (tab === 'stats') fetchStats()
+            }}
+            className="flex-1 p-2 border-2 text-[8px] uppercase tracking-wider transition-all"
             style={{
-              borderColor: amount === preset.toString() ? '#ffd700' : '#2a2a4a',
-              backgroundColor: amount === preset.toString() ? 'rgba(255, 215, 0, 0.1)' : '#0f0f24',
-              color: amount === preset.toString() ? '#ffd700' : '#e0e8f0',
+              borderColor: activeTab === tab ? '#ffd700' : '#2a2a4a',
+              backgroundColor: activeTab === tab ? 'rgba(255, 215, 0, 0.1)' : '#0f0f24',
+              color: activeTab === tab ? '#ffd700' : '#7a7a9a',
             }}
           >
-            ${preset}
+            {tab === 'topup' ? 'Top-Up' : tab === 'gateway' ? 'Gateway' : 'Stats'}
           </button>
         ))}
       </div>
 
-      {/* Keypad */}
-      <div className="flex-1 flex items-center justify-center">
-        <NumericKeypad value={amount} onChange={setAmount} maxLength={4} />
-      </div>
+      {/* TOP-UP TAB */}
+      {activeTab === 'topup' && (
+        <>
+          {topUpStep === 'enter-amount' && (
+            <div className="flex flex-col gap-3 flex-1">
+              <div
+                className="p-3 border-2 text-center"
+                style={{
+                  backgroundColor: '#0f0f24',
+                  borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
+                  borderStyle: 'solid',
+                  borderWidth: '2px',
+                }}
+              >
+                <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Amount to Load</p>
+                <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
+                  ${topUpAmount || '0'} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
+                </p>
+              </div>
 
-      {/* Scan button */}
-      <ArcadeButton
-        size="md"
-        variant="accent"
-        onClick={handleScanNFC}
-        disabled={!amount || parseFloat(amount) <= 0}
-        className="w-full"
-      >
-        Scan NFC Card
-      </ArcadeButton>
+              <div className="grid grid-cols-3 gap-2">
+                {TOPUP_PRESETS.map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => setTopUpAmount(preset)}
+                    className="p-3 border-2 text-[10px] transition-all"
+                    style={{
+                      borderColor: topUpAmount === preset ? '#ffd700' : '#2a2a4a',
+                      backgroundColor: topUpAmount === preset ? 'rgba(255, 215, 0, 0.1)' : '#0f0f24',
+                      color: topUpAmount === preset ? '#ffd700' : '#e0e8f0',
+                    }}
+                  >
+                    ${preset}
+                  </button>
+                ))}
+              </div>
 
-      {/* Back */}
-      <Link href="/app/festival" className="text-center">
-        <span className="text-[8px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
-          Back
-        </span>
-      </Link>
+              <div className="flex-1 flex items-center justify-center">
+                <NumericKeypad value={topUpAmount} onChange={setTopUpAmount} maxLength={6} />
+              </div>
 
-      {/* PIN Modal */}
-      <Modal isOpen={showPinModal} onClose={() => setShowPinModal(false)} title="Enter Admin PIN">
-        <div className="space-y-4">
-          <p className="text-[8px] text-center uppercase mb-4" style={{ color: '#7a7a9a' }}>
-            Demo PIN: 1234
-          </p>
-          <NumericKeypad value={pin} onChange={setPin} maxLength={4} isPin />
-          {pinError && (
-            <p className="text-[10px] text-center uppercase" style={{ color: '#ef4444' }}>
-              Invalid PIN
-            </p>
+              <ArcadeButton
+                size="md"
+                variant="accent"
+                onClick={() => setTopUpStep('tap-card')}
+                disabled={!topUpAmount || parseFloat(topUpAmount) <= 0}
+                className="w-full"
+              >
+                {'Tap Card to Load $'}{topUpAmount || '0'}
+              </ArcadeButton>
+            </div>
           )}
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={handlePinSubmit}
-            disabled={pin.length !== 4}
-            className="w-full mt-4"
-          >
-            Confirm
+
+          {topUpStep === 'tap-card' && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-6">
+              <div className="text-center space-y-2">
+                <h2
+                  className="text-sm"
+                  style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
+                >
+                  Tap Card
+                </h2>
+                <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                  {'Hold attendant\'s card near reader to load $'}{topUpAmount}
+                </p>
+              </div>
+              <NFCIndicator status="scanning" />
+              <ArcadeButton size="sm" variant="secondary" onClick={resetTopUp}>
+                Cancel
+              </ArcadeButton>
+            </div>
+          )}
+
+          {topUpStep === 'new-card-pin' && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <div className="text-center space-y-2">
+                <h2
+                  className="text-sm"
+                  style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+                >
+                  New Card: {cardWalletId}
+                </h2>
+                <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                  Set a PIN for this card
+                </p>
+              </div>
+
+              <div className="w-full max-w-xs">
+                <NumericKeypad value={newCardPin} onChange={setNewCardPin} maxLength={6} isPin />
+              </div>
+
+              <ArcadeButton
+                size="md"
+                variant="primary"
+                onClick={handleNewCardPinSubmit}
+                disabled={newCardPin.length < 4}
+                className="w-full max-w-xs"
+              >
+                Set PIN & Load
+              </ArcadeButton>
+
+              <p className="text-[8px] uppercase text-center" style={{ color: '#ef4444' }}>
+                Remember this PIN — it cannot be recovered
+              </p>
+            </div>
+          )}
+
+          {topUpStep === 'processing' && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-6">
+              <h2 className="text-sm" style={{ color: '#667eea' }}>Processing...</h2>
+              <div className="w-full max-w-xs">
+                <ProgressBar progress={0} isAnimating={true} />
+              </div>
+            </div>
+          )}
+
+          {topUpStep === 'success' && topUpResult && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <div
+                className="w-16 h-16 flex items-center justify-center"
+                style={{
+                  border: '4px solid #78ffd6',
+                  boxShadow: '0 0 12px rgba(120, 255, 214, 0.4)',
+                }}
+              >
+                <span className="text-2xl" style={{ color: '#78ffd6' }}>OK</span>
+              </div>
+
+              <div className="text-center space-y-3">
+                <h2 className="text-sm" style={{ color: '#78ffd6' }}>Card Updated</h2>
+
+                <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+                  <p className="text-sm" style={{ color: '#667eea' }}>{topUpResult.walletId}</p>
+                </div>
+
+                <p className="text-lg" style={{ color: '#ffd700' }}>
+                  Balance: ${topUpResult.balance} USDC
+                </p>
+
+                {isNewCard && (
+                  <p className="text-[8px] uppercase" style={{ color: '#ef4444' }}>
+                    Remind attendant to REMEMBER their PIN
+                  </p>
+                )}
+              </div>
+
+              <ArcadeButton size="md" variant="primary" onClick={resetTopUp} className="w-full max-w-xs mt-2">
+                Next Card
+              </ArcadeButton>
+            </div>
+          )}
+
+          {topUpStep === 'error' && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <h2 className="text-sm" style={{ color: '#ef4444' }}>Error</h2>
+              <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
+              <ArcadeButton size="md" variant="secondary" onClick={resetTopUp}>
+                Try Again
+              </ArcadeButton>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* GATEWAY TAB */}
+      {activeTab === 'gateway' && (
+        <div className="flex flex-col gap-3 flex-1">
+          <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+            <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Gateway Balance</p>
+            <p className="text-xl" style={{ color: '#ffd700' }}>
+              {gatewayLoading ? '...' : gatewayBalance !== null ? `$${gatewayBalance}` : '—'}
+              <span className="text-xs ml-1" style={{ color: '#7a7a9a' }}>USDC</span>
+            </p>
+          </div>
+
+          <ArcadeButton size="sm" variant="secondary" onClick={fetchGatewayBalance} className="w-full">
+            Refresh Balance
+          </ArcadeButton>
+
+          <div className="border-t-2 pt-3 mt-2" style={{ borderColor: '#2a2a4a' }}>
+            <p className="text-[8px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Deposit to Gateway</p>
+
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {['1', '5', '10'].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setDepositAmount(preset)}
+                  className="p-2 border-2 text-[10px] transition-all"
+                  style={{
+                    borderColor: depositAmount === preset ? '#ffd700' : '#2a2a4a',
+                    backgroundColor: depositAmount === preset ? 'rgba(255, 215, 0, 0.1)' : '#0f0f24',
+                    color: depositAmount === preset ? '#ffd700' : '#e0e8f0',
+                  }}
+                >
+                  ${preset}
+                </button>
+              ))}
+            </div>
+
+            <ArcadeButton
+              size="md"
+              variant="accent"
+              onClick={handleDeposit}
+              disabled={!depositAmount || depositLoading}
+              className="w-full"
+            >
+              {depositLoading ? 'Depositing...' : `Deposit $${depositAmount || '0'}`}
+            </ArcadeButton>
+
+            {depositResult && (
+              <p
+                className="text-[8px] mt-2 break-all"
+                style={{ color: depositResult.startsWith('Failed') ? '#ef4444' : '#78ffd6' }}
+              >
+                {depositResult}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* STATS TAB */}
+      {activeTab === 'stats' && (
+        <div className="flex flex-col gap-3 flex-1">
+          {stats ? (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Cards</p>
+                  <p className="text-lg" style={{ color: '#667eea' }}>{stats.totalCards}</p>
+                </div>
+                <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Balance</p>
+                  <p className="text-lg" style={{ color: '#ffd700' }}>${stats.totalBalance}</p>
+                </div>
+                <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Loaded</p>
+                  <p className="text-lg" style={{ color: '#78ffd6' }}>${stats.totalLoaded}</p>
+                </div>
+                <div className="p-3 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Spent</p>
+                  <p className="text-lg" style={{ color: '#f093fb' }}>${stats.totalSpent}</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>Loading stats...</p>
+            </div>
+          )}
+
+          <ArcadeButton size="sm" variant="secondary" onClick={fetchStats} className="w-full">
+            Refresh
           </ArcadeButton>
         </div>
-      </Modal>
+      )}
+
+      {/* Back link */}
+      <Link href="/app/festival" className="text-center mt-1">
+        <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
+      </Link>
     </div>
   )
 }
