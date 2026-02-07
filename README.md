@@ -72,7 +72,7 @@ Ki0xk uses the **Yellow SDK** to manage a unified off-chain balance for the kios
 **How we use it:**
 - **ClearNode WebSocket** connection for real-time balance tracking (`wss://clearnet-sandbox.yellow.com/ws`)
 - **EIP-712 authenticated sessions** — main wallet signs a challenge, ephemeral session key handles subsequent operations
-- **Unified balance** model (no channels) — the kiosk operator deposits once, serves unlimited users
+- **Unified balance** model — the kiosk operator deposits once, serves unlimited users via instant off-chain transfers
 - **`ytest.usd` asset** on sandbox for off-chain USDC accounting
 - **Ledger balance** queries to verify operator has sufficient funds before accepting coins
 
@@ -521,7 +521,7 @@ ENS names (e.g. `yourname.eth`) are resolved server-side via viem on Ethereum ma
 | Styling | Tailwind CSS v4, CSS custom properties, viewport-relative font sizing |
 | UI | shadcn/ui (New York), Radix UI, Lucide icons |
 | State | React Context + `useReducer` |
-| Yellow Network | ClearNode WebSocket, EIP-712 auth, unified balance |
+| Yellow Network | ClearNode WebSocket, EIP-712 session auth, off-chain transfers |
 | Arc Bridge | `@circle-fin/bridge-kit` + `@circle-fin/adapter-viem-v2` (CCTP) |
 | Circle Gateway | EIP-712 BurnIntent, Gateway API, GatewayMinter contract |
 | ENS | viem `getEnsAddress` + `normalize` on Ethereum mainnet |
@@ -600,7 +600,7 @@ Part of **Ki0xk**, built for [HackMoney](https://hackmoney.ethglobal.com/).
 
 | Sponsor | Integration | How We Use It |
 |---------|-------------|---------------|
-| **Yellow Network** | ClearNode SDK, unified balance, EIP-712 sessions | Off-chain USDC accounting for ATM — instant, gasless session-based transfers that settle on-chain when users withdraw |
+| **Yellow Network** | ClearNode SDK, EIP-712 session auth, off-chain transfers | Off-chain USDC accounting for ATM — instant, gasless session-based transfers that settle on-chain when users withdraw |
 | **Circle / Arc** | Arc Bridge (CCTP), Circle Gateway, Arc Testnet | ATM: cross-chain USDC delivery via CCTP to 7 chains. Festival: merchant payouts via Gateway EIP-712 burn+mint with just-in-time funding |
 | **ENS** | viem `getEnsAddress` + `normalize` | Human-readable wallet addresses — users type `name.eth` instead of hex addresses, resolved server-side on Ethereum mainnet |
 
