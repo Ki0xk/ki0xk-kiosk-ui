@@ -110,10 +110,8 @@ export default function NfcWalletPage() {
           )}
         </div>
 
-        <a href="/app/kiosk" className="text-center">
-          <span className="text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
-            Back
-          </span>
+        <a href="/app/kiosk" className="text-center inline-block px-2 py-0.5 border text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+          ‹ Back
         </a>
       </div>
     )
@@ -148,10 +146,10 @@ export default function NfcWalletPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setPin(''); setError(''); setStep('nfc-tap') }}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#7a7a9a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
           <h1
             className="text-sm"
@@ -162,10 +160,10 @@ export default function NfcWalletPage() {
           <button
             onClick={handleVerifyPin}
             disabled={pin.length < 4 || isProcessing}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: pin.length >= 4 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: pin.length >= 4 && !isProcessing ? '#78ffd6' : '#3a3a5a', borderColor: pin.length >= 4 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
           >
-            {isProcessing ? 'Wait...' : 'Go'}
+            {isProcessing ? 'Wait...' : 'Go ›'}
           </button>
         </div>
 
@@ -347,10 +345,10 @@ export default function NfcWalletPage() {
 
         <button
           onClick={() => setStep('show-balance')}
-          className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
-          style={{ color: '#7a7a9a' }}
+          className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
+          style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
         >
-          Back
+          ‹ Back
         </button>
       </div>
     )
@@ -393,10 +391,10 @@ export default function NfcWalletPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#7a7a9a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
           <h1
             className="text-sm"
@@ -404,7 +402,7 @@ export default function NfcWalletPage() {
           >
             Enter ENS
           </h1>
-          <span className="w-8" />
+          <span className="w-12" />
         </div>
         <div className="flex-1 min-h-0">
           <OnScreenKeyboard
@@ -466,10 +464,10 @@ export default function NfcWalletPage() {
 
           <button
             onClick={() => setStep('choose-destination')}
-            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
-            style={{ color: '#7a7a9a' }}
+            className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
         </div>
       </div>

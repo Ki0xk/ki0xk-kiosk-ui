@@ -154,10 +154,8 @@ export default function BuyPage() {
             Next
           </ArcadeButton>
 
-          <a href="/app/kiosk" className="text-center">
-            <span className="text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
-              Back
-            </span>
+          <a href="/app/kiosk" className="text-center inline-block px-2 py-0.5 border text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+            ‹ Back
           </a>
         </div>
       </div>
@@ -260,10 +258,10 @@ export default function BuyPage() {
 
           <button
             onClick={() => setStep('select-asset')}
-            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
-            style={{ color: '#7a7a9a' }}
+            className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
         </div>
       </div>
@@ -505,10 +503,10 @@ export default function BuyPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#7a7a9a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
           <h1
             className="text-sm"
@@ -516,7 +514,7 @@ export default function BuyPage() {
           >
             Enter ENS
           </h1>
-          <span className="w-8" />
+          <span className="w-12" />
         </div>
 
         {/* Content */}
@@ -599,10 +597,10 @@ export default function BuyPage() {
 
           <button
             onClick={() => setStep('choose-destination')}
-            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
-            style={{ color: '#7a7a9a' }}
+            className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
         </div>
       </div>
@@ -826,10 +824,10 @@ export default function BuyPage() {
 
         <button
           onClick={() => setStep('choose-destination')}
-          className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
-          style={{ color: '#7a7a9a' }}
+          className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
+          style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
         >
-          Back
+          ‹ Back
         </button>
       </div>
     )
@@ -881,10 +879,10 @@ export default function BuyPage() {
               if (inConfirm) { setNfcPinConfirm(''); setNfcPinStage('enter') }
               else { setStep('choose-destination') }
             }}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#7a7a9a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
           <h1
             className="text-sm"
@@ -896,19 +894,19 @@ export default function BuyPage() {
             <button
               onClick={() => { setNfcPinConfirm(''); setNfcError(''); setNfcPinStage('confirm') }}
               disabled={nfcPin.length < 4}
-              className="text-[11px] uppercase tracking-wider"
-              style={{ color: nfcPin.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+              className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: nfcPin.length >= 4 ? '#78ffd6' : '#3a3a5a', borderColor: nfcPin.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
             >
-              Next
+              Next ›
             </button>
           ) : (
             <button
               onClick={handleSave}
               disabled={nfcProcessing || nfcPinConfirm.length < 4}
-              className="text-[11px] uppercase tracking-wider"
-              style={{ color: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+              className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#78ffd6' : '#3a3a5a', borderColor: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
             >
-              {nfcProcessing ? 'Wait...' : 'Save'}
+              {nfcProcessing ? 'Wait...' : 'Save ›'}
             </button>
           )}
         </div>

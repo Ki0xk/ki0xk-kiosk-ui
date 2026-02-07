@@ -26,8 +26,8 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
       <div className="flex items-center justify-between px-1 mb-1">
         <button
           onClick={handlePrint}
-          className="text-[11px] uppercase tracking-wider"
-          style={{ color: '#7a7a9a' }}
+          className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+          style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
         >
           Print
         </button>
@@ -36,10 +36,10 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
         </p>
         <button
           onClick={onDone}
-          className="text-[11px] uppercase tracking-wider"
-          style={{ color: '#78ffd6' }}
+          className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+          style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
         >
-          Done
+          Done ›
         </button>
       </div>
       <div

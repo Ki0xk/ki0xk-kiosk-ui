@@ -53,10 +53,8 @@ export default function KioskPage() {
       </div>
 
       {/* Back link */}
-      <Link href="/app" className="mt-4">
-        <span className="text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
-          Back to Mode Select
-        </span>
+      <Link href="/app" className="mt-4 inline-block px-3 py-1 border text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+        ‹ Back to Mode Select
       </Link>
     </div>
   )

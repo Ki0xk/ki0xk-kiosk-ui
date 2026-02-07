@@ -53,8 +53,8 @@ export default function ClaimPage() {
       <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
         {/* iOS-style header: Back | Title | Submit */}
         <div className="flex items-center justify-between px-1">
-          <a href="/app/kiosk" className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Back
+          <a href="/app/kiosk" className="text-[11px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+            ‹ Back
           </a>
           <h1
             className="text-sm"
@@ -65,10 +65,10 @@ export default function ClaimPage() {
           <button
             onClick={() => { setError(''); setStep('enter-wallet-id') }}
             disabled={pin.length !== 6}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: pin.length === 6 ? '#78ffd6' : '#3a3a5a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: pin.length === 6 ? '#78ffd6' : '#3a3a5a', borderColor: pin.length === 6 ? '#78ffd6' : '#3a3a5a' }}
           >
-            Submit
+            Submit ›
           </button>
         </div>
 
@@ -106,10 +106,10 @@ export default function ClaimPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setError(''); setWalletId(''); setStep('enter-pin') }}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#7a7a9a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
           <h1
             className="text-sm"
@@ -120,10 +120,10 @@ export default function ClaimPage() {
           <button
             onClick={handleWalletIdSubmit}
             disabled={walletId.length !== 6 || isProcessing}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: walletId.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: walletId.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a', borderColor: walletId.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
           >
-            {isProcessing ? 'Wait...' : 'Submit'}
+            {isProcessing ? 'Wait...' : 'Submit ›'}
           </button>
         </div>
 
@@ -225,10 +225,10 @@ export default function ClaimPage() {
               setError('')
               setStep('enter-pin')
             }}
-            className="text-center text-[11px] uppercase tracking-wider transition-colors"
-            style={{ color: '#7a7a9a' }}
+            className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Go Back
+            ‹ Back
           </button>
         </div>
       </div>
@@ -294,10 +294,10 @@ export default function ClaimPage() {
         <div className="flex flex-col gap-3">
           <button
             onClick={() => setStep('show-balance')}
-            className="text-center text-[11px] uppercase tracking-wider transition-colors"
-            style={{ color: '#7a7a9a' }}
+            className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Go Back
+            ‹ Back
           </button>
         </div>
       </div>
@@ -343,10 +343,10 @@ export default function ClaimPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
-            className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#7a7a9a' }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Back
+            ‹ Back
           </button>
           <h1
             className="text-sm"
@@ -354,7 +354,7 @@ export default function ClaimPage() {
           >
             Enter ENS
           </h1>
-          <span className="w-8" />
+          <span className="w-12" />
         </div>
 
         {/* Content */}
@@ -430,10 +430,10 @@ export default function ClaimPage() {
 
           <button
             onClick={() => setStep('choose-destination')}
-            className="text-center text-[11px] uppercase tracking-wider transition-colors"
-            style={{ color: '#7a7a9a' }}
+            className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
-            Go Back
+            ‹ Back
           </button>
         </div>
       </div>
