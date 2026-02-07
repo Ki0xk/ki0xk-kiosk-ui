@@ -30,7 +30,7 @@ type TopUpStep =
   | 'success'
   | 'error'
 
-type Tab = 'topup' | 'gateway' | 'stats'
+type Tab = 'topup' | 'balance' | 'gateway' | 'stats'
 
 const TOPUP_PRESETS = ['0.10', '0.50', '1.00']
 
@@ -52,6 +52,13 @@ export default function FestivalAdminPage() {
   const [topUpResult, setTopUpResult] = useState<{ walletId: string; balance: string } | null>(null)
   const [topUpError, setTopUpError] = useState('')
 
+  // Balance check
+  const [balanceCheckWaiting, setBalanceCheckWaiting] = useState(true)
+  const [checkedCard, setCheckedCard] = useState<{
+    walletId: string; balance: string; totalLoaded: string; totalSpent: string
+  } | null>(null)
+  const [balanceCheckError, setBalanceCheckError] = useState('')
+
   // Gateway
   const [gatewayBalance, setGatewayBalance] = useState<string | null>(null)
   const [gatewayLoading, setGatewayLoading] = useState(false)
@@ -62,22 +69,42 @@ export default function FestivalAdminPage() {
   // Stats
   const [stats, setStats] = useState<any>(null)
 
-  // NFC tap handler for top-up flow
-  // Card UID is used as walletId — no NDEF write needed
+  // NFC tap handler — routes to top-up or balance check based on active tab
   const handleNfcTap = useCallback(async (uid: string, data?: { walletId: string }) => {
-    if (topUpStep !== 'tap-card') return
-
     const walletId = data?.walletId || uid
     if (!walletId) return
+
+    // Balance check flow
+    if (activeTab === 'balance' && balanceCheckWaiting) {
+      setBalanceCheckWaiting(false)
+      setBalanceCheckError('')
+      try {
+        const info = await apiGetCardInfo(walletId)
+        if (info?.success) {
+          setCheckedCard({
+            walletId,
+            balance: info.balance,
+            totalLoaded: info.totalLoaded,
+            totalSpent: info.totalSpent,
+          })
+        } else {
+          setBalanceCheckError('Card not found — use Top-Up to create')
+        }
+      } catch (err) {
+        setBalanceCheckError(err instanceof Error ? err.message : 'Card read failed')
+      }
+      return
+    }
+
+    // Top-up flow
+    if (topUpStep !== 'tap-card') return
 
     setCardWalletId(walletId)
 
     try {
-      // Check if card exists on server
       const info = await apiGetCardInfo(walletId).catch(() => null)
 
       if (info?.success) {
-        // Existing card — top up directly
         setIsNewCard(false)
         setTopUpStep('processing')
         const result = await apiTopUpCard(walletId, topUpAmount)
@@ -89,7 +116,6 @@ export default function FestivalAdminPage() {
           setTopUpStep('error')
         }
       } else {
-        // New card — register with UID as walletId, ask for PIN
         setIsNewCard(true)
         await apiCreateCardWithId(walletId)
         setTopUpStep('new-card-pin')
@@ -98,11 +124,13 @@ export default function FestivalAdminPage() {
       setTopUpError(err instanceof Error ? err.message : 'Card operation failed')
       setTopUpStep('error')
     }
-  }, [topUpStep, topUpAmount])
+  }, [topUpStep, topUpAmount, activeTab, balanceCheckWaiting])
+
+  const nfcEnabled = topUpStep === 'tap-card' || (activeTab === 'balance' && balanceCheckWaiting)
 
   const { connected: nfcConnected } = useNfcEvents({
     onCardTapped: handleNfcTap,
-    enabled: topUpStep === 'tap-card',
+    enabled: nfcEnabled,
   })
 
   // Admin PIN submit
@@ -246,11 +274,12 @@ export default function FestivalAdminPage() {
 
       {/* Tabs */}
       <div className="flex gap-2">
-        {(['topup', 'gateway', 'stats'] as Tab[]).map((tab) => (
+        {(['topup', 'balance', 'gateway', 'stats'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => {
               setActiveTab(tab)
+              if (tab === 'balance') { setBalanceCheckWaiting(true); setCheckedCard(null); setBalanceCheckError('') }
               if (tab === 'gateway') fetchGatewayBalance()
               if (tab === 'stats') fetchStats()
             }}
@@ -261,7 +290,7 @@ export default function FestivalAdminPage() {
               color: activeTab === tab ? '#ffd700' : '#7a7a9a',
             }}
           >
-            {tab === 'topup' ? 'Top-Up' : tab === 'gateway' ? 'Gateway' : 'Stats'}
+            {tab === 'topup' ? 'Top-Up' : tab === 'balance' ? 'Balance' : tab === 'gateway' ? 'Gateway' : 'Stats'}
           </button>
         ))}
       </div>
@@ -429,6 +458,97 @@ export default function FestivalAdminPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* BALANCE TAB */}
+      {activeTab === 'balance' && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
+          {balanceCheckWaiting && !checkedCard && (
+            <>
+              <div className="text-center space-y-2">
+                <h2
+                  className="text-sm"
+                  style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
+                >
+                  Check Balance
+                </h2>
+                <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                  Tap a card to view its balance
+                </p>
+              </div>
+              <NFCIndicator status="scanning" />
+            </>
+          )}
+
+          {checkedCard && (
+            <>
+              <div
+                className="w-16 h-16 flex items-center justify-center"
+                style={{
+                  border: '4px solid #667eea',
+                  boxShadow: '0 0 12px rgba(102, 126, 234, 0.4)',
+                }}
+              >
+                <span className="text-lg" style={{ color: '#667eea' }}>$</span>
+              </div>
+
+              <div className="text-center space-y-3 w-full max-w-xs">
+                <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+                  <p className="text-sm" style={{ color: '#667eea' }}>{checkedCard.walletId}</p>
+                </div>
+
+                <div
+                  className="p-4 border-2 text-center"
+                  style={{
+                    backgroundColor: '#0f0f24',
+                    borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
+                    borderStyle: 'solid',
+                    borderWidth: '2px',
+                  }}
+                >
+                  <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
+                  <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
+                    ${checkedCard.balance} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                    <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
+                    <p className="text-sm" style={{ color: '#78ffd6' }}>${checkedCard.totalLoaded}</p>
+                  </div>
+                  <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                    <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
+                    <p className="text-sm" style={{ color: '#f093fb' }}>${checkedCard.totalSpent}</p>
+                  </div>
+                </div>
+              </div>
+
+              <ArcadeButton
+                size="sm"
+                variant="secondary"
+                onClick={() => { setBalanceCheckWaiting(true); setCheckedCard(null) }}
+                className="w-full max-w-xs"
+              >
+                Scan Another Card
+              </ArcadeButton>
+            </>
+          )}
+
+          {balanceCheckError && (
+            <>
+              <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{balanceCheckError}</p>
+              <ArcadeButton
+                size="sm"
+                variant="secondary"
+                onClick={() => { setBalanceCheckWaiting(true); setBalanceCheckError('') }}
+              >
+                Try Again
+              </ArcadeButton>
+            </>
+          )}
+        </div>
       )}
 
       {/* GATEWAY TAB */}

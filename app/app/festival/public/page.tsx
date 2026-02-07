@@ -17,7 +17,7 @@ import {
   apiTopUpCard,
 } from '@/lib/api-client'
 
-type Flow = 'idle' | 'payment' | 'topup'
+type Flow = 'idle' | 'payment' | 'topup' | 'balance'
 
 // Payment flow steps
 type PayStep =
@@ -78,6 +78,13 @@ export default function FestivalPublicPage() {
   const [topUpError, setTopUpError] = useState('')
   const [showCoinAnim, setShowCoinAnim] = useState(false)
 
+  // Balance check state
+  const [balanceChecking, setBalanceChecking] = useState(true)
+  const [checkedBalance, setCheckedBalance] = useState<{
+    walletId: string; balance: string; totalLoaded: string; totalSpent: string
+  } | null>(null)
+  const [balanceError, setBalanceError] = useState('')
+
   const cartTotal = cart.reduce((sum, item) => sum + parseFloat(item.price) * item.qty, 0)
 
   // NFC tap for payment
@@ -131,14 +138,44 @@ export default function FestivalPublicPage() {
     }
   }, [flow, topUpStep, coinTotal])
 
+  // Balance check NFC handler
+  const handleBalanceNfcTap = useCallback(async (uid: string, data?: { walletId: string }) => {
+    if (flow !== 'balance' || !balanceChecking) return
+    const walletId = data?.walletId || uid
+    if (!walletId) return
+
+    setBalanceChecking(false)
+    setBalanceError('')
+    try {
+      const info = await apiGetCardBalance(walletId)
+      if (info.exists) {
+        // Fetch full info for loaded/spent
+        const { apiGetCardInfo } = await import('@/lib/api-client')
+        const full = await apiGetCardInfo(walletId).catch(() => null)
+        setCheckedBalance({
+          walletId,
+          balance: info.balance,
+          totalLoaded: full?.totalLoaded || '—',
+          totalSpent: full?.totalSpent || '—',
+        })
+      } else {
+        setBalanceError('Card not registered — use Admin to set up')
+      }
+    } catch (err) {
+      setBalanceError(err instanceof Error ? err.message : 'Card read failed')
+    }
+  }, [flow, balanceChecking])
+
   // Combined NFC handler
   const onNfcTap = useCallback((uid: string, data?: { walletId: string }) => {
     if (flow === 'payment') handlePayNfcTap(uid, data)
     if (flow === 'topup') handleTopUpNfcTap(uid, data)
-  }, [flow, handlePayNfcTap, handleTopUpNfcTap])
+    if (flow === 'balance') handleBalanceNfcTap(uid, data)
+  }, [flow, handlePayNfcTap, handleTopUpNfcTap, handleBalanceNfcTap])
 
   const nfcEnabled = (flow === 'payment' && payStep === 'tap-card') ||
-    (flow === 'topup' && topUpStep === 'tap-card')
+    (flow === 'topup' && topUpStep === 'tap-card') ||
+    (flow === 'balance' && balanceChecking)
 
   useNfcEvents({ onCardTapped: onNfcTap, enabled: nfcEnabled })
 
@@ -179,10 +216,20 @@ export default function FestivalPublicPage() {
     setTopUpError('')
   }
 
+  // Start balance check flow
+  const startBalanceCheck = () => {
+    setFlow('balance')
+    setBalanceChecking(true)
+    setCheckedBalance(null)
+    setBalanceError('')
+  }
+
   const goHome = () => {
     setFlow('idle')
     setPayStep('select-merchant')
     setTopUpStep('insert-coins')
+    setBalanceChecking(true)
+    setCheckedBalance(null)
   }
 
   // Cart helpers
@@ -254,6 +301,9 @@ export default function FestivalPublicPage() {
           </ArcadeButton>
           <ArcadeButton size="lg" variant="primary" onClick={startTopUp} className="w-full">
             Add Balance
+          </ArcadeButton>
+          <ArcadeButton size="lg" variant="secondary" onClick={startBalanceCheck} className="w-full">
+            Check Balance
           </ArcadeButton>
         </div>
 
@@ -711,6 +761,99 @@ export default function FestivalPublicPage() {
           <h2 className="text-sm" style={{ color: '#ef4444' }}>Top-Up Failed</h2>
           <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
           <ArcadeButton size="md" variant="secondary" onClick={goHome}>
+            Try Again
+          </ArcadeButton>
+        </div>
+      )
+    }
+  }
+
+  // BALANCE CHECK FLOW
+  if (flow === 'balance') {
+    if (balanceChecking && !checkedBalance) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-sm" style={{ color: '#667eea' }}>Check Balance</h2>
+            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+              Tap your wristband to view balance
+            </p>
+          </div>
+          <NFCIndicator status="scanning" />
+          {balanceError && (
+            <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
+          )}
+          <ArcadeButton size="sm" variant="secondary" onClick={goHome}>
+            Back
+          </ArcadeButton>
+        </div>
+      )
+    }
+
+    if (checkedBalance) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
+          <div
+            className="w-16 h-16 flex items-center justify-center"
+            style={{
+              border: '4px solid #667eea',
+              boxShadow: '0 0 12px rgba(102, 126, 234, 0.4)',
+            }}
+          >
+            <span className="text-lg" style={{ color: '#667eea' }}>$</span>
+          </div>
+
+          <div className="text-center space-y-3 w-full max-w-xs">
+            <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+              <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+              <p className="text-sm" style={{ color: '#667eea' }}>{checkedBalance.walletId}</p>
+            </div>
+
+            <div
+              className="p-4 border-2 text-center"
+              style={{
+                backgroundColor: '#0f0f24',
+                borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
+                borderStyle: 'solid',
+                borderWidth: '2px',
+              }}
+            >
+              <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
+              <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
+                ${checkedBalance.balance} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
+                <p className="text-sm" style={{ color: '#78ffd6' }}>${checkedBalance.totalLoaded}</p>
+              </div>
+              <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
+                <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
+                <p className="text-sm" style={{ color: '#f093fb' }}>${checkedBalance.totalSpent}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 w-full max-w-xs">
+            <ArcadeButton size="sm" variant="secondary" onClick={startBalanceCheck} className="flex-1">
+              Scan Again
+            </ArcadeButton>
+            <ArcadeButton size="sm" variant="primary" onClick={goHome} className="flex-1">
+              Done
+            </ArcadeButton>
+          </div>
+        </div>
+      )
+    }
+
+    if (balanceError) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
+          <h2 className="text-sm" style={{ color: '#ef4444' }}>Card Not Found</h2>
+          <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
+          <ArcadeButton size="md" variant="secondary" onClick={startBalanceCheck}>
             Try Again
           </ArcadeButton>
         </div>
