@@ -79,20 +79,30 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'nfc-tap') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | spacer */}
+        <div className="flex items-center justify-between px-1">
+          <a
+            href="/app/kiosk"
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </a>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             NFC Wallet
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Tap your NFC card to check balance
-          </p>
+          <span className="w-12" />
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+          Tap your NFC card to check balance
+        </p>
+
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <NFCIndicator status={nfcConnected ? 'scanning' : 'ready'} />
 
           <p className="text-sm uppercase tracking-wider" style={{ color: '#667eea' }}>
@@ -109,10 +119,6 @@ export default function NfcWalletPage() {
             </p>
           )}
         </div>
-
-        <a href="/app/kiosk" className="text-center inline-block px-2 py-0.5 border text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
-          ‹ Back
-        </a>
       </div>
     )
   }
@@ -306,18 +312,28 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'choose-destination') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | spacer */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('show-balance')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Withdraw To
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Where should we send your ${balance} USDC?
-          </p>
+          <span className="w-12" />
         </div>
+
+        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+          Where should we send your ${balance} USDC?
+        </p>
 
         <div className="flex-1 flex flex-col gap-3 justify-center">
           <ArcadeButton
@@ -338,14 +354,6 @@ export default function NfcWalletPage() {
             Enter ENS Name
           </ArcadeButton>
         </div>
-
-        <button
-          onClick={() => setStep('show-balance')}
-          className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
-          style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-        >
-          ‹ Back
-        </button>
       </div>
     )
   }
@@ -420,18 +428,33 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'select-chain') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | Send */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('choose-destination')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Select Chain
           </h1>
+          <button
+            onClick={() => setStep('settling')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Send ›
+          </button>
         </div>
 
         <div
-          className="p-3 border-2 text-center"
+          className="p-2 border-2 text-center"
           style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
         >
           <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
@@ -444,27 +467,8 @@ export default function NfcWalletPage() {
           </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <ChainSelector selectedChain={selectedChain} onSelect={setSelectedChain} />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('settling')}
-            className="w-full"
-          >
-            Confirm & Send
-          </ArcadeButton>
-
-          <button
-            onClick={() => setStep('choose-destination')}
-            className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
-            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-          >
-            ‹ Back
-          </button>
         </div>
       </div>
     )

@@ -5,22 +5,22 @@ import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 
 export default function ModeSelector() {
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6 gap-8">
-      {/* Title */}
-      <div className="text-center space-y-2">
+    <div className="h-full flex flex-col p-3 gap-3 overflow-hidden">
+      {/* Header */}
+      <div className="text-center">
         <h1
-          className="text-xl"
+          className="text-lg"
           style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
         >
           Select Mode
         </h1>
-        <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+        <p className="text-[11px] uppercase tracking-wider mt-0.5" style={{ color: '#7a7a9a' }}>
           Choose your experience
         </p>
       </div>
 
       {/* Mode buttons */}
-      <div className="flex flex-col gap-6 w-full max-w-xs">
+      <div className="flex-1 flex flex-col gap-5 justify-center w-full max-w-xs mx-auto">
         <Link href="/app/kiosk" className="w-full">
           <ArcadeButton size="lg" variant="primary" className="w-full">
             Kiosk Mode
@@ -35,7 +35,7 @@ export default function ModeSelector() {
       </div>
 
       {/* Holographic decorative element */}
-      <div className="flex gap-1 mt-8">
+      <div className="flex gap-1 justify-center">
         {['#78ffd6', '#2a2a4a', '#667eea', '#2a2a4a', '#764ba2', '#2a2a4a', '#ffd700'].map((color, i) => (
           <div
             key={i}

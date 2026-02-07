@@ -221,40 +221,43 @@ export default function FestivalAdminPage() {
   // PIN Entry screen
   if (adminStep === 'pin-entry') {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
-        <div className="text-center space-y-2">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+        {/* iOS-style header: Back | Title | Login */}
+        <div className="flex items-center justify-between px-1">
+          <Link
+            href="/app/festival"
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </Link>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Admin Login
           </h1>
-          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Enter admin PIN to continue
-          </p>
+          <button
+            onClick={handleAdminPinSubmit}
+            disabled={adminPin.length < 4}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: adminPin.length >= 4 ? '#78ffd6' : '#3a3a5a', borderColor: adminPin.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+          >
+            Login ›
+          </button>
         </div>
 
-        <div className="w-full max-w-xs">
+        <p className="text-[11px] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+          Enter admin PIN to continue
+        </p>
+
+        <div className="flex-1 flex items-center justify-center min-h-0">
           <NumericKeypad value={adminPin} onChange={setAdminPin} maxLength={6} isPin />
         </div>
 
         {adminPinError && (
-          <p className="text-sm uppercase" style={{ color: '#ef4444' }}>{adminPinError}</p>
+          <p className="text-sm uppercase text-center" style={{ color: '#ef4444' }}>{adminPinError}</p>
         )}
-
-        <ArcadeButton
-          size="md"
-          variant="primary"
-          onClick={handleAdminPinSubmit}
-          disabled={adminPin.length < 4}
-          className="w-full max-w-xs"
-        >
-          Login
-        </ArcadeButton>
-
-        <Link href="/app/festival" className="mt-2">
-          <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
-        </Link>
       </div>
     )
   }
@@ -645,8 +648,8 @@ export default function FestivalAdminPage() {
       )}
 
       {/* Back link */}
-      <Link href="/app/festival" className="text-center mt-1">
-        <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
+      <Link href="/app/festival" className="text-center mt-1 inline-block px-2 py-0.5 border text-[11px] uppercase tracking-wider mx-auto" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+        ‹ Back
       </Link>
     </div>
   )

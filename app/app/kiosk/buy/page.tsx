@@ -104,22 +104,37 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'select-asset') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | Next */}
+        <div className="flex items-center justify-between px-1">
+          <a
+            href="/app/kiosk"
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </a>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Buy Crypto
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Select asset to purchase
-          </p>
+          <button
+            onClick={() => setStep('processing')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Next ›
+          </button>
         </div>
 
+        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+          Select asset to purchase
+        </p>
+
         {/* Content */}
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-3 justify-center">
           {SUPPORTED_ASSETS.map((asset) => (
             <button
               key={asset.id}
@@ -141,22 +156,6 @@ export default function BuyPage() {
               </p>
             </button>
           ))}
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('processing')}
-            className="w-full"
-          >
-            Next
-          </ArcadeButton>
-
-          <a href="/app/kiosk" className="text-center inline-block px-2 py-0.5 border text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
-            ‹ Back
-          </a>
         </div>
       </div>
     )
@@ -221,48 +220,43 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | Confirm */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('select-asset')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Insert Coins
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            {getModeFeatures().useSimulatedCoins ? 'Tap a coin to simulate insertion' : 'Insert coins into the slot'}
-          </p>
+          <button
+            onClick={() => setStep('confirm-amount')}
+            disabled={state.totalDepositedUSDC <= 0}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: state.totalDepositedUSDC > 0 ? '#78ffd6' : '#3a3a5a', borderColor: state.totalDepositedUSDC > 0 ? '#78ffd6' : '#3a3a5a' }}
+          >
+            Next ›
+          </button>
         </div>
 
+        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+          {getModeFeatures().useSimulatedCoins ? 'Tap a coin to simulate insertion' : 'Insert coins into the slot'}
+        </p>
+
         {/* Content */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <CoinSlotSimulator
             onCoinInserted={handleCoinInserted}
             totalPesos={state.totalDepositedPesos}
             totalUSDC={state.totalDepositedUSDC}
           />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('confirm-amount')}
-            disabled={state.totalDepositedUSDC <= 0}
-            className="w-full"
-          >
-            Confirm
-          </ArcadeButton>
-
-          <button
-            onClick={() => setStep('select-asset')}
-            className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
-            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-          >
-            ‹ Back
-          </button>
         </div>
       </div>
     )
@@ -275,22 +269,37 @@ export default function BuyPage() {
     const fee = calculateFee(state.balanceUSDC)
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Add More | Title | Confirm */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('insert-coins')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Add More
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            Confirm Amount
+            Confirm
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Review fee breakdown
-          </p>
+          <button
+            onClick={() => setStep('choose-destination')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Next ›
+          </button>
         </div>
 
+        <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+          Review fee breakdown
+        </p>
+
         {/* Content — fee table */}
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-3 justify-center">
           {/* Gross */}
           <div
             className="flex items-center justify-between p-3 border-2"
@@ -345,27 +354,6 @@ export default function BuyPage() {
             </span>
           </div>
         </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('choose-destination')}
-            className="w-full"
-          >
-            Confirm
-          </ArcadeButton>
-
-          <ArcadeButton
-            size="sm"
-            variant="secondary"
-            onClick={() => setStep('insert-coins')}
-            className="w-full"
-          >
-            Add More
-          </ArcadeButton>
-        </div>
       </div>
     )
   }
@@ -394,18 +382,23 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | spacer */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('confirm-amount')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Where To Send?
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Choose destination method
-          </p>
+          <span className="w-12" />
         </div>
 
         {/* Content — four buttons */}
@@ -540,27 +533,40 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'select-chain') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | Send */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('choose-destination')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Select Chain
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Choose destination network
-          </p>
+          <button
+            onClick={() => {
+              dispatch(actions.setDestination(destinationAddress, selectedChain, 'qr'))
+              setStep('settling')
+            }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Send ›
+          </button>
         </div>
 
         {/* Destination preview */}
         <div
-          className="p-3 border-2 text-center"
+          className="p-2 border-2 text-center"
           style={{
             backgroundColor: '#0f0f24',
             borderColor: '#2a2a4a',
-            boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
           }}
         >
           <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
@@ -574,34 +580,11 @@ export default function BuyPage() {
         </div>
 
         {/* Content — chain list needs scroll for 7 chains */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <ChainSelector
             selectedChain={selectedChain}
             onSelect={setSelectedChain}
           />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => {
-              dispatch(actions.setDestination(destinationAddress, selectedChain, 'qr'))
-              setStep('settling')
-            }}
-            className="w-full"
-          >
-            Confirm & Send
-          </ArcadeButton>
-
-          <button
-            onClick={() => setStep('choose-destination')}
-            className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
-            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-          >
-            ‹ Back
-          </button>
         </div>
       </div>
     )
@@ -766,28 +749,34 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'nfc-tap') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | spacer */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('choose-destination')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             Tap NFC Card
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Hold any NFC card near the reader
-          </p>
+          <span className="w-12" />
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <NFCIndicator status={nfcProcessing ? 'ready' : 'scanning'} />
 
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1">
             <p className="text-sm uppercase tracking-wider" style={{ color: '#667eea' }}>
               {nfcProcessing ? 'Processing...' : nfcConnected ? 'Ready — tap your card' : 'Waiting for NFC...'}
             </p>
             <p className="text-[11px]" style={{ color: '#78ffd6' }}>
-              Any NFC chip works — metro card, wristband, sticker, badge, phone
+              Any NFC chip works — metro card, wristband, sticker, badge
             </p>
             <p className="text-[10px]" style={{ color: '#7a7a9a' }}>
               Your card becomes a crypto wallet instantly
@@ -801,7 +790,7 @@ export default function BuyPage() {
           )}
 
           <div
-            className="p-3 border-2 text-center"
+            className="p-2 border-2 text-center"
             style={{
               backgroundColor: '#0f0f24',
               borderColor: '#78ffd6',
@@ -819,14 +808,6 @@ export default function BuyPage() {
             </span>
           </div>
         </div>
-
-        <button
-          onClick={() => setStep('choose-destination')}
-          className="w-full text-[11px] uppercase tracking-wider py-1 px-2 border transition-colors"
-          style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-        >
-          ‹ Back
-        </button>
       </div>
     )
   }

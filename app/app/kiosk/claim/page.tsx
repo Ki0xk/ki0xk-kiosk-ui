@@ -232,22 +232,27 @@ export default function ClaimPage() {
   // ── choose-destination ─────────────────────────────────────────────────
   if (step === 'choose-destination') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | spacer */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('show-balance')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Where To Send?
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
-            Choose how to provide your destination
-          </p>
+          <span className="w-12" />
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 w-full max-w-xs mx-auto">
           <ArcadeButton
             size="lg"
             variant="primary"
@@ -282,17 +287,6 @@ export default function ClaimPage() {
               Coming Soon
             </span>
           </ArcadeButton>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={() => setStep('show-balance')}
-            className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
-            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-          >
-            ‹ Back
-          </button>
         </div>
       </div>
     )
@@ -371,64 +365,52 @@ export default function ClaimPage() {
   // ── select-chain ───────────────────────────────────────────────────────
   if (step === 'select-chain') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | Send */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => setStep('choose-destination')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Select Chain
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
-            Choose destination network
-          </p>
+          <button
+            onClick={() => setStep('settling')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Send ›
+          </button>
         </div>
 
         {/* Destination preview */}
         <div
-          className="p-3 border-2 text-center"
+          className="p-2 border-2 text-center"
           style={{
             backgroundColor: '#0f0f24',
             borderColor: '#2a2a4a',
           }}
         >
-          <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
-            Sending To
-          </p>
-          <p
-            className="text-sm tracking-wide break-all"
-            style={{ color: '#78ffd6', textShadow: '0 0 6px rgba(120, 255, 214, 0.3)' }}
-          >
+          <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+            Sending to:{' '}
+          </span>
+          <span className="text-[13px] font-mono" style={{ color: '#78ffd6' }}>
             {destinationAddress.length > 20
               ? destinationAddress.slice(0, 10) + '...' + destinationAddress.slice(-8)
               : destinationAddress}
-          </p>
+          </span>
         </div>
 
         {/* Content — chain list needs scroll for 7 chains */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <ChainSelector selectedChain={selectedChain} onSelect={setSelectedChain} />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('settling')}
-            className="w-full"
-          >
-            {'Confirm & Send'}
-          </ArcadeButton>
-
-          <button
-            onClick={() => setStep('choose-destination')}
-            className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
-            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-          >
-            ‹ Back
-          </button>
         </div>
       </div>
     )
