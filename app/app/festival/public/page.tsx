@@ -512,7 +512,7 @@ export default function FestivalPublicPage() {
     // Confirm
     if (payStep === 'confirm') {
       return (
-        <div className="h-full flex flex-col p-4 gap-3 overflow-y-auto">
+        <div className="h-full flex flex-col p-4 gap-3 overflow-hidden">
           <div className="text-center">
             <h2 className="text-sm" style={{ color: '#ffd700' }}>Confirm Payment</h2>
           </div>
@@ -583,7 +583,7 @@ export default function FestivalPublicPage() {
     // Success
     if (payStep === 'success' && payResult) {
       return (
-        <div className="h-full flex flex-col items-center justify-center p-6 gap-4 overflow-y-auto">
+        <div className="h-full flex flex-col items-center justify-center p-6 gap-4 overflow-hidden">
           <div
             className="w-16 h-16 flex items-center justify-center"
             style={{

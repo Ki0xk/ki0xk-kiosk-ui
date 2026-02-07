@@ -79,7 +79,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'nfc-tap') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -143,7 +143,7 @@ export default function NfcWalletPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -219,7 +219,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'show-balance') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -323,7 +323,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'choose-destination') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -372,7 +372,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'qr-scan') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -399,7 +399,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'ens-input') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -438,7 +438,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'select-chain') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -518,7 +518,7 @@ export default function NfcWalletPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -548,7 +548,7 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'done') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"

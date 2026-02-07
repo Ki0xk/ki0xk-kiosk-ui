@@ -261,7 +261,7 @@ export default function FestivalAdminPage() {
 
   // Dashboard
   return (
-    <div className="h-full flex flex-col p-3 gap-3 overflow-y-auto">
+    <div className="h-full flex flex-col p-3 gap-3 overflow-hidden">
       {/* Header */}
       <div className="text-center">
         <h1

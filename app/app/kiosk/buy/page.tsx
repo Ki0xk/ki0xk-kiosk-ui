@@ -104,7 +104,7 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'select-asset') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -182,7 +182,7 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -223,7 +223,7 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -277,7 +277,7 @@ export default function BuyPage() {
     const fee = calculateFee(state.balanceUSDC)
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -396,7 +396,7 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -467,7 +467,7 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'qr-scan') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -500,7 +500,7 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'ens-input') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -549,7 +549,7 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'select-chain') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -582,7 +582,7 @@ export default function BuyPage() {
           </span>
         </div>
 
-        {/* Content */}
+        {/* Content — chain list needs scroll for 7 chains */}
         <div className="flex-1 overflow-y-auto">
           <ChainSelector
             selectedChain={selectedChain}
@@ -645,7 +645,7 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -684,149 +684,71 @@ export default function BuyPage() {
       hash.length > 16 ? hash.slice(0, 10) + '...' + hash.slice(-6) : hash
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
-        {/* Title area */}
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* Title */}
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
             Transaction Complete
           </h1>
-          <div
-            className="w-24 h-1 mx-auto mt-2"
-            style={{
-              background: 'linear-gradient(90deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700)',
-            }}
-          />
         </div>
 
-        {/* Content — receipt */}
-        <div className="flex-1 flex flex-col gap-3">
-          {/* Amount sent */}
-          <div
-            className="flex items-center justify-between p-3 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-              Amount Sent
-            </span>
-            <span
-              className="text-sm"
-              style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}
-            >
-              ${result?.settledAmount ?? '0'} USDC
-            </span>
-          </div>
-
-          {/* Fee */}
-          <div
-            className="flex items-center justify-between p-3 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-              Fee
-            </span>
-            <span className="text-sm" style={{ color: '#f093fb' }}>
-              ${result?.fee.fee.toFixed(6) ?? '0'}
-            </span>
-          </div>
-
-          {/* Destination */}
-          <div
-            className="flex items-center justify-between p-3 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-              Destination
-            </span>
-            <span className="text-[9px] font-mono" style={{ color: '#667eea' }}>
-              {truncateAddr(destinationAddress)}
-            </span>
-          </div>
-
-          {/* Chain */}
-          <div
-            className="flex items-center justify-between p-3 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-              Chain
-            </span>
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#e0e8f0' }}>
-              {SUPPORTED_CHAINS[selectedChain].name}
-            </span>
-          </div>
-
-          {/* TX Hash */}
-          {result?.bridgeTxHash && (
-            <div
-              className="flex items-center justify-between p-3 border-2"
-              style={{
-                backgroundColor: '#0f0f24',
-                borderColor: '#2a2a4a',
-                boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-              }}
-            >
-              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                TX Hash
-              </span>
-              <span className="text-[8px] font-mono" style={{ color: '#ffd700' }}>
-                {truncateHash(result.bridgeTxHash)}
-              </span>
-            </div>
-          )}
-
-          {/* QR Code for explorer link */}
-          {result?.explorerUrl && (
-            <div className="flex flex-col items-center gap-2 p-3 border-2" style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}>
-              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                Scan to verify on explorer
-              </span>
-              <div className="bg-white p-2 rounded">
-                <QRCodeSVG value={result.explorerUrl} size={120} />
+        {/* Receipt — two-column layout */}
+        <div className="flex-1 flex gap-3 min-h-0">
+          {/* Left: receipt details */}
+          <div className="flex-1 flex flex-col gap-1.5">
+            {[
+              { label: 'Sent', value: `$${result?.settledAmount ?? '0'} USDC`, color: '#78ffd6' },
+              { label: 'Fee', value: `$${result?.fee.fee.toFixed(6) ?? '0'}`, color: '#f093fb' },
+              { label: 'To', value: truncateAddr(destinationAddress), color: '#667eea' },
+              { label: 'Chain', value: SUPPORTED_CHAINS[selectedChain].name, color: '#e0e8f0' },
+              ...(result?.bridgeTxHash ? [{ label: 'TX', value: truncateHash(result.bridgeTxHash), color: '#ffd700' }] : []),
+            ].map((row, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-2 py-1.5 border"
+                style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
+              >
+                <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                  {row.label}
+                </span>
+                <span className="text-[9px]" style={{ color: row.color }}>
+                  {row.value}
+                </span>
               </div>
-              <span className="text-[7px] font-mono break-all text-center" style={{ color: '#667eea' }}>
-                {result.explorerUrl}
+            ))}
+          </div>
+
+          {/* Right: QR code */}
+          {result?.explorerUrl && (
+            <div
+              className="flex flex-col items-center justify-center gap-1 px-3 border"
+              style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
+            >
+              <span className="text-[7px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                Verify
               </span>
+              <div className="bg-white p-1.5">
+                <QRCodeSVG value={result.explorerUrl} size={80} />
+              </div>
             </div>
           )}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => {
-              dispatch(actions.reset())
-              router.push('/app/kiosk')
-            }}
-            className="w-full"
-          >
-            New Transaction
-          </ArcadeButton>
-        </div>
+        {/* Button */}
+        <ArcadeButton
+          size="md"
+          variant="primary"
+          onClick={() => {
+            dispatch(actions.reset())
+            router.push('/app/kiosk')
+          }}
+          className="w-full"
+        >
+          New Transaction
+        </ArcadeButton>
       </div>
     )
   }
@@ -836,7 +758,7 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'pin-generated' && state.pinData) {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -871,7 +793,7 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'nfc-tap') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -974,7 +896,7 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         <div className="text-center">
           <h1
             className="text-lg"
@@ -1073,39 +995,29 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'nfc-done') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
-            Balance Saved
+            {nfcIsNewCard ? 'NFC Wallet Created!' : 'Balance Added'}
           </h1>
-          <div
-            className="w-24 h-1 mx-auto mt-2"
-            style={{
-              background: 'linear-gradient(90deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700)',
-            }}
-          />
-          <p className="text-[8px] uppercase tracking-widest mt-2" style={{ color: '#7a7a9a' }}>
-            {nfcIsNewCard ? 'Take a photo of this screen!' : 'Balance added to existing card'}
-          </p>
+          {nfcIsNewCard && (
+            <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#ffd700' }}>
+              Take a photo of this screen!
+            </p>
+          )}
         </div>
 
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-1.5 min-h-0">
           {/* Card ID */}
           <div
-            className="flex items-center justify-between p-3 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#667eea',
-              boxShadow: '0 0 8px rgba(102, 126, 234, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
+            className="flex items-center justify-between px-3 py-1.5 border"
+            style={{ backgroundColor: '#0f0f24', borderColor: '#667eea' }}
           >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-              Card ID
-            </span>
-            <span className="text-sm font-mono" style={{ color: '#667eea' }}>
+            <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Card</span>
+            <span className="text-[10px] font-mono" style={{ color: '#667eea' }}>
               {nfcCardId.length > 12 ? nfcCardId.slice(0, 6) + '...' + nfcCardId.slice(-4) : nfcCardId}
             </span>
           </div>
@@ -1113,18 +1025,12 @@ export default function BuyPage() {
           {/* PIN — only show for new cards */}
           {nfcIsNewCard && nfcPin && (
             <div
-              className="flex items-center justify-between p-3 border-2"
-              style={{
-                backgroundColor: '#0f0f24',
-                borderColor: '#ffd700',
-                boxShadow: '0 0 8px rgba(255, 215, 0, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-              }}
+              className="flex items-center justify-between px-3 py-1.5 border"
+              style={{ backgroundColor: '#0f0f24', borderColor: '#ffd700' }}
             >
-              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                Your PIN
-              </span>
+              <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>PIN</span>
               <span
-                className="text-lg font-mono tracking-[0.3em]"
+                className="text-sm font-mono tracking-[0.3em]"
                 style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.4)' }}
               >
                 {nfcPin}
@@ -1134,16 +1040,10 @@ export default function BuyPage() {
 
           {/* Balance */}
           <div
-            className="flex items-center justify-between p-3 border-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#78ffd6',
-              boxShadow: '0 0 8px rgba(120, 255, 214, 0.15), inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
+            className="flex items-center justify-between px-3 py-1.5 border"
+            style={{ backgroundColor: '#0f0f24', borderColor: '#78ffd6' }}
           >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-              Card Balance
-            </span>
+            <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Balance</span>
             <span
               className="text-sm"
               style={{ color: '#78ffd6', textShadow: '0 0 8px rgba(120, 255, 214, 0.4)' }}
@@ -1152,27 +1052,20 @@ export default function BuyPage() {
             </span>
           </div>
 
-          {/* How to use info */}
+          {/* Compact info */}
           <div
-            className="p-3 border-2 space-y-2"
-            style={{
-              backgroundColor: '#0f0f24',
-              borderColor: '#2a2a4a',
-              boxShadow: 'inset -2px -2px 0px 0px rgba(0,0,0,0.2)',
-            }}
+            className="px-3 py-2 border space-y-1"
+            style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <p className="text-[8px] uppercase tracking-widest" style={{ color: '#f093fb' }}>
+            <p className="text-[8px]" style={{ color: '#f093fb' }}>
               Your NFC card is now a crypto wallet!
             </p>
-            <p className="text-[8px] leading-relaxed" style={{ color: '#7a7a9a' }}>
-              Tap this same card at any Ki0xk kiosk or festival to check balance, add more, or withdraw USDC to any blockchain.
-            </p>
-            <p className="text-[8px] leading-relaxed" style={{ color: '#7a7a9a' }}>
-              Works with metro cards, ETHGlobal wristbands, NFC stickers, badges — any NFC chip.
+            <p className="text-[7px]" style={{ color: '#7a7a9a' }}>
+              Tap at any Ki0xk kiosk to check balance, top up, or withdraw USDC.
             </p>
             {nfcIsNewCard && (
-              <p className="text-[8px] leading-relaxed" style={{ color: '#ffd700' }}>
-                Remember your PIN! You need it to spend or withdraw.
+              <p className="text-[7px]" style={{ color: '#ffd700' }}>
+                Remember your PIN — you need it to spend or withdraw.
               </p>
             )}
           </div>

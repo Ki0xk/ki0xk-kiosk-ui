@@ -50,7 +50,7 @@ export default function ClaimPage() {
   // ── enter-pin ──────────────────────────────────────────────────────────
   if (step === 'enter-pin') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -115,7 +115,7 @@ export default function ClaimPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -174,7 +174,7 @@ export default function ClaimPage() {
   // ── show-balance ───────────────────────────────────────────────────────
   if (step === 'show-balance') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -265,7 +265,7 @@ export default function ClaimPage() {
   // ── choose-destination ─────────────────────────────────────────────────
   if (step === 'choose-destination') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -334,7 +334,7 @@ export default function ClaimPage() {
   // ── qr-scan ────────────────────────────────────────────────────────────
   if (step === 'qr-scan') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -365,7 +365,7 @@ export default function ClaimPage() {
   // ── ens-input ──────────────────────────────────────────────────────────
   if (step === 'ens-input') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -413,7 +413,7 @@ export default function ClaimPage() {
   // ── select-chain ───────────────────────────────────────────────────────
   if (step === 'select-chain') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -448,7 +448,7 @@ export default function ClaimPage() {
           </p>
         </div>
 
-        {/* Content */}
+        {/* Content — chain list needs scroll for 7 chains */}
         <div className="flex-1 overflow-y-auto">
           <ChainSelector selectedChain={selectedChain} onSelect={setSelectedChain} />
         </div>
@@ -503,7 +503,7 @@ export default function ClaimPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -550,108 +550,70 @@ export default function ClaimPage() {
     const explorerLink = claimResult?.explorerUrl || null
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
-        {/* Title area */}
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* Title */}
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
             USDC Claimed!
           </h1>
         </div>
 
-        {/* Content — receipt */}
-        <div className="flex-1 flex items-center justify-center">
-          <div
-            className="w-full max-w-xs p-5"
-            style={{
-              backgroundColor: '#0f0f24',
-              border: '3px solid transparent',
-              borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #f093fb, #ffd700) 1',
-              boxShadow: '0 0 20px rgba(120, 255, 214, 0.15)',
-            }}
-          >
-            {/* Amount */}
-            <div className="text-center mb-5">
-              <p className="text-[7px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
-                Amount
-              </p>
-              <p
-                className="text-xl"
-                style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+        {/* Receipt — two-column layout */}
+        <div className="flex-1 flex gap-3 min-h-0">
+          {/* Left: receipt details */}
+          <div className="flex-1 flex flex-col gap-1.5">
+            {[
+              { label: 'Amount', value: `$${claimResult?.amount || walletAmount} USDC`, color: '#ffd700' },
+              { label: 'To', value: truncatedAddress, color: '#78ffd6' },
+              { label: 'Chain', value: SUPPORTED_CHAINS[selectedChain].name, color: '#667eea' },
+              { label: 'TX', value: truncatedTxHash, color: '#f093fb' },
+            ].map((row, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-2 py-1.5 border"
+                style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
               >
-                ${claimResult?.amount || walletAmount} USDC
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div className="mb-4" style={{ borderTop: '1px solid #2a2a4a' }} />
-
-            {/* Destination */}
-            <div className="mb-3">
-              <p className="text-[7px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
-                Destination
-              </p>
-              <p
-                className="text-[10px] tracking-wide break-all"
-                style={{ color: '#78ffd6', textShadow: '0 0 6px rgba(120, 255, 214, 0.3)' }}
-              >
-                {truncatedAddress}
-              </p>
-            </div>
-
-            {/* Chain */}
-            <div className="mb-3">
-              <p className="text-[7px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
-                Chain
-              </p>
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: '#667eea' }}>
-                {SUPPORTED_CHAINS[selectedChain].name}
-              </p>
-            </div>
-
-            {/* TX Hash */}
-            <div className="mb-4">
-              <p className="text-[7px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
-                TX Hash
-              </p>
-              <p className="text-[10px] tracking-wide" style={{ color: '#f093fb' }}>
-                {truncatedTxHash}
-              </p>
-            </div>
-
-            {/* QR Code for explorer link */}
-            {explorerLink && (
-              <>
-                <div className="mb-3" style={{ borderTop: '1px solid #2a2a4a' }} />
-                <div className="flex flex-col items-center gap-2">
-                  <p className="text-[7px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
-                    Scan to verify on-chain
-                  </p>
-                  <div className="bg-white p-2 rounded">
-                    <QRCodeSVG value={explorerLink} size={120} />
-                  </div>
-                </div>
-              </>
-            )}
+                <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                  {row.label}
+                </span>
+                <span className="text-[9px]" style={{ color: row.color }}>
+                  {row.value}
+                </span>
+              </div>
+            ))}
           </div>
+
+          {/* Right: QR code */}
+          {explorerLink && (
+            <div
+              className="flex flex-col items-center justify-center gap-1 px-3 border"
+              style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
+            >
+              <span className="text-[7px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                Verify
+              </span>
+              <div className="bg-white p-1.5">
+                <QRCodeSVG value={explorerLink} size={80} />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => {
-              dispatch(actions.reset())
-              router.push('/app/kiosk')
-            }}
-            className="w-full"
-          >
-            Done
-          </ArcadeButton>
-        </div>
+        {/* Button */}
+        <ArcadeButton
+          size="md"
+          variant="primary"
+          onClick={() => {
+            dispatch(actions.reset())
+            router.push('/app/kiosk')
+          }}
+          className="w-full"
+        >
+          Done
+        </ArcadeButton>
       </div>
     )
   }

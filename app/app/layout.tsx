@@ -126,12 +126,10 @@ export default function AppLayout({
   return (
     <Ki0xkProvider>
       <AutoFundOnStartup />
-      <div className="min-h-screen bg-background flex items-center justify-center p-2">
+      <div className="h-screen bg-background flex items-center justify-center p-1">
         <div
-          className="w-full max-h-[98vh]"
+          className="w-full h-full max-h-screen"
           style={{
-            maxWidth: '900px',
-            aspectRatio: '4 / 3',
             zoom: zoom !== 1 ? zoom : undefined,
           }}
         >
