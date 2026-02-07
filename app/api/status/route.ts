@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { getMode, getModeFeatures } from '@/lib/mode'
 import { getSessionSummary } from '@/lib/server/session'
 import { getPendingWalletsSummary } from '@/lib/server/settlement'
-import { autoFundIfNeeded, getAllBalances } from '@/lib/server/faucet'
+import { autoFundIfNeeded } from '@/lib/server/faucet'
 
 export async function GET() {
   try {
@@ -30,21 +30,15 @@ export async function GET() {
       wallet = { error: error instanceof Error ? error.message : 'Failed to get wallet info' }
     }
 
-    // Auto-fund on first status check (fire-and-forget)
+    // Auto-fund runs once per server lifetime (fire-and-forget)
+    // Balances are checked inside autoFundIfNeeded only on first call;
+    // use /api/faucet for on-demand balance checks
     autoFundIfNeeded().catch(() => {})
-
-    let balances = undefined
-    try {
-      balances = await getAllBalances()
-    } catch {
-      balances = { error: 'Failed to fetch balances' }
-    }
 
     return NextResponse.json({
       mode,
       features,
       wallet,
-      balances,
       serial,
       sessions: getSessionSummary(),
       pinWallets: getPendingWalletsSummary(),
