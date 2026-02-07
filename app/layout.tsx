@@ -1,13 +1,14 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import { Press_Start_2P } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const pressStart2P = Press_Start_2P({ 
+const pressStart2P = localFont({
+  src: '../public/fonts/PressStart2P.woff2',
   weight: '400',
-  subsets: ['latin'],
-  variable: '--font-pixel'
+  variable: '--font-pixel',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {

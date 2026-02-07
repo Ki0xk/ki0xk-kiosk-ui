@@ -118,11 +118,23 @@ export default function AppLayout({
 }: {
   children: React.ReactNode
 }) {
+  // NEXT_PUBLIC_ZOOM: set in .env to scale the kiosk UI (e.g. 1.5 for 10" tablet)
+  // Default: 1 (no zoom). For DIY kiosk on 10" tablet, try 1.4–1.8
+  // Alternatively, use Ctrl++ in the browser to zoom before the demo
+  const zoom = parseFloat(process.env.NEXT_PUBLIC_ZOOM || '1') || 1
+
   return (
     <Ki0xkProvider>
       <AutoFundOnStartup />
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl aspect-[3/4] max-h-[90vh]">
+      <div className="min-h-screen bg-background flex items-center justify-center p-2">
+        <div
+          className="w-full max-h-[98vh]"
+          style={{
+            maxWidth: '900px',
+            aspectRatio: '4 / 3',
+            zoom: zoom !== 1 ? zoom : undefined,
+          }}
+        >
           <PixelFrame>
             <div className="flex flex-col h-full">
               {/* Header */}
