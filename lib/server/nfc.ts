@@ -32,6 +32,10 @@ export class NfcManager {
   }
 
   async connect(): Promise<void> {
+    if (this.nfc) {
+      logger.info('NFC already initialized, skipping connect')
+      return
+    }
     let NFC: any
     try {
       // nfc-pcsc is CJS: { NFC, Reader, ... }

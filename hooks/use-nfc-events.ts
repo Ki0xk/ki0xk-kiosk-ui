@@ -21,11 +21,14 @@ export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptio
   const seenIds = useRef(new Set<string>())
   const callbackRef = useRef(onCardTapped)
   callbackRef.current = onCardTapped
+  const enabledRef = useRef(enabled)
+  enabledRef.current = enabled
 
   const features = getModeFeatures()
 
+  // Keep SSE always open when useRealNFC is true — only gate the callback with enabled
   useEffect(() => {
-    if (!features.useRealNFC || !enabled) return
+    if (!features.useRealNFC) return
 
     const eventSource = new EventSource('/api/hardware/nfc/events')
 
@@ -38,7 +41,8 @@ export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptio
         if (seenIds.current.has(event.id)) return
         seenIds.current.add(event.id)
 
-        if (callbackRef.current) {
+        // Only fire callback when enabled
+        if (enabledRef.current && callbackRef.current) {
           callbackRef.current(event.uid, event.data)
         }
       } catch {}
@@ -48,7 +52,7 @@ export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptio
       eventSource.close()
       setConnected(false)
     }
-  }, [features.useRealNFC, enabled])
+  }, [features.useRealNFC])
 
   return { connected }
 }

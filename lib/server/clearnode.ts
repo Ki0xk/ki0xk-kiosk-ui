@@ -27,6 +27,7 @@ const APP_SCOPE = 'kiosk'
 export class ClearNodeClient {
   private client: Client | null = null
   private authenticated = false
+  private _connectingPromise: Promise<void> | null = null
   private requestId = 0
   private networkConfig: unknown = null
   private mainSigner: MessageSigner | null = null
@@ -145,10 +146,18 @@ export class ClearNodeClient {
   }
 
   async ensureConnected(): Promise<void> {
-    if (!this.authenticated) {
+    if (this.authenticated) return
+    // Deduplicate concurrent callers — only one connect sequence runs
+    if (this._connectingPromise) return this._connectingPromise
+    this._connectingPromise = (async () => {
       await this.connect()
       await this.getConfig()
       await this.authenticate()
+    })()
+    try {
+      await this._connectingPromise
+    } finally {
+      this._connectingPromise = null
     }
   }
 
@@ -318,11 +327,12 @@ export class ClearNodeClient {
   }
 }
 
-let _instance: ClearNodeClient | null = null
+// Use globalThis to survive Next.js hot-reload
+const globalForClearNode = globalThis as unknown as { __clearNodeClient?: ClearNodeClient }
 
 export function getClearNode(): ClearNodeClient {
-  if (!_instance) {
-    _instance = new ClearNodeClient()
+  if (!globalForClearNode.__clearNodeClient) {
+    globalForClearNode.__clearNodeClient = new ClearNodeClient()
   }
-  return _instance
+  return globalForClearNode.__clearNodeClient
 }

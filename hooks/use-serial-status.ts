@@ -23,7 +23,8 @@ export function useSerialStatus(pollIntervalMs = 10000): SerialStatus {
 
     const poll = async () => {
       try {
-        const res = await fetch('/api/status')
+        // Use lightweight hardware status endpoint (no ClearNode/balance fetching)
+        const res = await fetch('/api/hardware/status')
         const data = await res.json()
         if (!cancelled) {
           setConnected(data.serial?.connected ?? false)
