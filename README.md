@@ -247,6 +247,168 @@ cd ki0xk-payment-kiosk && pnpm rebuild
 
 ---
 
+## DIY Kiosk Hardware Setup
+
+Turn an Android tablet + a Linux mini-PC into a portable Ki0xk payment kiosk for local ATMs, festivals, pop-up events, hackathons, and offline-first deployments.
+
+The design separates peripherals from logic — all trusted code runs on the mini-PC. The tablet is a dumb peripheral (screen, touch, camera).
+
+> For hardware support, contact [@0xoucan](https://x.com/0xoucan)
+
+### Architecture
+
+```
+Android Tablet (USB)
+ ├─ Touch / Pen input     → Weylus (tablet as touchscreen)
+ ├─ Front camera          → scrcpy → v4l2loopback → QR scanner
+ └─ USB networking        → ADB reverse (localhost access)
+
+Linux Mini-PC
+ ├─ Ki0xk UI              → Firefox (kiosk mode) or Chromium
+ ├─ NFC Reader            → USB PC/SC (pcscd)
+ ├─ Coin Acceptor         → Arduino Uno (serial JSON)
+ ├─ Off-chain accounting  → Yellow Network
+ └─ On-chain settlement   → Circle Arc / Gateway
+```
+
+### Hardware Required
+
+| Component | Notes |
+|-----------|-------|
+| Linux mini-PC (x86_64) | Ubuntu / Linux Mint recommended |
+| Android tablet | USB, front camera |
+| USB NFC reader | PC/SC compatible (e.g. ACR122U) |
+| Arduino Uno | Or compatible board |
+| Pulse-based coin acceptor | Electronic, pulse output |
+| USB cables | Tablet, Arduino, NFC reader |
+| **Dummy HDMI plug** | Display emulator for headless boots (critical for unattended reboots) |
+
+### Software Prerequisites (Linux)
+
+```bash
+sudo apt update
+sudo apt install -y \
+  adb scrcpy v4l2loopback-dkms v4l-utils \
+  pcscd pcsc-tools libpcsclite1 libpcsclite-dev
+```
+
+> `scrcpy` may require `snap install scrcpy` on some distros if not in apt.
+
+### Android Tablet Setup
+
+1. Enable Developer Options + USB Debugging
+2. Connect tablet via USB, accept ADB RSA prompt
+3. Verify: `adb devices` — should show `XXXXXXXX    device`
+
+### NFC Reader
+
+See [NFC Reader Setup (Linux)](#nfc-reader-setup-linux) above.
+
+**Why not tablet NFC?**
+
+| Method | Status | Reason |
+|--------|--------|--------|
+| Android Web NFC | Not used | Browser-limited, unreliable |
+| Android native NFC | Not used | Requires custom app |
+| USB NFC (PC/SC) | Used | Stable, kiosk-grade, works with any card |
+
+### Arduino Coinslot
+
+Pulse-based electronic coin acceptor connected to an Arduino Uno. Emits JSON events over serial at 115200 baud.
+
+Full firmware and wiring: [Ki0xk Coinslot repo](https://github.com/Ki0xk/Coinslot)
+
+```
+[ Coin Inserted ] → Coin Acceptor (pulse) → Arduino Uno (interrupt) → USB Serial → Ki0xk Backend
+```
+
+**Serial output:**
+```json
+{"type":"status","msg":"READY coin-pulse reader"}
+{"type":"coin","pulses":1,"value":1,"ok":true}
+{"type":"coin","pulses":7,"value":2,"ok":true}
+{"type":"coin","pulses":13,"value":5,"ok":true}
+```
+
+**Wiring:** Coin acceptor pulse → Arduino Pin 2 (interrupt). Shared GND. Acceptor powered by external 5V adapter, Arduino via USB.
+
+**Build & upload:**
+```bash
+cd Coinslot
+pio run -e uno --target upload    # Build + upload
+pio device monitor -b 115200      # Monitor serial
+```
+
+### Startup Script
+
+Create `~/.local/bin/ki0xk-startup.sh` and add to Startup Applications (`bash -lc "$HOME/.local/bin/ki0xk-startup.sh"`):
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+sleep 15  # Wait for desktop + USB to initialize
+
+# ADB
+adb start-server
+for i in {1..60}; do
+  adb devices | awk 'NR>1 && $2=="device"{found=1} END{exit !found}' && break
+  sleep 2
+done
+
+# Port forwarding (Ki0xk UI on mini-PC → tablet browser)
+adb reverse tcp:3000 tcp:3000 || true
+
+# Weylus — tablet as touchscreen (https://github.com/nickelc/weylus)
+# Default ports: 1701 (web), 9001 (websocket)
+adb reverse tcp:1701 tcp:1701 || true
+adb reverse tcp:9001 tcp:9001 || true
+weylus &
+
+# Virtual webcam for QR scanning via tablet front camera
+sudo -n modprobe v4l2loopback \
+  devices=1 video_nr=2 card_label="TabletCam" exclusive_caps=1
+
+pkill -f "scrcpy.*--video-source=camera" || true
+scrcpy \
+  --video-source=camera \
+  --camera-facing=front \
+  --max-size=1280 \
+  --video-bit-rate=8M \
+  --v4l2-sink=/dev/video2 \
+  --no-audio --no-control --stay-awake \
+  >/dev/null 2>&1 &
+```
+
+**What this does:**
+- **ADB reverse** — the tablet browser accesses `localhost:3000` to reach the Ki0xk UI running on the mini-PC
+- **Weylus** — turns the tablet into a USB touchscreen for the mini-PC (ports 1701/9001 are Weylus defaults, not Ki0xk)
+- **scrcpy + v4l2loopback** — pipes the tablet's front camera as a virtual webcam (`/dev/video2`) so Firefox on the mini-PC can use it for QR scanning via `navigator.mediaDevices.getUserMedia()`
+
+### QR Scanning
+
+Verify the virtual camera: `v4l2-ctl --list-devices` — should show `TabletCam`.
+
+Firefox/Chromium sees it as a normal webcam. The kiosk UI uses `html5-qrcode` to scan Ethereum addresses (`0x...`) and ENS names (`name.eth`).
+
+### Headless Reboots
+
+Without a monitor connected, the mini-PC may not start a graphical session — Weylus and Firefox kiosk will fail. **Always use a dummy HDMI plug** for unattended kiosks. This is standard practice for ATMs, POS terminals, and festival kiosks.
+
+### Summary
+
+| Component | Role |
+|-----------|------|
+| Android tablet | Touchscreen (Weylus) + QR camera (scrcpy) |
+| Linux mini-PC | Runs Ki0xk UI, NFC, coinslot, all backend logic |
+| USB NFC reader | Deterministic card reads via PC/SC |
+| Arduino + coin acceptor | Physical cash input |
+| Dummy HDMI plug | Reliable unattended reboots |
+
+No tablet apps. No cloud dependencies. No hardcoded users. USB-only, offline-friendly operation.
+
+---
+
 ## Demo Modes
 
 | Mode | Coin Input | NFC | Transfers | Gateway | Deploy Target |
@@ -428,6 +590,12 @@ Part of **Ki0xk**, built for [HackMoney](https://hackmoney.ethglobal.com/).
 | **Yellow Network** | ClearNode SDK, unified balance, EIP-712 sessions | Off-chain USDC accounting for ATM — instant, gasless session-based transfers that settle on-chain when users withdraw |
 | **Circle / Arc** | Arc Bridge (CCTP), Circle Gateway, Arc Testnet | ATM: cross-chain USDC delivery via CCTP to 7 chains. Festival: merchant payouts via Gateway EIP-712 burn+mint with just-in-time funding |
 | **ENS** | viem `getEnsAddress` + `normalize` | Human-readable wallet addresses — users type `name.eth` instead of hex addresses, resolved server-side on Ethereum mainnet |
+
+---
+
+## Support
+
+For hardware setup help, DIY kiosk questions, or collaboration: [@0xoucan](https://x.com/0xoucan)
 
 ---
 
