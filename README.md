@@ -140,11 +140,23 @@ Arduino Coinslot  →  Yellow Network (off-chain balance)  →  Arc Bridge (CCTP
 
 Cashless payments at events using NFC wristbands/cards. Three flows:
 
-**Admin top-up (cashier):** Enter amount → tap NFC card → new card: set PIN → balance loaded. Existing card: balance added directly.
+**Admin dashboard (cashier):** PIN-protected with 4 tabs:
+- **Top-Up** — enter amount (presets: $0.10, $0.50, $1.00 or custom) → tap NFC card → new card: set PIN → balance loaded. Existing card: balance added directly
+- **Balance** — tap any card to view balance, total loaded, total spent
+- **Gateway** — view unified Gateway balance, deposit Arc USDC ($1/$5/$10 presets)
+- **Stats** — total cards issued, total balance, total loaded, total spent
 
-**Self-service top-up:** Insert coins (Arduino coinslot) → tap NFC card → balance added.
+**Self-service (public terminal):** Three flows:
+- **Pay** — select merchant → build cart (preset products with qty) → tap NFC card → enter PIN → confirm → Gateway burn+mint → USDC to merchant
+- **Add Balance** — insert coins (Arduino coinslot) → tap NFC card → balance added
+- **Check Balance** — tap card → view balance, loaded, spent
 
-**Merchant payment:** Select merchant → build cart (preset products) → tap NFC card → enter PIN → confirm → Circle Gateway burn+mint → USDC delivered to merchant wallet.
+**Merchant product catalog:** Each merchant has 3 preset products at testnet prices:
+| Merchant | Products | Prices (USDC) |
+|----------|----------|---------------|
+| Beers | Small / Medium / Large | 0.01 / 0.02 / 0.05 |
+| Food | Snack / Meal / Combo | 0.01 / 0.02 / 0.05 |
+| Merch | Sticker / T-Shirt / Hoodie | 0.01 / 0.02 / 0.05 |
 
 ```
 NFC Card (UID)  →  Festival Card (server)  →  Circle Gateway (burn)  →  Merchant wallet (mint)
@@ -152,9 +164,9 @@ NFC Card (UID)  →  Festival Card (server)  →  Circle Gateway (burn)  →  Me
 
 **NFC card stores:** Only the hardware UID (no NDEF write needed — works with any NFC card/tag including MIFARE Classic).
 
-**Festival cards:** Server-side balance tracking with SHA-256 PIN hashing. Card UID = wallet ID.
+**Festival cards:** Server-side balance tracking with SHA-256 PIN hashing. Card UID = wallet ID. Persisted to `festival-cards.json` with in-memory cache.
 
-**Merchant payouts:** Real USDC delivered via Circle Gateway to merchant's preferred chain.
+**Merchant payouts:** Real USDC delivered via Circle Gateway to merchant's preferred chain. Merchants configured via env vars (`MERCHANT_BEERS_ADDRESS`, etc.).
 
 ### Online Demo Mode
 
@@ -438,7 +450,8 @@ All modes perform **real USDC transfers**. All modes support **NFC card wallets*
 
 | Route | Method | Purpose |
 |-------|--------|---------|
-| `/api/festival/card` | POST | Card CRUD (create, set-pin, balance, topup, info, summary) |
+| `/api/festival/card` | POST | Card CRUD (create, set-pin, verify-pin, balance, topup, info, summary) |
+| `/api/festival/claim` | POST | NFC card withdrawal: verify PIN → deduct → Arc Bridge → USDC to destination |
 | `/api/festival/pay` | POST | Payment: verify PIN → deduct → Gateway burn+mint |
 | `/api/festival/merchants` | GET | List merchants from env config |
 | `/api/festival/admin/verify-pin` | POST | Verify admin PIN |
@@ -505,7 +518,7 @@ ENS names (e.g. `yourname.eth`) are resolved server-side via viem on Ethereum ma
 | Layer | Technology |
 |-------|------------|
 | Framework | Next.js 16, React 19, TypeScript 5 |
-| Styling | Tailwind CSS v4, CSS custom properties |
+| Styling | Tailwind CSS v4, CSS custom properties, viewport-relative font sizing |
 | UI | shadcn/ui (New York), Radix UI, Lucide icons |
 | State | React Context + `useReducer` |
 | Yellow Network | ClearNode WebSocket, EIP-712 auth, unified balance |
