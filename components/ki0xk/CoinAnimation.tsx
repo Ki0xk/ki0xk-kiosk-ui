@@ -21,7 +21,7 @@ export function CoinAnimation({ isAnimating, amount }: CoinAnimationProps) {
           }}
         >
           <div
-            className="w-12 h-12 flex items-center justify-center text-[8px] font-bold"
+            className="w-12 h-12 flex items-center justify-center text-[11px] font-bold"
             style={{
               background: 'linear-gradient(135deg, #ffd700, #78ffd6)',
               color: '#0a0a1a',

@@ -14,7 +14,7 @@ export default function FestivalPage() {
         >
           Festival Mode
         </h1>
-        <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+        <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
           Events & Retail
         </p>
       </div>
@@ -36,7 +36,7 @@ export default function FestivalPage() {
 
       {/* Back link */}
       <Link href="/app" className="mt-4">
-        <span className="text-[8px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
+        <span className="text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
           Back to Mode Select
         </span>
       </Link>

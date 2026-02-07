@@ -14,7 +14,7 @@ export default function ModeSelector() {
         >
           Select Mode
         </h1>
-        <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+        <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
           Choose your experience
         </p>
       </div>

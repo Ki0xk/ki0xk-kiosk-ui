@@ -29,7 +29,7 @@ export function ChainSelector({ selectedChain, onSelect }: ChainSelectorProps) {
           >
             <div className="flex flex-col items-start gap-1">
               <span
-                className="text-[10px] uppercase tracking-wider"
+                className="text-sm uppercase tracking-wider"
                 style={{
                   color: isSelected ? '#78ffd6' : '#e0e8f0',
                   textShadow: isSelected ? '0 0 8px rgba(120, 255, 214, 0.4)' : 'none',
@@ -37,7 +37,7 @@ export function ChainSelector({ selectedChain, onSelect }: ChainSelectorProps) {
               >
                 {chain.name}
               </span>
-              <span className="text-[7px]" style={{ color: '#7a7a9a' }}>
+              <span className="text-[10px]" style={{ color: '#7a7a9a' }}>
                 Chain ID: {chain.chainId}
               </span>
             </div>
@@ -51,7 +51,7 @@ export function ChainSelector({ selectedChain, onSelect }: ChainSelectorProps) {
               }}
             >
               {isSelected && (
-                <span className="text-[8px]" style={{ color: '#0a0a1a' }}>
+                <span className="text-[11px]" style={{ color: '#0a0a1a' }}>
                   +
                 </span>
               )}

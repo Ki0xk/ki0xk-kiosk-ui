@@ -58,7 +58,7 @@ export function Toast({ message, type, isVisible, onClose, duration = 3000 }: To
         boxShadow: config.glow,
       }}
     >
-      <p className="text-[10px] uppercase tracking-wider">{message}</p>
+      <p className="text-sm uppercase tracking-wider">{message}</p>
     </div>
   )
 }

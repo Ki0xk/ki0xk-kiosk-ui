@@ -87,7 +87,7 @@ export default function NfcWalletPage() {
           >
             NFC Wallet
           </h1>
-          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Tap your NFC card to check balance
           </p>
         </div>
@@ -95,23 +95,23 @@ export default function NfcWalletPage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
           <NFCIndicator status={nfcConnected ? 'scanning' : 'ready'} />
 
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: '#667eea' }}>
+          <p className="text-sm uppercase tracking-wider" style={{ color: '#667eea' }}>
             {nfcConnected ? 'Ready — tap your card' : 'Waiting for NFC...'}
           </p>
 
-          <p className="text-[8px] text-center" style={{ color: '#78ffd6' }}>
+          <p className="text-[11px] text-center" style={{ color: '#78ffd6' }}>
             Metro card, wristband, sticker, badge — any NFC chip
           </p>
 
           {error && (
-            <p className="text-[9px] text-center px-4" style={{ color: '#ef4444' }}>
+            <p className="text-[13px] text-center px-4" style={{ color: '#ef4444' }}>
               {error}
             </p>
           )}
         </div>
 
         <a href="/app/kiosk" className="text-center">
-          <span className="text-[8px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
+          <span className="text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
             Back
           </span>
         </a>
@@ -151,7 +151,7 @@ export default function NfcWalletPage() {
           >
             Enter Your PIN
           </h1>
-          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Enter the PIN you set for this card
           </p>
         </div>
@@ -165,10 +165,10 @@ export default function NfcWalletPage() {
               boxShadow: '0 0 8px rgba(102, 126, 234, 0.15)',
             }}
           >
-            <span className="text-[8px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+            <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
               Card:{' '}
             </span>
-            <span className="text-[10px] font-mono" style={{ color: '#667eea' }}>
+            <span className="text-sm font-mono" style={{ color: '#667eea' }}>
               {cardId.length > 12 ? cardId.slice(0, 6) + '...' + cardId.slice(-4) : cardId}
             </span>
           </div>
@@ -181,7 +181,7 @@ export default function NfcWalletPage() {
           />
 
           {error && (
-            <p className="text-[9px] text-center" style={{ color: '#ef4444' }}>
+            <p className="text-[13px] text-center" style={{ color: '#ef4444' }}>
               {error}
             </p>
           )}
@@ -204,7 +204,7 @@ export default function NfcWalletPage() {
               setError('')
               setStep('nfc-tap')
             }}
-            className="w-full text-[8px] uppercase tracking-wider py-2 transition-colors"
+            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
             style={{ color: '#7a7a9a' }}
           >
             Back
@@ -240,7 +240,7 @@ export default function NfcWalletPage() {
               boxShadow: '0 0 16px rgba(102, 126, 234, 0.2)',
             }}
           >
-            <p className="text-[8px] uppercase tracking-widest mb-2" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase tracking-widest mb-2" style={{ color: '#7a7a9a' }}>
               Available Balance
             </p>
             <p
@@ -257,10 +257,10 @@ export default function NfcWalletPage() {
               className="flex-1 p-3 border-2 text-center"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
-              <p className="text-[7px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
                 Total Loaded
               </p>
-              <p className="text-[11px]" style={{ color: '#78ffd6' }}>
+              <p className="text-[15px]" style={{ color: '#78ffd6' }}>
                 ${totalLoaded}
               </p>
             </div>
@@ -268,10 +268,10 @@ export default function NfcWalletPage() {
               className="flex-1 p-3 border-2 text-center"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
-              <p className="text-[7px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
                 Total Spent
               </p>
-              <p className="text-[11px]" style={{ color: '#f093fb' }}>
+              <p className="text-[15px]" style={{ color: '#f093fb' }}>
                 ${totalSpent}
               </p>
             </div>
@@ -282,10 +282,10 @@ export default function NfcWalletPage() {
             className="p-2 border-2 text-center w-full max-w-xs"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <span className="text-[8px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+            <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
               Card:{' '}
             </span>
-            <span className="text-[10px] font-mono" style={{ color: '#667eea' }}>
+            <span className="text-sm font-mono" style={{ color: '#667eea' }}>
               {cardId}
             </span>
           </div>
@@ -331,7 +331,7 @@ export default function NfcWalletPage() {
           >
             Withdraw To
           </h1>
-          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Where should we send your ${balance} USDC?
           </p>
         </div>
@@ -358,7 +358,7 @@ export default function NfcWalletPage() {
 
         <button
           onClick={() => setStep('show-balance')}
-          className="w-full text-[8px] uppercase tracking-wider py-2 transition-colors"
+          className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
           style={{ color: '#7a7a9a' }}
         >
           Back
@@ -424,7 +424,7 @@ export default function NfcWalletPage() {
             setDestinationAddress('')
             setStep('choose-destination')
           }}
-          className="w-full text-[8px] uppercase tracking-wider py-2 transition-colors"
+          className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
           style={{ color: '#7a7a9a' }}
         >
           Back
@@ -452,10 +452,10 @@ export default function NfcWalletPage() {
           className="p-3 border-2 text-center"
           style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
         >
-          <span className="text-[8px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+          <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
             Sending to:{' '}
           </span>
-          <span className="text-[9px] font-mono" style={{ color: '#78ffd6' }}>
+          <span className="text-[13px] font-mono" style={{ color: '#78ffd6' }}>
             {destinationAddress.length > 20
               ? destinationAddress.slice(0, 10) + '...' + destinationAddress.slice(-8)
               : destinationAddress}
@@ -478,7 +478,7 @@ export default function NfcWalletPage() {
 
           <button
             onClick={() => setStep('choose-destination')}
-            className="w-full text-[8px] uppercase tracking-wider py-2 transition-colors"
+            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
             style={{ color: '#7a7a9a' }}
           >
             Back
@@ -526,7 +526,7 @@ export default function NfcWalletPage() {
           >
             Settling
           </h1>
-          <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
             Withdrawing from NFC wallet...
           </p>
         </div>
@@ -535,7 +535,7 @@ export default function NfcWalletPage() {
           <div className="w-full max-w-xs">
             <ProgressBar progress={0} isAnimating onComplete={handleSettleComplete} />
           </div>
-          <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Bridging ${balance} USDC to {SUPPORTED_CHAINS[selectedChain].name}...
           </p>
         </div>
@@ -569,7 +569,7 @@ export default function NfcWalletPage() {
             className="flex items-center justify-between p-3 border-2"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Amount
             </span>
             <span
@@ -584,10 +584,10 @@ export default function NfcWalletPage() {
             className="flex items-center justify-between p-3 border-2"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Chain
             </span>
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#e0e8f0' }}>
+            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#e0e8f0' }}>
               {SUPPORTED_CHAINS[selectedChain].name}
             </span>
           </div>
@@ -597,10 +597,10 @@ export default function NfcWalletPage() {
               className="flex items-center justify-between p-3 border-2"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
-              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                 TX Hash
               </span>
-              <span className="text-[8px] font-mono" style={{ color: '#ffd700' }}>
+              <span className="text-[11px] font-mono" style={{ color: '#ffd700' }}>
                 {claimResult.txHash.slice(0, 10) + '...' + claimResult.txHash.slice(-6)}
               </span>
             </div>
@@ -610,7 +610,7 @@ export default function NfcWalletPage() {
             <div className="flex flex-col items-center gap-2 p-3 border-2" style={{
               backgroundColor: '#0f0f24', borderColor: '#2a2a4a',
             }}>
-              <span className="text-[9px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                 Scan to verify
               </span>
               <div className="bg-white p-2 rounded">

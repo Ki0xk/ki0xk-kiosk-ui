@@ -290,7 +290,7 @@ export default function FestivalPublicPage() {
           >
             Festival Terminal
           </h1>
-          <p className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Choose an action
           </p>
         </div>
@@ -308,7 +308,7 @@ export default function FestivalPublicPage() {
         </div>
 
         <Link href="/app/festival" className="mt-4">
-          <span className="text-[8px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
+          <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>Back</span>
         </Link>
       </div>
     )
@@ -341,13 +341,13 @@ export default function FestivalPublicPage() {
                 }}
               >
                 <p className="text-sm" style={{ color: '#f093fb' }}>{m.name}</p>
-                <p className="text-[8px] uppercase mt-1" style={{ color: '#7a7a9a' }}>
+                <p className="text-[11px] uppercase mt-1" style={{ color: '#7a7a9a' }}>
                   {m.preferredChain}
                 </p>
               </button>
             ))}
             {merchants.length === 0 && (
-              <p className="text-[8px] uppercase text-center" style={{ color: '#7a7a9a' }}>
+              <p className="text-[11px] uppercase text-center" style={{ color: '#7a7a9a' }}>
                 No merchants configured
               </p>
             )}
@@ -367,7 +367,7 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col p-4 gap-3">
           <div className="text-center">
             <h2 className="text-sm" style={{ color: '#f093fb' }}>{selectedMerchant.name}</h2>
-            <p className="text-[8px] uppercase mt-1" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase mt-1" style={{ color: '#7a7a9a' }}>
               Build your order
             </p>
           </div>
@@ -385,7 +385,7 @@ export default function FestivalPublicPage() {
                 >
                   <div>
                     <p className="text-xs" style={{ color: '#e0e8f0' }}>{p.name}</p>
-                    <p className="text-[8px]" style={{ color: '#ffd700' }}>${p.price}</p>
+                    <p className="text-[11px]" style={{ color: '#ffd700' }}>${p.price}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -428,7 +428,7 @@ export default function FestivalPublicPage() {
               borderWidth: '2px',
             }}
           >
-            <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Order Total</p>
+            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Order Total</p>
             <p className="text-xl" style={{ color: '#ffd700' }}>
               ${cartTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
             </p>
@@ -446,7 +446,7 @@ export default function FestivalPublicPage() {
 
           <button
             onClick={() => setPayStep('select-merchant')}
-            className="text-[8px] uppercase tracking-wider text-center"
+            className="text-[11px] uppercase tracking-wider text-center"
             style={{ color: '#7a7a9a' }}
           >
             Back
@@ -461,7 +461,7 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
           <div className="text-center space-y-2">
             <h2 className="text-sm" style={{ color: '#f093fb' }}>Tap Your Wristband</h2>
-            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
               {'Hold near reader to pay $'}{cartTotal.toFixed(2)}
             </p>
           </div>
@@ -479,7 +479,7 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
           <div className="text-center space-y-2">
             <h2 className="text-sm" style={{ color: '#667eea' }}>Enter Your PIN</h2>
-            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
               Card: {walletId} | Balance: ${cardBalance}
             </p>
           </div>
@@ -500,7 +500,7 @@ export default function FestivalPublicPage() {
 
           <button
             onClick={() => { setPayStep('tap-card'); setPin('') }}
-            className="text-[8px] uppercase"
+            className="text-[11px] uppercase"
             style={{ color: '#7a7a9a' }}
           >
             Cancel
@@ -518,12 +518,12 @@ export default function FestivalPublicPage() {
           </div>
 
           <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Merchant</p>
+            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Merchant</p>
             <p className="text-sm" style={{ color: '#f093fb' }}>{selectedMerchant?.name}</p>
           </div>
 
           <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[8px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Items</p>
+            <p className="text-[11px] uppercase mb-2" style={{ color: '#7a7a9a' }}>Items</p>
             {cart.filter((i) => i.qty > 0).map((item) => (
               <div key={item.productId} className="flex justify-between text-xs mb-1">
                 <span style={{ color: '#e0e8f0' }}>{item.name} x{item.qty}</span>
@@ -541,9 +541,9 @@ export default function FestivalPublicPage() {
               borderWidth: '2px',
             }}
           >
-            <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total</p>
+            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total</p>
             <p className="text-xl" style={{ color: '#ffd700' }}>${cartTotal.toFixed(2)} USDC</p>
-            <p className="text-[8px] mt-1" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] mt-1" style={{ color: '#7a7a9a' }}>
               Balance after: ${(parseFloat(cardBalance) - cartTotal).toFixed(2)} USDC
             </p>
           </div>
@@ -554,7 +554,7 @@ export default function FestivalPublicPage() {
 
           <button
             onClick={() => setPayStep('enter-pin')}
-            className="text-[8px] uppercase text-center"
+            className="text-[11px] uppercase text-center"
             style={{ color: '#7a7a9a' }}
           >
             Back
@@ -569,7 +569,7 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
           <div className="text-center space-y-2">
             <h2 className="text-sm" style={{ color: '#667eea' }}>Processing Payment</h2>
-            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
               Gateway burn + mint...
             </p>
           </div>
@@ -600,14 +600,14 @@ export default function FestivalPublicPage() {
             <h2 className="text-sm" style={{ color: '#78ffd6' }}>Payment Successful</h2>
 
             <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-              <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Remaining Balance</p>
+              <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Remaining Balance</p>
               <p className="text-lg" style={{ color: '#ffd700' }}>${payResult.newBalance} USDC</p>
             </div>
 
             {payResult.txHash && (
               <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>TX Hash</p>
-                <p className="text-[8px] break-all" style={{ color: '#667eea' }}>{payResult.txHash}</p>
+                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>TX Hash</p>
+                <p className="text-[11px] break-all" style={{ color: '#667eea' }}>{payResult.txHash}</p>
               </div>
             )}
 
@@ -616,7 +616,7 @@ export default function FestivalPublicPage() {
                 href={payResult.explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[8px] uppercase underline block"
+                className="text-[11px] uppercase underline block"
                 style={{ color: '#667eea' }}
               >
                 View on Explorer
@@ -636,7 +636,7 @@ export default function FestivalPublicPage() {
       return (
         <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
           <h2 className="text-sm" style={{ color: '#ef4444' }}>Payment Failed</h2>
-          <p className="text-[10px] text-center max-w-xs" style={{ color: '#ef4444' }}>{payError}</p>
+          <p className="text-sm text-center max-w-xs" style={{ color: '#ef4444' }}>{payError}</p>
           <ArcadeButton size="md" variant="secondary" onClick={goHome}>
             Try Again
           </ArcadeButton>
@@ -653,7 +653,7 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
           <div className="text-center space-y-2">
             <h2 className="text-sm" style={{ color: '#ffd700' }}>Insert Coins</h2>
-            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
               Insert coins into the slot
             </p>
           </div>
@@ -669,7 +669,7 @@ export default function FestivalPublicPage() {
               borderWidth: '2px',
             }}
           >
-            <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Inserted</p>
+            <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Inserted</p>
             <p className="text-2xl" style={{ color: '#ffd700' }}>
               ${coinTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
             </p>
@@ -687,7 +687,7 @@ export default function FestivalPublicPage() {
 
           <button
             onClick={goHome}
-            className="text-[8px] uppercase"
+            className="text-[11px] uppercase"
             style={{ color: '#7a7a9a' }}
           >
             Cancel
@@ -702,7 +702,7 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
           <div className="text-center space-y-2">
             <h2 className="text-sm" style={{ color: '#f093fb' }}>Tap Your Wristband</h2>
-            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
               {'Hold near reader to add $'}{coinTotal.toFixed(2)}
             </p>
           </div>
@@ -759,7 +759,7 @@ export default function FestivalPublicPage() {
       return (
         <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
           <h2 className="text-sm" style={{ color: '#ef4444' }}>Top-Up Failed</h2>
-          <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
+          <p className="text-sm text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
           <ArcadeButton size="md" variant="secondary" onClick={goHome}>
             Try Again
           </ArcadeButton>
@@ -775,13 +775,13 @@ export default function FestivalPublicPage() {
         <div className="h-full flex flex-col items-center justify-center p-6 gap-6">
           <div className="text-center space-y-2">
             <h2 className="text-sm" style={{ color: '#667eea' }}>Check Balance</h2>
-            <p className="text-[8px] uppercase" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase" style={{ color: '#7a7a9a' }}>
               Tap your wristband to view balance
             </p>
           </div>
           <NFCIndicator status="scanning" />
           {balanceError && (
-            <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
+            <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
           )}
           <ArcadeButton size="sm" variant="secondary" onClick={goHome}>
             Back
@@ -805,7 +805,7 @@ export default function FestivalPublicPage() {
 
           <div className="text-center space-y-3 w-full max-w-xs">
             <div className="p-3 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-              <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
+              <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
               <p className="text-sm" style={{ color: '#667eea' }}>{checkedBalance.walletId}</p>
             </div>
 
@@ -818,7 +818,7 @@ export default function FestivalPublicPage() {
                 borderWidth: '2px',
               }}
             >
-              <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
+              <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Current Balance</p>
               <p className="text-2xl" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}>
                 ${checkedBalance.balance} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
               </p>
@@ -826,11 +826,11 @@ export default function FestivalPublicPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
+                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Loaded</p>
                 <p className="text-sm" style={{ color: '#78ffd6' }}>${checkedBalance.totalLoaded}</p>
               </div>
               <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-                <p className="text-[8px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
+                <p className="text-[11px] uppercase mb-1" style={{ color: '#7a7a9a' }}>Spent</p>
                 <p className="text-sm" style={{ color: '#f093fb' }}>${checkedBalance.totalSpent}</p>
               </div>
             </div>
@@ -852,7 +852,7 @@ export default function FestivalPublicPage() {
       return (
         <div className="h-full flex flex-col items-center justify-center p-6 gap-4">
           <h2 className="text-sm" style={{ color: '#ef4444' }}>Card Not Found</h2>
-          <p className="text-[10px] text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
+          <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
           <ArcadeButton size="md" variant="secondary" onClick={startBalanceCheck}>
             Try Again
           </ArcadeButton>

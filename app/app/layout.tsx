@@ -27,7 +27,7 @@ function SerialAutoConnect() {
         style={{ backgroundColor: connected ? '#78ffd6' : '#ef4444' }}
       />
       <span
-        className="text-[8px] uppercase tracking-wider"
+        className="text-[11px] uppercase tracking-wider"
         style={{ color: connected ? '#78ffd6' : '#ef4444' }}
       >
         {connected ? 'Arduino OK' : 'No Arduino'}
@@ -60,7 +60,7 @@ function NfcStatus() {
         style={{ backgroundColor: '#78ffd6' }}
       />
       <span
-        className="text-[8px] uppercase tracking-wider"
+        className="text-[11px] uppercase tracking-wider"
         style={{ color: '#78ffd6' }}
       >
         {label}
@@ -79,7 +79,7 @@ function StatusIndicator() {
       {!features.serialEnabled && (
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 animate-pulse" style={{ backgroundColor: '#78ffd6' }} />
-          <span className="text-[8px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
+          <span className="text-[11px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
             Online
           </span>
         </div>
@@ -96,7 +96,7 @@ function ModeLabel() {
     demo_festival: 'Festival',
   }
   return (
-    <span className="text-[7px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+    <span className="text-[10px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
       {labels[mode] || 'Online'}
     </span>
   )
@@ -113,25 +113,48 @@ function AutoFundOnStartup() {
   return null
 }
 
+function useAutoZoom() {
+  // Auto-scale UI to fill viewport. Design baseline: 800x500 effective px.
+  // NEXT_PUBLIC_ZOOM overrides auto-zoom if set (e.g. "1.5" or "auto" for default)
+  const [zoom, setZoom] = useState(1)
+
+  useEffect(() => {
+    const envZoom = process.env.NEXT_PUBLIC_ZOOM
+    // If a fixed number is set, use it
+    if (envZoom && envZoom !== 'auto' && !isNaN(Number(envZoom))) {
+      setZoom(Number(envZoom))
+      return
+    }
+
+    function update() {
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      // Scale to fill viewport based on design baseline
+      const scale = Math.min(vw / 800, vh / 500)
+      setZoom(Math.max(1, Math.min(scale, 3)))
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  return zoom
+}
+
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // NEXT_PUBLIC_ZOOM: set in .env to scale the kiosk UI (e.g. 1.5 for 10" tablet)
-  // Default: 1 (no zoom). For DIY kiosk on 10" tablet, try 1.4–1.8
-  // Alternatively, use Ctrl++ in the browser to zoom before the demo
-  const zoom = parseFloat(process.env.NEXT_PUBLIC_ZOOM || '1') || 1
+  const zoom = useAutoZoom()
 
   return (
     <Ki0xkProvider>
       <AutoFundOnStartup />
-      <div className="h-screen bg-background flex items-center justify-center p-1">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div
           className="w-full h-full max-h-screen"
-          style={{
-            zoom: zoom !== 1 ? zoom : undefined,
-          }}
+          style={{ zoom }}
         >
           <PixelFrame>
             <div className="flex flex-col h-full">
@@ -147,7 +170,7 @@ export default function AppLayout({
                 <div className="flex items-center gap-3">
                   <ModeLabel />
                   <span
-                    className="text-[8px] uppercase tracking-wider"
+                    className="text-[11px] uppercase tracking-wider"
                     style={{ color: '#ffd700', textShadow: '0 0 6px rgba(255, 215, 0, 0.4)' }}
                   >
                     Ki0xk

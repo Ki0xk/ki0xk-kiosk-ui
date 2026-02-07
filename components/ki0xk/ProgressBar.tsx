@@ -60,7 +60,7 @@ export function ProgressBar({ progress, isAnimating = false, onComplete }: Progr
           />
         ))}
       </div>
-      <p className="text-center text-[8px] text-[#7a7a9a] mt-2 uppercase">
+      <p className="text-center text-[11px] text-[#7a7a9a] mt-2 uppercase">
         {currentProgress}% Complete
       </p>
     </div>

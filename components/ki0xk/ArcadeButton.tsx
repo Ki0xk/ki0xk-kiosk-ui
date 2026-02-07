@@ -36,8 +36,8 @@ export function ArcadeButton({
   }
 
   const sizeStyles = {
-    sm: 'px-4 py-2 text-[8px]',
-    md: 'px-6 py-4 text-[10px]',
+    sm: 'px-4 py-2 text-[11px]',
+    md: 'px-6 py-4 text-sm',
     lg: 'px-8 py-5 text-xs',
   }
 

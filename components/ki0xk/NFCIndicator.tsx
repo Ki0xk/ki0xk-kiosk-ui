@@ -92,7 +92,7 @@ export function NFCIndicator({ status }: NFCIndicatorProps) {
       </div>
 
       {/* Status label */}
-      <p className={`text-[10px] uppercase tracking-wider ${config.color}`}>
+      <p className={`text-sm uppercase tracking-wider ${config.color}`}>
         {config.label}
       </p>
     </div>

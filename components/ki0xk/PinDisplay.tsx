@@ -26,7 +26,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
     <div className="w-full flex flex-col items-center gap-5">
       {/* Header */}
       <div className="text-center">
-        <p className="text-[9px] uppercase tracking-widest mb-2" style={{ color: '#7a7a9a' }}>
+        <p className="text-[13px] uppercase tracking-widest mb-2" style={{ color: '#7a7a9a' }}>
           Your Receipt
         </p>
         <div
@@ -93,7 +93,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
           borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700) 1',
         }}
       >
-        <p className="text-[9px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
+        <p className="text-[13px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
           Amount
         </p>
         <p className="text-2xl" style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}>
@@ -111,7 +111,7 @@ export function PinDisplay({ pin, walletId, amount, onDone, onPrint }: PinDispla
         }}
       >
         <p
-          className="text-[10px] uppercase tracking-wider font-bold"
+          className="text-sm uppercase tracking-wider font-bold"
           style={{
             color: '#ef4444',
             textShadow: '0 0 8px rgba(239, 68, 68, 0.5)',
