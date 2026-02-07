@@ -16,12 +16,19 @@ export async function POST() {
   try {
     const nfc = getNfcManager()
     if (nfc.connected) {
-      return NextResponse.json({ success: true, message: 'Already connected', reader: nfc.readerName })
+      return NextResponse.json({ success: true, readerReady: true, message: 'Already connected', reader: nfc.readerName })
     }
     await nfc.connect()
-    return NextResponse.json({ success: true, message: 'NFC reader connected' })
+    // PC/SC initialized but reader attaches asynchronously — wait briefly for it
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    return NextResponse.json({
+      success: true,
+      readerReady: nfc.connected,
+      reader: nfc.readerName || null,
+      message: nfc.connected ? 'NFC reader connected' : 'PC/SC initialized, waiting for reader',
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json({ success: false, readerReady: false, message }, { status: 500 })
   }
 }

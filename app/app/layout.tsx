@@ -41,12 +41,27 @@ function NfcAutoConnect() {
   const [attempted, setAttempted] = useState(false)
 
   useEffect(() => {
-    if (!features.useRealNFC || attempted) return
-    setAttempted(true)
-    fetch('/api/hardware/nfc/connect', { method: 'POST' })
-      .then((res) => res.json())
-      .then((data) => { if (data.success) setNfcConnected(true) })
-      .catch(() => {})
+    if (!features.useRealNFC) return
+
+    // Initial connect call
+    if (!attempted) {
+      setAttempted(true)
+      fetch('/api/hardware/nfc/connect', { method: 'POST' })
+        .then((res) => res.json())
+        .then((data) => { if (data.readerReady) setNfcConnected(true) })
+        .catch(() => {})
+    }
+
+    // Poll /api/hardware/status for actual reader state
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/hardware/status')
+        const data = await res.json()
+        setNfcConnected(data.nfc?.connected ?? false)
+      } catch {}
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [features.useRealNFC, attempted])
 
   if (!features.useRealNFC) return null
