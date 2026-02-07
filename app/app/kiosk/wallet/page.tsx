@@ -6,8 +6,8 @@ import { useKi0xk, actions } from '@/lib/state'
 import { SUPPORTED_CHAINS, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
 import {
   apiGetCardInfo,
-  apiGetCardBalance,
-  apiClaimPinWallet,
+  apiVerifyCardPin,
+  apiClaimNfcCard,
 } from '@/lib/api-client'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
 import { QRCodeSVG } from 'qrcode.react'
@@ -125,16 +125,17 @@ export default function NfcWalletPage() {
       setIsProcessing(true)
       setError('')
       try {
-        // Use the festival card system — verify PIN via lookup
-        const result = await apiGetCardBalance(cardId)
-        if (result.success && result.exists) {
-          // PIN verification happens during claim, for now just show balance
+        const result = await apiVerifyCardPin(cardId, pin)
+        if (result.success) {
+          setBalance(result.balance)
+          setTotalLoaded(result.totalLoaded)
+          setTotalSpent(result.totalSpent)
           setStep('show-balance')
         } else {
-          setError('Card not found')
+          setError(result.message || 'Invalid PIN')
         }
       } catch {
-        setError('Verification failed')
+        setError('Invalid PIN')
       } finally {
         setIsProcessing(false)
       }
@@ -478,7 +479,7 @@ export default function NfcWalletPage() {
       claimingStarted.current = true
       try {
         // Use the PIN wallet claim flow — same backend, NFC card walletId acts like walletId
-        const result = await apiClaimPinWallet(cardId, pin, destinationAddress, selectedChain)
+        const result = await apiClaimNfcCard(cardId, pin, destinationAddress, selectedChain)
         if (result.success) {
           setClaimResult({
             amount: result.amount,

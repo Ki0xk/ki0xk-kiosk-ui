@@ -8,6 +8,7 @@ import {
   topUp,
   getCard,
   getSummary,
+  verifyPin,
 } from '@/lib/server/festival-cards'
 
 export async function POST(request: Request) {
@@ -28,6 +29,24 @@ export async function POST(request: Request) {
         }
         const result = setPin(walletId, pin)
         return NextResponse.json(result)
+      }
+
+      case 'verify-pin': {
+        const { walletId, pin } = body
+        if (!walletId || !pin) {
+          return NextResponse.json({ success: false, message: 'walletId and pin required' }, { status: 400 })
+        }
+        const valid = verifyPin(walletId, pin)
+        if (!valid) {
+          return NextResponse.json({ success: false, message: 'Invalid PIN' }, { status: 401 })
+        }
+        const cardData = getCard(walletId)
+        return NextResponse.json({
+          success: true,
+          balance: cardData?.balance || '0',
+          totalLoaded: cardData?.totalLoaded || '0',
+          totalSpent: cardData?.totalSpent || '0',
+        })
       }
 
       case 'balance': {

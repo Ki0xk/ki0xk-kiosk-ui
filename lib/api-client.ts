@@ -91,6 +91,20 @@ export async function apiClaimPinWallet(
   return post('/api/pin/claim', { walletId, pin, destination, targetChainKey })
 }
 
+export async function apiClaimNfcCard(
+  walletId: string,
+  pin: string,
+  destination: string,
+  targetChainKey: string
+): Promise<{
+  success: boolean
+  amount: string
+  bridgeResult?: { success: boolean; txHash?: string; txStatus?: string; explorerUrl?: string }
+  message: string
+}> {
+  return post('/api/festival/claim', { walletId, pin, destination, targetChainKey })
+}
+
 // Faucet / balance helpers
 export async function apiGetBalances(): Promise<{
   arc: { usdc: string; usdcRaw: string }
@@ -148,6 +162,16 @@ export async function apiSetCardPin(walletId: string, pin: string): Promise<{
   message: string
 }> {
   return post('/api/festival/card', { action: 'set-pin', walletId, pin })
+}
+
+export async function apiVerifyCardPin(walletId: string, pin: string): Promise<{
+  success: boolean
+  balance: string
+  totalLoaded: string
+  totalSpent: string
+  message?: string
+}> {
+  return post('/api/festival/card', { action: 'verify-pin', walletId, pin })
 }
 
 export async function apiGetCardBalance(walletId: string): Promise<{
