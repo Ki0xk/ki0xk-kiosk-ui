@@ -123,7 +123,7 @@ export default function BuyPage() {
           <button
             onClick={() => setStep('processing')}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Next ›
           </button>
@@ -240,7 +240,7 @@ export default function BuyPage() {
             onClick={() => setStep('confirm-amount')}
             disabled={state.totalDepositedUSDC <= 0}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: state.totalDepositedUSDC > 0 ? '#78ffd6' : '#3a3a5a', borderColor: state.totalDepositedUSDC > 0 ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: state.totalDepositedUSDC > 0 ? '#ffd700' : '#3a3a5a', borderColor: state.totalDepositedUSDC > 0 ? '#ffd700' : '#3a3a5a' }}
           >
             Next ›
           </button>
@@ -288,7 +288,7 @@ export default function BuyPage() {
           <button
             onClick={() => setStep('choose-destination')}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Next ›
           </button>
@@ -555,7 +555,7 @@ export default function BuyPage() {
               setStep('settling')
             }}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Send ›
           </button>
@@ -674,7 +674,7 @@ export default function BuyPage() {
               router.push('/app/kiosk')
             }}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
           </button>
@@ -874,7 +874,7 @@ export default function BuyPage() {
               onClick={() => { setNfcPinConfirm(''); setNfcError(''); setNfcPinStage('confirm') }}
               disabled={nfcPin.length < 4}
               className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-              style={{ color: nfcPin.length >= 4 ? '#78ffd6' : '#3a3a5a', borderColor: nfcPin.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+              style={{ color: nfcPin.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: nfcPin.length >= 4 ? '#ffd700' : '#3a3a5a' }}
             >
               Next ›
             </button>
@@ -883,7 +883,7 @@ export default function BuyPage() {
               onClick={handleSave}
               disabled={nfcProcessing || nfcPinConfirm.length < 4}
               className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-              style={{ color: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#78ffd6' : '#3a3a5a', borderColor: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+              style={{ color: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#ffd700' : '#3a3a5a' }}
             >
               {nfcProcessing ? 'Wait...' : 'Save ›'}
             </button>
@@ -949,7 +949,7 @@ export default function BuyPage() {
               router.push('/app/kiosk')
             }}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
           </button>

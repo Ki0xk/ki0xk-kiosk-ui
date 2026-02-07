@@ -241,7 +241,7 @@ export default function FestivalAdminPage() {
             onClick={handleAdminPinSubmit}
             disabled={adminPin.length < 4}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: adminPin.length >= 4 ? '#78ffd6' : '#3a3a5a', borderColor: adminPin.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: adminPin.length >= 4 ? '#ffd700' : '#3a3a5a', borderColor: adminPin.length >= 4 ? '#ffd700' : '#3a3a5a' }}
           >
             Login ›
           </button>

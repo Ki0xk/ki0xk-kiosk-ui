@@ -168,7 +168,7 @@ export default function NfcWalletPage() {
             onClick={handleVerifyPin}
             disabled={pin.length < 4 || isProcessing}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: pin.length >= 4 && !isProcessing ? '#78ffd6' : '#3a3a5a', borderColor: pin.length >= 4 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: pin.length >= 4 && !isProcessing ? '#ffd700' : '#3a3a5a', borderColor: pin.length >= 4 && !isProcessing ? '#ffd700' : '#3a3a5a' }}
           >
             {isProcessing ? 'Wait...' : 'Go ›'}
           </button>
@@ -236,7 +236,7 @@ export default function NfcWalletPage() {
             onClick={() => setStep('choose-destination')}
             disabled={parseFloat(balance) <= 0}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: parseFloat(balance) > 0 ? '#78ffd6' : '#3a3a5a', borderColor: parseFloat(balance) > 0 ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: parseFloat(balance) > 0 ? '#ffd700' : '#3a3a5a', borderColor: parseFloat(balance) > 0 ? '#ffd700' : '#3a3a5a' }}
           >
             Send ›
           </button>
@@ -447,7 +447,7 @@ export default function NfcWalletPage() {
           <button
             onClick={() => setStep('settling')}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Send ›
           </button>
@@ -550,7 +550,7 @@ export default function NfcWalletPage() {
               router.push('/app/kiosk')
             }}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
           </button>

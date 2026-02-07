@@ -88,7 +88,7 @@ export default function ClaimPage() {
             onClick={handlePinSubmit}
             disabled={pin.length !== 6 || isProcessing}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: pin.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a', borderColor: pin.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: pin.length === 6 && !isProcessing ? '#ffd700' : '#3a3a5a', borderColor: pin.length === 6 && !isProcessing ? '#ffd700' : '#3a3a5a' }}
           >
             {isProcessing ? 'Wait...' : 'Submit ›'}
           </button>
@@ -130,7 +130,7 @@ export default function ClaimPage() {
             onClick={() => { setError(''); setStep('enter-pin') }}
             disabled={walletId.length !== 6}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: walletId.length === 6 ? '#78ffd6' : '#3a3a5a', borderColor: walletId.length === 6 ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: walletId.length === 6 ? '#ffd700' : '#3a3a5a', borderColor: walletId.length === 6 ? '#ffd700' : '#3a3a5a' }}
           >
             Next ›
           </button>
@@ -172,7 +172,7 @@ export default function ClaimPage() {
           <button
             onClick={() => setStep('choose-destination')}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Claim ›
           </button>
@@ -384,7 +384,7 @@ export default function ClaimPage() {
           <button
             onClick={() => setStep('settling')}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Send ›
           </button>
@@ -506,7 +506,7 @@ export default function ClaimPage() {
               router.push('/app/kiosk')
             }}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+            style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
             Done ›
           </button>
