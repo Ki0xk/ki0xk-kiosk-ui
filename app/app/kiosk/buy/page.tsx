@@ -883,7 +883,7 @@ export default function BuyPage() {
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          <NFCIndicator scanning={!nfcProcessing} />
+          <NFCIndicator status={nfcProcessing ? 'ready' : 'scanning'} />
 
           <div className="text-center space-y-2">
             <p className="text-[10px] uppercase tracking-wider" style={{ color: '#667eea' }}>

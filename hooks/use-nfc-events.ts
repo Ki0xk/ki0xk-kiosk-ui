@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { getModeFeatures } from '@/lib/mode'
+import { getMode, getModeFeatures } from '@/lib/mode'
 
 interface NfcTapEvent {
   id: string
@@ -19,9 +19,9 @@ interface UseNfcEventsOptions {
 type NfcSource = 'none' | 'pcsc' | 'webnfc'
 
 /**
- * NFC hook with automatic fallback:
- * 1. PC/SC via SSE (server-side USB reader — festival/kiosk mode only)
- * 2. Web NFC API (phone's built-in NFC — works in all modes on Android Chrome)
+ * NFC hook with two strategies:
+ * 1. PC/SC via SSE (server-side USB reader — kiosk/festival mode)
+ * 2. Web NFC API (phone's built-in NFC — online demo mode only)
  */
 export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptions = {}) {
   const [connected, setConnected] = useState(false)
@@ -33,47 +33,65 @@ export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptio
   enabledRef.current = enabled
 
   const features = getModeFeatures()
+  const mode = getMode()
 
-  // ---- Strategy 1: PC/SC via SSE (USB NFC reader, festival mode only) ----
+  // ---- Strategy 1: PC/SC via SSE (USB NFC reader, kiosk/festival mode) ----
   useEffect(() => {
     if (!features.useRealNFC) return
 
-    let sseConnected = false
-    const eventSource = new EventSource('/api/hardware/nfc/events')
+    let active = true
+    let eventSource: EventSource | null = null
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
-    eventSource.onopen = () => {
-      sseConnected = true
-      setConnected(true)
-      setSource('pcsc')
-    }
-    eventSource.onerror = () => {
-      sseConnected = false
-      setConnected(false)
-    }
+    function connect() {
+      if (!active) return
+      eventSource = new EventSource('/api/hardware/nfc/events')
 
-    eventSource.onmessage = (e) => {
-      try {
-        const event: NfcTapEvent = JSON.parse(e.data)
-        if (seenIds.current.has(event.id)) return
-        seenIds.current.add(event.id)
+      eventSource.onopen = () => {
+        if (!active) return
+        setConnected(true)
+        setSource('pcsc')
+      }
 
-        if (enabledRef.current && callbackRef.current) {
-          callbackRef.current(event.uid, event.data)
+      eventSource.onerror = () => {
+        if (!active) return
+        setConnected(false)
+        // EventSource auto-reconnects for most errors, but if it closes
+        // permanently (readyState === CLOSED), reconnect manually
+        if (eventSource?.readyState === EventSource.CLOSED) {
+          reconnectTimer = setTimeout(connect, 2000)
         }
-      } catch {}
+      }
+
+      eventSource.onmessage = (e) => {
+        try {
+          const event: NfcTapEvent = JSON.parse(e.data)
+          if (seenIds.current.has(event.id)) return
+          seenIds.current.add(event.id)
+
+          if (enabledRef.current && callbackRef.current) {
+            callbackRef.current(event.uid, event.data)
+          }
+        } catch {}
+      }
     }
+
+    connect()
 
     return () => {
-      eventSource.close()
-      if (sseConnected) setConnected(false)
+      active = false
+      eventSource?.close()
+      if (reconnectTimer) clearTimeout(reconnectTimer)
+      setConnected(false)
     }
   }, [features.useRealNFC])
 
-  // ---- Strategy 2: Web NFC API (phone's built-in NFC — all modes) ----
+  // ---- Strategy 2: Web NFC API (phone NFC — online demo mode ONLY) ----
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (!('NDEFReader' in window)) return
-    // Skip if PC/SC already connected
+    // Only use Web NFC in online demo mode (no USB hardware)
+    if (mode !== 'demo_online') return
     if (source === 'pcsc') return
 
     const timer = setTimeout(async () => {
@@ -104,10 +122,10 @@ export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptio
       } catch (err) {
         console.warn('Web NFC not available:', err)
       }
-    }, features.useRealNFC ? 3000 : 500)
+    }, 500)
 
     return () => clearTimeout(timer)
-  }, [features.useRealNFC, source])
+  }, [mode, source])
 
   return { connected, source }
 }

@@ -16,6 +16,8 @@ export async function GET() {
   const nfc = getNfcManager()
 
   const encoder = new TextEncoder()
+  let cleanup: (() => void) | null = null
+
   const stream = new ReadableStream({
     start(controller) {
       const heartbeat = setInterval(() => {
@@ -35,12 +37,14 @@ export async function GET() {
         }
       })
 
-      ;(controller as any)._cleanup = () => {
+      cleanup = () => {
         unsubscribe()
         clearInterval(heartbeat)
       }
     },
-    cancel() {},
+    cancel() {
+      cleanup?.()
+    },
   })
 
   return new Response(stream, {
