@@ -29,7 +29,7 @@ export default function ClaimPage() {
   const router = useRouter()
   const { dispatch } = useKi0xk()
 
-  const [step, setStep] = useState<ClaimStep>('enter-pin')
+  const [step, setStep] = useState<ClaimStep>('enter-wallet-id')
   const [pin, setPin] = useState('')
   const [walletId, setWalletId] = useState('')
   const [walletAmount, setWalletAmount] = useState('')
@@ -49,40 +49,7 @@ export default function ClaimPage() {
 
   // ── enter-pin ──────────────────────────────────────────────────────────
   if (step === 'enter-pin') {
-    return (
-      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
-        {/* iOS-style header: Back | Title | Submit */}
-        <div className="flex items-center justify-between px-1">
-          <a href="/app/kiosk" className="text-[11px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
-            ‹ Back
-          </a>
-          <h1
-            className="text-sm"
-            style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
-          >
-            Enter PIN
-          </h1>
-          <button
-            onClick={() => { setError(''); setStep('enter-wallet-id') }}
-            disabled={pin.length !== 6}
-            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: pin.length === 6 ? '#78ffd6' : '#3a3a5a', borderColor: pin.length === 6 ? '#78ffd6' : '#3a3a5a' }}
-          >
-            Submit ›
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex items-center justify-center min-h-0">
-          <PinKeypad value={pin} onChange={setPin} maxLength={6} />
-        </div>
-      </div>
-    )
-  }
-
-  // ── enter-wallet-id ────────────────────────────────────────────────────
-  if (step === 'enter-wallet-id') {
-    const handleWalletIdSubmit = async () => {
+    const handlePinSubmit = async () => {
       setIsProcessing(true)
       setError('')
       try {
@@ -105,7 +72,7 @@ export default function ClaimPage() {
         {/* iOS-style header: Back | Title | Submit */}
         <div className="flex items-center justify-between px-1">
           <button
-            onClick={() => { setError(''); setWalletId(''); setStep('enter-pin') }}
+            onClick={() => { setError(''); setPin(''); setStep('enter-wallet-id') }}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
           >
@@ -115,13 +82,13 @@ export default function ClaimPage() {
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            Wallet ID
+            Enter PIN
           </h1>
           <button
-            onClick={handleWalletIdSubmit}
-            disabled={walletId.length !== 6 || isProcessing}
+            onClick={handlePinSubmit}
+            disabled={pin.length !== 6 || isProcessing}
             className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
-            style={{ color: walletId.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a', borderColor: walletId.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+            style={{ color: pin.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a', borderColor: pin.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
           >
             {isProcessing ? 'Wait...' : 'Submit ›'}
           </button>
@@ -129,7 +96,7 @@ export default function ClaimPage() {
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center min-h-0">
-          <WalletIdKeypad value={walletId} onChange={setWalletId} maxLength={6} />
+          <PinKeypad value={pin} onChange={setPin} maxLength={6} />
         </div>
 
         {/* Error message */}
@@ -140,6 +107,39 @@ export default function ClaimPage() {
             </p>
           </div>
         )}
+      </div>
+    )
+  }
+
+  // ── enter-wallet-id ────────────────────────────────────────────────────
+  if (step === 'enter-wallet-id') {
+    return (
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+        {/* iOS-style header: Back | Title | Next */}
+        <div className="flex items-center justify-between px-1">
+          <a href="/app/kiosk" className="text-[11px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}>
+            ‹ Back
+          </a>
+          <h1
+            className="text-sm"
+            style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+          >
+            Wallet ID
+          </h1>
+          <button
+            onClick={() => { setError(''); setStep('enter-pin') }}
+            disabled={walletId.length !== 6}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: walletId.length === 6 ? '#78ffd6' : '#3a3a5a', borderColor: walletId.length === 6 ? '#78ffd6' : '#3a3a5a' }}
+          >
+            Next ›
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex items-center justify-center min-h-0">
+          <WalletIdKeypad value={walletId} onChange={setWalletId} maxLength={6} />
+        </div>
       </div>
     )
   }
@@ -223,7 +223,7 @@ export default function ClaimPage() {
               setWalletId('')
               setWalletAmount('')
               setError('')
-              setStep('enter-pin')
+              setStep('enter-wallet-id')
             }}
             className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
             style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
