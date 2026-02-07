@@ -169,14 +169,27 @@ export async function claimFaucets(): Promise<FaucetClaimResult> {
 
 /**
  * Auto-fund if balances are below thresholds.
- * Runs once per server lifetime. Silent — never throws.
+ * Runs on startup, then repeats every 2.5 hours (faucet cooldown).
+ * Silent — never throws.
  */
-const globalForFaucet = globalThis as unknown as { __autoFundAttempted?: boolean }
+const FAUCET_INTERVAL_MS = 2.5 * 60 * 60 * 1000 // 2.5 hours
+
+const globalForFaucet = globalThis as unknown as {
+  __autoFundStarted?: boolean
+}
 
 export async function autoFundIfNeeded(): Promise<void> {
-  if (globalForFaucet.__autoFundAttempted) return
-  globalForFaucet.__autoFundAttempted = true
+  if (globalForFaucet.__autoFundStarted) return
+  globalForFaucet.__autoFundStarted = true
 
+  // Run immediately, then schedule recurring
+  await runFaucetCheck()
+  setInterval(() => {
+    runFaucetCheck().catch(() => {})
+  }, FAUCET_INTERVAL_MS)
+}
+
+async function runFaucetCheck(): Promise<void> {
   try {
     const balances = await getAllBalances()
     const arcAmount = parseFloat(balances.arc.usdc)
@@ -187,21 +200,18 @@ export async function autoFundIfNeeded(): Promise<void> {
         arc: balances.arc.usdc,
         yellow: balances.yellow.amount,
       })
-      return
+    } else {
+      logger.info('Low balance detected, attempting faucet claims', {
+        arc: balances.arc.usdc,
+        yellow: balances.yellow.amount,
+      })
+
+      const address = getKioskAddress()
+      const promises: Promise<unknown>[] = []
+      if (yellowAmount < 1.0) promises.push(claimYellowFaucet(address))
+      if (arcAmount < 1.0) promises.push(claimCircleFaucet(address))
+      await Promise.allSettled(promises)
     }
-
-    logger.info('Low balance detected, attempting faucet claims', {
-      arc: balances.arc.usdc,
-      yellow: balances.yellow.amount,
-    })
-
-    const address = getKioskAddress()
-
-    const promises: Promise<unknown>[] = []
-    if (yellowAmount < 1.0) promises.push(claimYellowFaucet(address))
-    if (arcAmount < 1.0) promises.push(claimCircleFaucet(address))
-
-    await Promise.allSettled(promises)
 
     // Auto-fund Gateway for festival mode (deposit 1 USDC if empty)
     if (getMode() === 'demo_festival') {
