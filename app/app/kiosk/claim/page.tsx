@@ -50,7 +50,7 @@ export default function ClaimPage() {
   // ── enter-pin ──────────────────────────────────────────────────────────
   if (step === 'enter-pin') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -59,18 +59,18 @@ export default function ClaimPage() {
           >
             Enter Your PIN
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             6-digit PIN from your receipt
           </p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center min-h-0">
           <PinKeypad value={pin} onChange={setPin} maxLength={6} />
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <ArcadeButton
             size="md"
             variant="primary"
@@ -115,7 +115,7 @@ export default function ClaimPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -124,13 +124,13 @@ export default function ClaimPage() {
           >
             Enter Wallet ID
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
+          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             6-character code from your receipt
           </p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center min-h-0">
           <WalletIdKeypad value={walletId} onChange={setWalletId} maxLength={6} />
         </div>
 
@@ -144,7 +144,7 @@ export default function ClaimPage() {
         )}
 
         {/* Action buttons */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <ArcadeButton
             size="md"
             variant="primary"
@@ -365,7 +365,7 @@ export default function ClaimPage() {
   // ── ens-input ──────────────────────────────────────────────────────────
   if (step === 'ens-input') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
@@ -374,13 +374,10 @@ export default function ClaimPage() {
           >
             Enter ENS
           </h1>
-          <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: '#7a7a9a' }}>
-            Type ENS or address
-          </p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 min-h-0">
           <OnScreenKeyboard
             value={destinationAddress}
             onChange={setDestinationAddress}
@@ -394,18 +391,16 @@ export default function ClaimPage() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={() => {
-              setDestinationAddress('')
-              setStep('choose-destination')
-            }}
-            className="text-center text-[11px] uppercase tracking-wider transition-colors"
-            style={{ color: '#7a7a9a' }}
-          >
-            Go Back
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setDestinationAddress('')
+            setStep('choose-destination')
+          }}
+          className="text-center text-[11px] uppercase tracking-wider py-1 transition-colors"
+          style={{ color: '#7a7a9a' }}
+        >
+          Go Back
+        </button>
       </div>
     )
   }

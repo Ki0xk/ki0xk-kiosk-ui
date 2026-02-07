@@ -29,7 +29,7 @@ export function WalletIdKeypad({ value, onChange, maxLength = 6 }: WalletIdKeypa
     <div className="w-full max-w-xs mx-auto">
       {/* Display */}
       <div
-        className="mb-4 p-4 border-2 text-center"
+        className="mb-2 p-2 border-2 text-center"
         style={{
           backgroundColor: '#0f0f24',
           borderColor: '#667eea',

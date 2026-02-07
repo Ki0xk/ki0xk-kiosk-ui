@@ -143,22 +143,22 @@ export default function NfcWalletPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             Enter Your PIN
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Enter the PIN you set for this card
+          <p className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+            PIN for this card
           </p>
         </div>
 
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
           <div
-            className="p-2 border-2 text-center"
+            className="p-1 border-2 text-center"
             style={{
               backgroundColor: '#0f0f24',
               borderColor: '#667eea',
@@ -187,7 +187,7 @@ export default function NfcWalletPage() {
           )}
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <ArcadeButton
             size="md"
             variant="primary"
@@ -204,7 +204,7 @@ export default function NfcWalletPage() {
               setError('')
               setStep('nfc-tap')
             }}
-            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
+            className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
             style={{ color: '#7a7a9a' }}
           >
             Back
@@ -399,16 +399,16 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'ens-input') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             Enter ENS
           </h1>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <OnScreenKeyboard
             value={destinationAddress}
             onChange={setDestinationAddress}
@@ -424,7 +424,7 @@ export default function NfcWalletPage() {
             setDestinationAddress('')
             setStep('choose-destination')
           }}
-          className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
+          className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
           style={{ color: '#7a7a9a' }}
         >
           Back

@@ -30,7 +30,7 @@ export function PinKeypad({ value, onChange, maxLength = 6 }: PinKeypadProps) {
     <div className="w-full max-w-xs mx-auto">
       {/* Display — masked with asterisks */}
       <div
-        className="mb-4 p-4 border-2 text-center"
+        className="mb-2 p-2 border-2 text-center"
         style={{
           backgroundColor: '#0f0f24',
           borderColor: '#667eea',
@@ -64,7 +64,7 @@ export function PinKeypad({ value, onChange, maxLength = 6 }: PinKeypadProps) {
             <button
               key={key}
               onClick={() => handlePress(key)}
-              className="p-4 text-sm uppercase transition-all duration-100 touch-active"
+              className="p-2 text-sm uppercase transition-all duration-100 touch-active"
               style={{
                 backgroundColor: isSpecial ? '#141430' : '#0f0f24',
                 color: isSpecial ? '#7a7a9a' : '#e0e8f0',

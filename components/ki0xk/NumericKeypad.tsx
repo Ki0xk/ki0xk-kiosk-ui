@@ -24,7 +24,7 @@ export function NumericKeypad({ value, onChange, maxLength = 6, isPin = false }:
     <div className="w-full max-w-xs mx-auto">
       {/* Display */}
       <div
-        className="mb-4 p-4 border-2 text-center"
+        className="mb-2 p-2 border-2 text-center"
         style={{
           backgroundColor: '#0f0f24',
           borderColor: '#667eea',
@@ -45,7 +45,7 @@ export function NumericKeypad({ value, onChange, maxLength = 6, isPin = false }:
           <button
             key={key}
             onClick={() => handlePress(key)}
-            className="p-4 text-sm uppercase transition-all duration-100 touch-active"
+            className="p-2 text-sm uppercase transition-all duration-100 touch-active"
             style={{
               backgroundColor: key === 'clear' || key === 'back' ? '#141430' : '#0f0f24',
               color: key === 'clear' || key === 'back' ? '#7a7a9a' : '#e0e8f0',

@@ -67,7 +67,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
     <div className="w-full max-w-2xl mx-auto">
       {/* Display field */}
       <div
-        className="mb-3 p-3 border-2 text-left min-h-[44px] flex items-center"
+        className="mb-1 p-2 border-2 text-left min-h-[36px] flex items-center"
         style={{
           backgroundColor: '#0f0f24',
           borderColor: '#667eea',
@@ -93,7 +93,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
             <button
               key={n}
               onClick={() => { if (value.length < maxLength) onChange(value + n) }}
-              className="flex-1 min-w-0 py-[10px] text-sm transition-all touch-active"
+              className="flex-1 min-w-0 py-[6px] text-sm transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
@@ -109,7 +109,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
             <button
               key={key}
               onClick={() => handleKey(key)}
-              className="flex-1 min-w-0 py-[10px] text-sm transition-all touch-active"
+              className="flex-1 min-w-0 py-[6px] text-sm transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
@@ -125,7 +125,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
             <button
               key={key}
               onClick={() => handleKey(key)}
-              className="flex-1 min-w-0 py-[10px] text-sm transition-all touch-active"
+              className="flex-1 min-w-0 py-[6px] text-sm transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
@@ -139,7 +139,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
         <div className="flex gap-[3px] justify-center">
           <button
             onClick={() => handleSpecial('CAPS')}
-            className="px-3 py-[10px] text-[13px] uppercase transition-all touch-active flex items-center gap-1"
+            className="px-3 py-[6px] text-[13px] uppercase transition-all touch-active flex items-center gap-1"
             style={{
               ...keyStyle(true),
               borderColor: caps ? '#ffd700' : '#2a2a4a',
@@ -156,7 +156,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
             <button
               key={key}
               onClick={() => handleKey(key)}
-              className="flex-1 min-w-0 py-[10px] text-sm transition-all touch-active"
+              className="flex-1 min-w-0 py-[6px] text-sm transition-all touch-active"
               style={keyStyle()}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#667eea' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a4a' }}
@@ -166,7 +166,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
           ))}
           <button
             onClick={() => handleSpecial('DEL')}
-            className="px-4 py-[10px] text-lg transition-all touch-active"
+            className="px-4 py-[6px] text-lg transition-all touch-active"
             style={keyStyle(true)}
           >
             {'\u2190'}
@@ -177,21 +177,21 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
         <div className="flex gap-[3px]">
           <button
             onClick={() => handleSpecial('0X')}
-            className="px-3 py-[10px] text-[13px] uppercase transition-all touch-active"
+            className="px-3 py-[6px] text-[13px] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             0x
           </button>
           <button
             onClick={() => handleSpecial('SPACE')}
-            className="flex-1 py-[10px] text-[13px] uppercase transition-all touch-active"
+            className="flex-1 py-[6px] text-[13px] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             SPACE
           </button>
           <button
             onClick={() => handleSpecial('.ETH')}
-            className="px-4 py-[10px] text-[13px] transition-all touch-active"
+            className="px-4 py-[6px] text-[13px] transition-all touch-active"
             style={{
               ...keyStyle(),
               color: '#78ffd6',
@@ -202,7 +202,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
           </button>
           <button
             onClick={() => handleSpecial('CLR')}
-            className="px-3 py-[10px] text-[13px] uppercase transition-all touch-active"
+            className="px-3 py-[6px] text-[13px] uppercase transition-all touch-active"
             style={keyStyle(true)}
           >
             CLR
@@ -213,7 +213,7 @@ export function OnScreenKeyboard({ value, onChange, onSubmit, placeholder = 'Typ
         <button
           onClick={onSubmit}
           disabled={!value}
-          className="w-full py-3 text-sm uppercase tracking-wider transition-all touch-active mt-1"
+          className="w-full py-2 text-sm uppercase tracking-wider transition-all touch-active mt-1"
           style={{
             backgroundColor: value ? '#ffd700' : '#141430',
             color: value ? '#0a0a1a' : '#7a7a9a',

@@ -500,22 +500,19 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'ens-input') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
         {/* Title area */}
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             Enter ENS
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Type ENS or address
-          </p>
         </div>
 
         {/* Content */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <OnScreenKeyboard
             value={destinationAddress}
             onChange={setDestinationAddress}
@@ -535,7 +532,7 @@ export default function BuyPage() {
             setDestinationAddress('')
             setStep('choose-destination')
           }}
-          className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
+          className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
           style={{ color: '#7a7a9a' }}
         >
           Back
@@ -896,23 +893,23 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
+      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
         <div className="text-center">
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
             {inConfirm ? 'Confirm PIN' : 'Set Your PIN'}
           </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            {inConfirm ? 'Re-enter your PIN to confirm' : 'Choose a 4+ digit PIN to protect your balance'}
+          <p className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
+            {inConfirm ? 'Re-enter PIN to confirm' : '4+ digit PIN to protect your balance'}
           </p>
         </div>
 
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
           {/* Card ID */}
           <div
-            className="p-2 border-2 text-center"
+            className="p-1 border-2 text-center"
             style={{
               backgroundColor: '#0f0f24',
               borderColor: '#667eea',
@@ -944,7 +941,7 @@ export default function BuyPage() {
           )}
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {!inConfirm ? (
             <ArcadeButton
               size="md"
@@ -980,7 +977,7 @@ export default function BuyPage() {
                 setStep('choose-destination')
               }
             }}
-            className="w-full text-[11px] uppercase tracking-wider py-2 transition-colors"
+            className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
             style={{ color: '#7a7a9a' }}
           >
             Back
