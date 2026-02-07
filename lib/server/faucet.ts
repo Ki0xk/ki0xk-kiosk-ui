@@ -3,6 +3,7 @@ import { getServerConfig } from './config'
 import { getKioskAddress } from './wallet'
 import { getArcBalance } from './arc/bridge'
 import { getClearNode } from './clearnode'
+import { getMode } from '../mode'
 
 // ============================================================================
 // Types
@@ -170,11 +171,11 @@ export async function claimFaucets(): Promise<FaucetClaimResult> {
  * Auto-fund if balances are below thresholds.
  * Runs once per server lifetime. Silent — never throws.
  */
-let _autoFundAttempted = false
+const globalForFaucet = globalThis as unknown as { __autoFundAttempted?: boolean }
 
 export async function autoFundIfNeeded(): Promise<void> {
-  if (_autoFundAttempted) return
-  _autoFundAttempted = true
+  if (globalForFaucet.__autoFundAttempted) return
+  globalForFaucet.__autoFundAttempted = true
 
   try {
     const balances = await getAllBalances()
@@ -201,6 +202,18 @@ export async function autoFundIfNeeded(): Promise<void> {
     if (arcAmount < 1.0) promises.push(claimCircleFaucet(address))
 
     await Promise.allSettled(promises)
+
+    // Auto-fund Gateway for festival mode (deposit 1 USDC if empty)
+    if (getMode() === 'demo_festival') {
+      try {
+        const { ensureGatewayBalance } = await import('./gateway')
+        await ensureGatewayBalance('1')
+      } catch (gwErr) {
+        logger.warn('Gateway auto-fund failed (non-fatal)', {
+          error: gwErr instanceof Error ? gwErr.message : String(gwErr),
+        })
+      }
+    }
   } catch (error) {
     logger.warn('Auto-fund check failed (non-fatal)', {
       error: error instanceof Error ? error.message : String(error),

@@ -12,7 +12,8 @@ export interface CoinEvent {
 
 type CoinListener = (event: CoinEvent) => void
 
-let _serialManager: SerialManager | null = null
+// Use globalThis to survive Next.js hot-reload (module re-evaluation resets let vars)
+const globalForSerial = globalThis as unknown as { __serialManager?: SerialManager }
 
 export class SerialManager {
   private port: any = null
@@ -120,8 +121,8 @@ export class SerialManager {
 }
 
 export function getSerialManager(): SerialManager {
-  if (!_serialManager) {
-    _serialManager = new SerialManager()
+  if (!globalForSerial.__serialManager) {
+    globalForSerial.__serialManager = new SerialManager()
   }
-  return _serialManager
+  return globalForSerial.__serialManager
 }

@@ -10,7 +10,8 @@ export interface NfcTapEvent {
 
 type NfcListener = (event: NfcTapEvent) => void
 
-let _nfcManager: NfcManager | null = null
+// Use globalThis to survive Next.js hot-reload (module re-evaluation resets let vars)
+const globalForNfc = globalThis as unknown as { __nfcManager?: NfcManager }
 
 export class NfcManager {
   private nfc: any = null
@@ -33,10 +34,17 @@ export class NfcManager {
   async connect(): Promise<void> {
     let NFC: any
     try {
+      // nfc-pcsc is CJS: { NFC, Reader, ... }
+      // Dynamic import wraps it as { default: { NFC, ... } }
       const mod = await import('nfc-pcsc')
-      NFC = mod.default || mod.NFC || mod
-    } catch {
-      throw new Error('nfc-pcsc not available — install with: pnpm add nfc-pcsc')
+      const pkg = mod.default || mod
+      NFC = pkg.NFC || pkg
+      if (typeof NFC !== 'function') {
+        throw new Error('Could not resolve NFC constructor from nfc-pcsc')
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      throw new Error(`nfc-pcsc not available: ${msg}`)
     }
 
     logger.info('Initializing NFC PC/SC...')
@@ -50,20 +58,27 @@ export class NfcManager {
 
       reader.on('card', async (card: any) => {
         this.currentCard = card
-        logger.debug('NFC card detected', { uid: card.uid })
+        const uid = card.uid || ''
+        logger.debug('NFC card detected', { uid })
 
-        // Try to read NDEF data
+        // Try to read NDEF data (works on NTAG/Ultralight, fails on MIFARE Classic)
         let data: { walletId: string } | undefined
         try {
           data = await this.readNdefFromCard(reader)
         } catch {
-          // No NDEF or read error — blank card
+          // No NDEF or read error — use UID as walletId fallback
+        }
+
+        // If no NDEF data, use UID directly as the walletId
+        // This makes any NFC card/tag work (MIFARE Classic, NTAG, DESFire, etc.)
+        if (!data && uid) {
+          data = { walletId: uid }
         }
 
         const event: NfcTapEvent = {
           id: `nfc_${++this.eventCounter}_${Date.now()}`,
           type: 'nfc_tap',
-          uid: card.uid,
+          uid,
           data,
           timestamp: Date.now(),
         }
@@ -218,8 +233,8 @@ export class NfcManager {
 }
 
 export function getNfcManager(): NfcManager {
-  if (!_nfcManager) {
-    _nfcManager = new NfcManager()
+  if (!globalForNfc.__nfcManager) {
+    globalForNfc.__nfcManager = new NfcManager()
   }
-  return _nfcManager
+  return globalForNfc.__nfcManager
 }

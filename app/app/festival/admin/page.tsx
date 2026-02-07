@@ -9,9 +9,8 @@ import { ProgressBar } from '@/components/ki0xk/ProgressBar'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
 import {
   apiVerifyAdminPin,
-  apiCreateCard,
+  apiCreateCardWithId,
   apiSetCardPin,
-  apiWriteNfc,
   apiTopUpCard,
   apiGetGatewayBalance,
   apiDepositToGateway,
@@ -64,48 +63,40 @@ export default function FestivalAdminPage() {
   const [stats, setStats] = useState<any>(null)
 
   // NFC tap handler for top-up flow
+  // Card UID is used as walletId — no NDEF write needed
   const handleNfcTap = useCallback(async (uid: string, data?: { walletId: string }) => {
     if (topUpStep !== 'tap-card') return
 
-    if (data?.walletId) {
-      // Existing card — top up directly
-      setCardWalletId(data.walletId)
-      setIsNewCard(false)
-      setTopUpStep('processing')
-      try {
-        const result = await apiTopUpCard(data.walletId, topUpAmount)
+    const walletId = data?.walletId || uid
+    if (!walletId) return
+
+    setCardWalletId(walletId)
+
+    try {
+      // Check if card exists on server
+      const info = await apiGetCardInfo(walletId).catch(() => null)
+
+      if (info?.success) {
+        // Existing card — top up directly
+        setIsNewCard(false)
+        setTopUpStep('processing')
+        const result = await apiTopUpCard(walletId, topUpAmount)
         if (result.success) {
-          setTopUpResult({ walletId: data.walletId, balance: result.newBalance })
+          setTopUpResult({ walletId, balance: result.newBalance })
           setTopUpStep('success')
         } else {
           setTopUpError(result.message)
           setTopUpStep('error')
         }
-      } catch (err) {
-        setTopUpError(err instanceof Error ? err.message : 'Top-up failed')
-        setTopUpStep('error')
-      }
-    } else {
-      // Blank card — create new card
-      setIsNewCard(true)
-      try {
-        const created = await apiCreateCard()
-        setCardWalletId(created.walletId)
-
-        // Write walletId to NFC card
-        const writeResult = await apiWriteNfc(created.walletId)
-        if (!writeResult.success) {
-          setTopUpError('Failed to write NFC card')
-          setTopUpStep('error')
-          return
-        }
-
-        // Ask attendant to set PIN
+      } else {
+        // New card — register with UID as walletId, ask for PIN
+        setIsNewCard(true)
+        await apiCreateCardWithId(walletId)
         setTopUpStep('new-card-pin')
-      } catch (err) {
-        setTopUpError(err instanceof Error ? err.message : 'Card creation failed')
-        setTopUpStep('error')
       }
+    } catch (err) {
+      setTopUpError(err instanceof Error ? err.message : 'Card operation failed')
+      setTopUpStep('error')
     }
   }, [topUpStep, topUpAmount])
 

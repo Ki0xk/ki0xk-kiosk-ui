@@ -348,21 +348,9 @@ export async function getGatewayBalance(): Promise<{
     })
 
     if (!res.ok) {
-      // Fallback: read on-chain balance on Arc
-      const arcChain = getArcChain()
-      const publicClient = createPublicClient({
-        chain: arcChain,
-        transport: http(GATEWAY_CHAINS.arc.rpcUrl),
-      })
-
-      const balance = await publicClient.readContract({
-        address: GATEWAY_CHAINS.arc.usdcAddress as Address,
-        abi: erc20Abi,
-        functionName: 'balanceOf',
-        args: [account.address],
-      })
-
-      return { available: formatUnits(balance, 6), token: 'USDC' }
+      const errText = await res.text().catch(() => '')
+      logger.warn('Gateway balance API failed', { status: res.status, body: errText })
+      return { available: '0', token: 'USDC', error: `API ${res.status}` }
     }
 
     const data = await res.json()
@@ -371,5 +359,54 @@ export async function getGatewayBalance(): Promise<{
     const msg = err instanceof Error ? err.message : String(err)
     logger.error('Gateway balance check failed', { error: msg })
     return { available: '0', token: 'USDC', error: msg }
+  }
+}
+
+/**
+ * Ensure the Gateway has at least `requiredUsdc` available.
+ * If insufficient, deposits from Arc USDC into GatewayWallet.
+ * Waits for Arc finality (~2s) after deposit.
+ */
+export async function ensureGatewayBalance(requiredUsdc: string): Promise<{
+  success: boolean
+  deposited: boolean
+  depositTxHash?: string
+  error?: string
+}> {
+  try {
+    const balance = await getGatewayBalance()
+    const available = parseFloat(balance.available)
+    const required = parseFloat(requiredUsdc)
+
+    if (available >= required) {
+      logger.info('Gateway balance sufficient', { available: balance.available, required: requiredUsdc })
+      return { success: true, deposited: false }
+    }
+
+    // Deposit the shortfall + 0.01 buffer
+    const shortfall = required - available
+    const depositAmount = (shortfall + 0.01).toFixed(6)
+
+    logger.info('Gateway balance insufficient, depositing...', {
+      available: balance.available,
+      required: requiredUsdc,
+      depositAmount,
+    })
+
+    const result = await depositToGateway(depositAmount)
+    if (!result.success) {
+      return { success: false, deposited: false, error: `Deposit failed: ${result.error}` }
+    }
+
+    // Wait for Arc block finality so Gateway API recognizes the deposit
+    logger.info('Waiting for Arc finality after Gateway deposit...')
+    await new Promise(resolve => setTimeout(resolve, 3000))
+
+    logger.info('Gateway funded', { depositAmount, depositTxHash: result.depositTxHash })
+    return { success: true, deposited: true, depositTxHash: result.depositTxHash }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    logger.error('ensureGatewayBalance failed', { error: msg })
+    return { success: false, deposited: false, error: msg }
   }
 }

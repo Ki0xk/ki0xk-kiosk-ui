@@ -73,8 +73,12 @@ function generateWalletId(): string {
   return result
 }
 
-export function createCard(): { walletId: string } {
-  const walletId = generateWalletId()
+export function createCard(specificId?: string): { walletId: string } {
+  const walletId = specificId || generateWalletId()
+  const cards = loadCards()
+  if (cards.has(walletId)) {
+    return { walletId } // Already exists, return it
+  }
   const card: FestivalCard = {
     walletId,
     pinHash: '',
@@ -85,7 +89,6 @@ export function createCard(): { walletId: string } {
     lastActivityAt: Date.now(),
     status: 'ACTIVE',
   }
-  const cards = loadCards()
   cards.set(walletId, card)
   saveCards()
   logger.info('Festival card created', { walletId })

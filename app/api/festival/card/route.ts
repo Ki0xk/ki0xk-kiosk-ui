@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
     switch (action) {
       case 'create': {
-        const result = createCard()
+        const result = createCard(body.walletId)
         return NextResponse.json({ success: true, ...result })
       }
 

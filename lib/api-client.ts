@@ -6,7 +6,7 @@ async function post<T>(url: string, body?: object): Promise<T> {
   })
   if (!res.ok) {
     const data = await res.json().catch(() => ({ message: res.statusText }))
-    throw new Error(data.message || `Request failed: ${res.status}`)
+    throw new Error(data.message || data.error || `Request failed: ${res.status}`)
   }
   return res.json()
 }
@@ -134,6 +134,13 @@ export async function apiCreateCard(): Promise<{
   walletId: string
 }> {
   return post('/api/festival/card', { action: 'create' })
+}
+
+export async function apiCreateCardWithId(walletId: string): Promise<{
+  success: boolean
+  walletId: string
+}> {
+  return post('/api/festival/card', { action: 'create', walletId })
 }
 
 export async function apiSetCardPin(walletId: string, pin: string): Promise<{

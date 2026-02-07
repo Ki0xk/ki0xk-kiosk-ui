@@ -1,7 +1,7 @@
 import { logger } from './logger'
-import { verifyPin, deduct, getBalance } from './festival-cards'
+import { verifyPin, deduct, topUp, getBalance } from './festival-cards'
 import { getMerchantById } from './merchants'
-import { gatewayTransfer, gatewayMint } from './gateway'
+import { gatewayTransfer, gatewayMint, ensureGatewayBalance } from './gateway'
 
 export interface FestivalPaymentResult {
   success: boolean
@@ -43,7 +43,7 @@ export async function processPayment(
     return { success: false, error: deductResult.message }
   }
 
-  logger.info('Festival payment: card deducted, starting Gateway transfer', {
+  logger.info('Festival payment: card deducted, ensuring Gateway balance', {
     walletId,
     merchantId,
     amount: amountUsdc,
@@ -51,7 +51,25 @@ export async function processPayment(
     chain: merchant.preferredChain,
   })
 
-  // 5. Gateway transfer (burn on Arc)
+  // 5. Ensure Gateway has enough balance (just-in-time deposit)
+  const feeBuffer = 0.01 // covers gas + 0.005% fee on testnet
+  const requiredGateway = (parseFloat(amountUsdc) + feeBuffer).toFixed(6)
+  const fundResult = await ensureGatewayBalance(requiredGateway)
+  if (!fundResult.success) {
+    logger.error('Gateway funding failed, refunding card', {
+      walletId,
+      amount: amountUsdc,
+      error: fundResult.error,
+    })
+    const refund = topUp(walletId, amountUsdc)
+    return {
+      success: false,
+      newBalance: refund.newBalance,
+      error: `Gateway funding failed: ${fundResult.error}`,
+    }
+  }
+
+  // 6. Gateway transfer (burn on Arc)
   const transferResult = await gatewayTransfer(
     merchant.walletAddress,
     amountUsdc,
@@ -59,18 +77,26 @@ export async function processPayment(
   )
 
   if (!transferResult.success) {
-    logger.error('Gateway transfer failed after card deduction', {
+    logger.error('Gateway transfer failed, refunding card', {
       walletId,
+      amount: amountUsdc,
       error: transferResult.error,
+    })
+    // Auto-refund the card
+    const refund = topUp(walletId, amountUsdc)
+    logger.info('Card refunded after Gateway failure', {
+      walletId,
+      refundedAmount: amountUsdc,
+      newBalance: refund.newBalance,
     })
     return {
       success: false,
-      newBalance: deductResult.newBalance,
-      error: `Gateway transfer failed: ${transferResult.error}. Card was charged — admin can refund.`,
+      newBalance: refund.newBalance,
+      error: `Gateway transfer failed: ${transferResult.error}`,
     }
   }
 
-  // 6. Gateway mint (on destination chain)
+  // 7. Gateway mint (on destination chain)
   const mintResult = await gatewayMint(
     transferResult.attestation!,
     transferResult.signature!,
