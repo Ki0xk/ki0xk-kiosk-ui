@@ -5,6 +5,7 @@ import { Ki0xkProvider } from '@/lib/state'
 import { PixelFrame } from '@/components/ki0xk/PixelFrame'
 import { getMode, getModeFeatures } from '@/lib/mode'
 import { useSerialStatus } from '@/hooks/use-serial-status'
+import { useNfcEvents } from '@/hooks/use-nfc-events'
 
 function SerialAutoConnect() {
   const features = getModeFeatures()
@@ -35,77 +36,54 @@ function SerialAutoConnect() {
   )
 }
 
-function NfcAutoConnect() {
+function NfcStatus() {
   const features = getModeFeatures()
-  const [nfcConnected, setNfcConnected] = useState(false)
   const [attempted, setAttempted] = useState(false)
+  const { connected, source } = useNfcEvents({})
 
   useEffect(() => {
-    if (!features.useRealNFC) return
-
-    // Initial connect call
-    if (!attempted) {
-      setAttempted(true)
-      fetch('/api/hardware/nfc/connect', { method: 'POST' })
-        .then((res) => res.json())
-        .then((data) => { if (data.readerReady) setNfcConnected(true) })
-        .catch(() => {})
-    }
-
-    // Poll /api/hardware/status for actual reader state
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/api/hardware/status')
-        const data = await res.json()
-        setNfcConnected(data.nfc?.connected ?? false)
-      } catch {}
-    }, 5000)
-
-    return () => clearInterval(interval)
+    // Only attempt PC/SC connect in festival mode
+    if (!features.useRealNFC || attempted) return
+    setAttempted(true)
+    fetch('/api/hardware/nfc/connect', { method: 'POST' }).catch(() => {})
   }, [features.useRealNFC, attempted])
 
-  if (!features.useRealNFC) return null
+  // Show nothing if no NFC source detected
+  if (!connected) return null
+
+  const label = source === 'webnfc' ? 'Phone NFC' : 'NFC OK'
 
   return (
     <div className="flex items-center gap-2">
       <div
         className="w-2 h-2 animate-pulse"
-        style={{ backgroundColor: nfcConnected ? '#78ffd6' : '#ef4444' }}
+        style={{ backgroundColor: '#78ffd6' }}
       />
       <span
         className="text-[8px] uppercase tracking-wider"
-        style={{ color: nfcConnected ? '#78ffd6' : '#ef4444' }}
+        style={{ color: '#78ffd6' }}
       >
-        {nfcConnected ? 'NFC OK' : 'No NFC'}
+        {label}
       </span>
     </div>
   )
 }
 
 function StatusIndicator() {
-  const mode = getMode()
   const features = getModeFeatures()
 
-  if (features.useRealNFC) {
-    // Festival mode: show both Arduino + NFC
-    return (
-      <div className="flex items-center gap-3">
-        <SerialAutoConnect />
-        <NfcAutoConnect />
-      </div>
-    )
-  }
-
-  if (features.serialEnabled) {
-    return <SerialAutoConnect />
-  }
-
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-2 h-2 animate-pulse" style={{ backgroundColor: '#78ffd6' }} />
-      <span className="text-[8px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
-        System Online
-      </span>
+    <div className="flex items-center gap-3">
+      {features.serialEnabled && <SerialAutoConnect />}
+      <NfcStatus />
+      {!features.serialEnabled && (
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 animate-pulse" style={{ backgroundColor: '#78ffd6' }} />
+          <span className="text-[8px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
+            Online
+          </span>
+        </div>
+      )}
     </div>
   )
 }
