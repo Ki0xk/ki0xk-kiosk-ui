@@ -50,45 +50,31 @@ export default function ClaimPage() {
   // ── enter-pin ──────────────────────────────────────────────────────────
   if (step === 'enter-pin') {
     return (
-      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+        {/* iOS-style header: Back | Title | Submit */}
+        <div className="flex items-center justify-between px-1">
+          <a href="/app/kiosk" className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            Back
+          </a>
           <h1
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            Enter Your PIN
+            Enter PIN
           </h1>
-          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            6-digit PIN from your receipt
-          </p>
+          <button
+            onClick={() => { setError(''); setStep('enter-wallet-id') }}
+            disabled={pin.length !== 6}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: pin.length === 6 ? '#78ffd6' : '#3a3a5a' }}
+          >
+            Submit
+          </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center min-h-0">
           <PinKeypad value={pin} onChange={setPin} maxLength={6} />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-2">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => {
-              setError('')
-              setStep('enter-wallet-id')
-            }}
-            disabled={pin.length !== 6}
-            className="w-full"
-          >
-            Submit
-          </ArcadeButton>
-
-          <a href="/app/kiosk" className="text-center">
-            <span className="text-[11px] uppercase tracking-wider transition-colors" style={{ color: '#7a7a9a' }}>
-              Go Back
-            </span>
-          </a>
         </div>
       </div>
     )
@@ -115,18 +101,30 @@ export default function ClaimPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+        {/* iOS-style header: Back | Title | Submit */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => { setError(''); setWalletId(''); setStep('enter-pin') }}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            Enter Wallet ID
+            Wallet ID
           </h1>
-          <p className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            6-character code from your receipt
-          </p>
+          <button
+            onClick={handleWalletIdSubmit}
+            disabled={walletId.length !== 6 || isProcessing}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: walletId.length === 6 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+          >
+            {isProcessing ? 'Wait...' : 'Submit'}
+          </button>
         </div>
 
         {/* Content */}
@@ -142,31 +140,6 @@ export default function ClaimPage() {
             </p>
           </div>
         )}
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-2">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={handleWalletIdSubmit}
-            disabled={walletId.length !== 6 || isProcessing}
-            className="w-full"
-          >
-            {isProcessing ? 'Looking Up...' : 'Submit'}
-          </ArcadeButton>
-
-          <button
-            onClick={() => {
-              setError('')
-              setWalletId('')
-              setStep('enter-pin')
-            }}
-            className="text-center text-[11px] uppercase tracking-wider transition-colors"
-            style={{ color: '#7a7a9a' }}
-          >
-            Go Back
-          </button>
-        </div>
       </div>
     )
   }
@@ -366,14 +339,22 @@ export default function ClaimPage() {
   if (step === 'ens-input') {
     return (
       <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+        {/* iOS-style header: Back | Title | (spacer) */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             Enter ENS
           </h1>
+          <span className="w-8" />
         </div>
 
         {/* Content */}
@@ -389,18 +370,6 @@ export default function ClaimPage() {
             placeholder="yourname.eth or 0x..."
           />
         </div>
-
-        {/* Action buttons */}
-        <button
-          onClick={() => {
-            setDestinationAddress('')
-            setStep('choose-destination')
-          }}
-          className="text-center text-[11px] uppercase tracking-wider py-1 transition-colors"
-          style={{ color: '#7a7a9a' }}
-        >
-          Go Back
-        </button>
       </div>
     )
   }

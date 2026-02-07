@@ -501,14 +501,22 @@ export default function BuyPage() {
   if (step === 'ens-input') {
     return (
       <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+        {/* iOS-style header: Back | Title | (spacer) */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             Enter ENS
           </h1>
+          <span className="w-8" />
         </div>
 
         {/* Content */}
@@ -525,18 +533,6 @@ export default function BuyPage() {
             maxLength={42}
           />
         </div>
-
-        {/* Back */}
-        <button
-          onClick={() => {
-            setDestinationAddress('')
-            setStep('choose-destination')
-          }}
-          className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
-          style={{ color: '#7a7a9a' }}
-        >
-          Back
-        </button>
       </div>
     )
   }
@@ -755,32 +751,16 @@ export default function BuyPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'pin-generated' && state.pinData) {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
-          <h1
-            className="text-lg"
-            style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
-          >
-            PIN Generated
-          </h1>
-          <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            Save or print this receipt
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex items-center justify-center">
-          <PinDisplay
-            pin={state.pinData.pin}
-            walletId={state.pinData.walletId}
-            amount={state.pinData.amount}
-            onDone={() => {
-              dispatch(actions.reset())
-              router.push('/app/kiosk')
-            }}
-          />
-        </div>
+      <div className="h-full flex flex-col p-2 overflow-hidden">
+        <PinDisplay
+          pin={state.pinData.pin}
+          walletId={state.pinData.walletId}
+          amount={state.pinData.amount}
+          onDone={() => {
+            dispatch(actions.reset())
+            router.push('/app/kiosk')
+          }}
+        />
       </div>
     )
   }
@@ -893,20 +873,47 @@ export default function BuyPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+        {/* iOS-style header: Back | Title | Next/Save */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => {
+              if (inConfirm) { setNfcPinConfirm(''); setNfcPinStage('enter') }
+              else { setStep('choose-destination') }
+            }}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            {inConfirm ? 'Confirm PIN' : 'Set Your PIN'}
+            {inConfirm ? 'Confirm PIN' : 'Set PIN'}
           </h1>
-          <p className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
-            {inConfirm ? 'Re-enter PIN to confirm' : '4+ digit PIN to protect your balance'}
-          </p>
+          {!inConfirm ? (
+            <button
+              onClick={() => { setNfcPinConfirm(''); setNfcError(''); setNfcPinStage('confirm') }}
+              disabled={nfcPin.length < 4}
+              className="text-[11px] uppercase tracking-wider"
+              style={{ color: nfcPin.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={nfcProcessing || nfcPinConfirm.length < 4}
+              className="text-[11px] uppercase tracking-wider"
+              style={{ color: !nfcProcessing && nfcPinConfirm.length >= 4 ? '#78ffd6' : '#3a3a5a' }}
+            >
+              {nfcProcessing ? 'Wait...' : 'Save'}
+            </button>
+          )}
         </div>
 
-        <div className="flex-1 flex flex-col gap-2 min-h-0">
+        <div className="flex-1 flex flex-col gap-1 min-h-0">
           {/* Card ID */}
           <div
             className="p-1 border-2 text-center"
@@ -939,49 +946,6 @@ export default function BuyPage() {
               {nfcError}
             </p>
           )}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {!inConfirm ? (
-            <ArcadeButton
-              size="md"
-              variant="primary"
-              onClick={() => {
-                setNfcPinConfirm('')
-                setNfcError('')
-                setNfcPinStage('confirm')
-              }}
-              disabled={nfcPin.length < 4}
-              className="w-full"
-            >
-              Next
-            </ArcadeButton>
-          ) : (
-            <ArcadeButton
-              size="md"
-              variant="primary"
-              onClick={handleSave}
-              disabled={nfcProcessing || nfcPinConfirm.length < 4}
-              className="w-full"
-            >
-              {nfcProcessing ? 'Saving...' : 'Save to Card'}
-            </ArcadeButton>
-          )}
-
-          <button
-            onClick={() => {
-              if (inConfirm) {
-                setNfcPinConfirm('')
-                setNfcPinStage('enter')
-              } else {
-                setStep('choose-destination')
-              }
-            }}
-            className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
-            style={{ color: '#7a7a9a' }}
-          >
-            Back
-          </button>
         </div>
       </div>
     )

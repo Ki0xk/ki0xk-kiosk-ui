@@ -143,20 +143,33 @@ export default function NfcWalletPage() {
     }
 
     return (
-      <div className="h-full flex flex-col p-2 gap-2 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+        {/* iOS-style header: Back | Title | Go */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => { setPin(''); setError(''); setStep('nfc-tap') }}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            Enter Your PIN
+            Enter PIN
           </h1>
-          <p className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
-            PIN for this card
-          </p>
+          <button
+            onClick={handleVerifyPin}
+            disabled={pin.length < 4 || isProcessing}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: pin.length >= 4 && !isProcessing ? '#78ffd6' : '#3a3a5a' }}
+          >
+            {isProcessing ? 'Wait...' : 'Go'}
+          </button>
         </div>
 
-        <div className="flex-1 flex flex-col gap-2 min-h-0">
+        <div className="flex-1 flex flex-col gap-1 min-h-0">
           <div
             className="p-1 border-2 text-center"
             style={{
@@ -185,30 +198,6 @@ export default function NfcWalletPage() {
               {error}
             </p>
           )}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={handleVerifyPin}
-            disabled={pin.length < 4 || isProcessing}
-            className="w-full"
-          >
-            {isProcessing ? 'Verifying...' : 'View Balance'}
-          </ArcadeButton>
-
-          <button
-            onClick={() => {
-              setPin('')
-              setError('')
-              setStep('nfc-tap')
-            }}
-            className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
-            style={{ color: '#7a7a9a' }}
-          >
-            Back
-          </button>
         </div>
       </div>
     )
@@ -400,13 +389,22 @@ export default function NfcWalletPage() {
   if (step === 'ens-input') {
     return (
       <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
-        <div className="text-center">
+        {/* iOS-style header: Back | Title | (spacer) */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => { setDestinationAddress(''); setStep('choose-destination') }}
+            className="text-[11px] uppercase tracking-wider"
+            style={{ color: '#7a7a9a' }}
+          >
+            Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
           >
             Enter ENS
           </h1>
+          <span className="w-8" />
         </div>
         <div className="flex-1 min-h-0">
           <OnScreenKeyboard
@@ -419,16 +417,6 @@ export default function NfcWalletPage() {
             maxLength={42}
           />
         </div>
-        <button
-          onClick={() => {
-            setDestinationAddress('')
-            setStep('choose-destination')
-          }}
-          className="w-full text-[11px] uppercase tracking-wider py-1 transition-colors"
-          style={{ color: '#7a7a9a' }}
-        >
-          Back
-        </button>
       </div>
     )
   }
