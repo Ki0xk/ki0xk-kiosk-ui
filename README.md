@@ -4,13 +4,15 @@ Physical crypto payment infrastructure for events, festivals, retail, and tempor
 
 Built with Next.js 16, React 19, Tailwind CSS v4, and shadcn/ui. Retro arcade aesthetic with holographic glows, scanlines, and pixel art styling.
 
-> Cash in, crypto out. No wallet needed.
+> Cash in, crypto out. Any NFC card becomes a wallet.
 
 ---
 
 ## What It Does
 
-Ki0xk turns physical coins into USDC on any blockchain. The operator pre-funds a wallet with USDC, and the system handles everything — coin acceptance, off-chain accounting, cross-chain bridging, and NFC wristband payments.
+Ki0xk turns physical coins into USDC on any blockchain — and turns **any NFC chip** into a crypto wallet. Metro cards, ETHGlobal wristbands, NFC stickers, ID badges, or even your phone — tap it once, set a PIN, and you have a reusable USDC wallet you can top up and withdraw from at any kiosk.
+
+The operator pre-funds a wallet with USDC, and the system handles everything — coin acceptance, off-chain accounting, cross-chain bridging, NFC card wallets, and festival wristband payments.
 
 ```
                     ┌─────────────────────────────────────────────────┐
@@ -19,8 +21,9 @@ Ki0xk turns physical coins into USDC on any blockchain. The operator pre-funds a
                     └─────────┬──────────────────┬────────────────────┘
                               │                  │
                ┌──────────────▼──────┐  ┌───────▼──────────────────┐
-               │   ATM MODE          │  │   FESTIVAL MODE           │
+               │   ATM / KIOSK MODE  │  │   FESTIVAL MODE           │
                │   Cash → USDC       │  │   NFC Wristband Payments  │
+               │   NFC Card Wallets  │  │   Merchant Cart + Gateway │
                └──────────┬──────────┘  └───────┬──────────────────┘
                           │                      │
          ┌────────────────▼──────┐    ┌──────────▼─────────────────┐
@@ -30,6 +33,33 @@ Ki0xk turns physical coins into USDC on any blockchain. The operator pre-funds a
          │  for USDC delivery    │    │  + just-in-time funding     │
          └───────────────────────┘    └────────────────────────────┘
 ```
+
+---
+
+## NFC Card Wallets — Any NFC Chip Is a Crypto Wallet
+
+The killer feature: **any NFC-enabled object** becomes a reusable crypto wallet. No app, no account, no KYC.
+
+**How it works:**
+1. User inserts coins at a kiosk → chooses "Save to NFC Card"
+2. Taps any NFC card/chip near the reader — the card's hardware UID is read
+3. First time? Set a 4-digit PIN. Returning? Balance tops up automatically
+4. Done. The card now holds USDC balance — protected by the user's PIN
+
+**What works as a wallet:**
+- Metro / subway / transport cards
+- ETHGlobal wristbands and conference badges
+- NFC stickers (stick one on your phone case)
+- Any MIFARE Classic, NTAG, DESFire, or NFC-enabled card
+- Android phones (via Web NFC API in online demo mode)
+
+**The card stores nothing** — only the hardware UID is read (no NDEF write). All balances and PINs are tracked server-side with SHA-256 hashing. Lost your card? Your balance is safe — the card alone is useless without the PIN.
+
+**NFC Wallet features (kiosk mode):**
+- **Check balance** — tap card → enter PIN → see balance, total loaded, total spent
+- **Top up** — insert more coins → tap same card → balance increases
+- **Withdraw** — tap card → enter PIN → scan QR or type ENS → receive USDC on any chain
+- **Cross-kiosk** — cards work at any Ki0xk kiosk or festival using the same server
 
 ---
 
@@ -81,24 +111,29 @@ Ki0xk resolves **ENS names** (e.g. `yourname.eth`) server-side via viem's `getEn
 - On-screen keyboard with `.eth` shortcut button for quick ENS entry
 - QR scanner accepts both hex addresses and ENS names
 - Server-side resolution via `lib/server/ens.ts` before passing to the bridge
-- Works in both ATM mode (CCTP bridge) and claim flow
+- Works in both ATM mode (CCTP bridge) and NFC wallet withdrawal
 
 **Key files:** `lib/server/ens.ts`
 
 ---
 
-## Two Operating Modes
+## Three Operating Modes
 
-### ATM Mode — Cash to Crypto
+### Kiosk / ATM Mode — Cash to Crypto + NFC Wallets
 
-Users insert physical coins and receive USDC on their preferred chain.
+Users insert physical coins and either receive USDC on their preferred chain or save it to an NFC card wallet.
 
-**Path A — "I have a wallet":** Insert coins → scan QR or type ENS → select chain → receive USDC on-chain (~20s).
+**Path A — "Send to my wallet":** Insert coins → scan QR or type ENS → select chain → receive USDC on-chain (~20s).
 
-**Path B — "No wallet yet":** Insert coins → get a PIN + Wallet ID receipt → come back later with a wallet to claim.
+**Path B — "Save to NFC card":** Insert coins → tap any NFC card → set PIN (first time only) → balance saved. Come back anytime to top up or withdraw.
+
+**Path C — "Print a PIN":** Insert coins → get a PIN + Wallet ID receipt → come back later with a wallet to claim.
+
+**Path D — "NFC Wallet":** Tap existing NFC card → enter PIN → check balance → optionally withdraw to any chain.
 
 ```
 Arduino Coinslot  →  Yellow Network (off-chain balance)  →  Arc Bridge (CCTP)  →  USDC on destination
+                                                         →  NFC Card (local balance + PIN)
 ```
 
 ### Festival Mode — NFC Wristband Payments
@@ -121,6 +156,10 @@ NFC Card (UID)  →  Festival Card (server)  →  Circle Gateway (burn)  →  Me
 
 **Merchant payouts:** Real USDC delivered via Circle Gateway to merchant's preferred chain.
 
+### Online Demo Mode
+
+Same features as kiosk mode but with simulated coin insertion (UI buttons instead of Arduino serial). Web NFC API enables phone-based NFC on Android Chrome. Deployable to Vercel or any host.
+
 ---
 
 ## Quick Start
@@ -134,9 +173,9 @@ cp .env.example .env.local
 # Edit .env.local — add your PRIVATE_KEY (funded on Arc Testnet)
 
 # Run
-NEXT_PUBLIC_MODE=demo_online pnpm dev     # UI coins, no hardware
-NEXT_PUBLIC_MODE=demo_kiosk pnpm dev      # Arduino coins
-NEXT_PUBLIC_MODE=demo_festival pnpm dev   # Arduino + NFC + Gateway
+NEXT_PUBLIC_MODE=demo_online pnpm dev     # UI coins, phone NFC
+NEXT_PUBLIC_MODE=demo_kiosk pnpm dev      # Arduino coins + USB NFC reader
+NEXT_PUBLIC_MODE=demo_festival pnpm dev   # Arduino + NFC + Gateway merchants
 ```
 
 ### Environment Variables
@@ -161,21 +200,22 @@ NEXT_PUBLIC_MODE=demo_festival pnpm dev   # Arduino + NFC + Gateway
 
 ### Testnet Faucets
 
+The system auto-claims faucets on startup and every 2.5 hours if balances are low.
+
 ```bash
-# Yellow Network faucet (ytest.usd)
+# Yellow Network faucet (ytest.usd) — auto-claimed
 curl -XPOST https://clearnet-sandbox.yellow.com/faucet/requestTokens \
   -H "Content-Type: application/json" \
   -d '{"userAddress":"YOUR_WALLET_ADDRESS"}'
 
-# Circle Arc faucet (USDC on Arc Testnet) — requires CIRCLE_API_KEY
-# Auto-claimed on startup if balance < 1 USDC
+# Circle Arc faucet (USDC on Arc Testnet) — auto-claimed if CIRCLE_API_KEY is set
 ```
 
 ---
 
 ## NFC Reader Setup (Linux)
 
-Festival mode requires a USB NFC reader (tested with ACR122U). Install the PC/SC stack:
+Kiosk and festival modes with USB NFC reader (tested with ACR122U). Install the PC/SC stack:
 
 ```bash
 # 1. Install PC/SC daemon and development libraries
@@ -209,13 +249,13 @@ cd ki0xk-payment-kiosk && pnpm rebuild
 
 ## Demo Modes
 
-| Mode | Coin Input | Transfers | NFC | Gateway | Deploy Target |
-|------|-----------|-----------|-----|---------|---------------|
-| `demo_online` | UI buttons | Real USDC via Arc Bridge | No | No | Vercel / any host |
-| `demo_kiosk` | Arduino serial | Real USDC via Arc Bridge | No | No | Local PC + tablet |
-| `demo_festival` | Arduino serial | Real USDC via Gateway | Yes | Yes | Local PC + tablet |
+| Mode | Coin Input | NFC | Transfers | Gateway | Deploy Target |
+|------|-----------|-----|-----------|---------|---------------|
+| `demo_online` | UI buttons | Phone (Web NFC) | Real USDC via Arc Bridge | No | Vercel / any host |
+| `demo_kiosk` | Arduino serial | USB reader (PC/SC) | Real USDC via Arc Bridge | No | Local PC + tablet |
+| `demo_festival` | Arduino serial | USB reader (PC/SC) | Real USDC via Gateway | Yes | Local PC + tablet |
 
-All modes perform **real USDC transfers**. Only the input method and settlement path change.
+All modes perform **real USDC transfers**. All modes support **NFC card wallets**.
 
 ---
 
@@ -252,6 +292,7 @@ All modes perform **real USDC transfers**. Only the input method and settlement 
 | `/api/hardware/nfc/connect` | POST | Connect NFC PC/SC reader |
 | `/api/hardware/nfc/events` | GET | SSE stream of NFC tap events |
 | `/api/hardware/nfc/write` | POST | Write NDEF to NFC card |
+| `/api/hardware/status` | GET | Hardware connection status (lightweight) |
 
 ### System
 
@@ -272,6 +313,14 @@ Coins → Local Session (Yellow off-chain) → Arc Bridge (CCTP) → USDC on des
                                            approve → burn → attest → mint
                                                 │
                                            ~15 seconds end-to-end
+```
+
+### NFC Card Wallet Flow
+
+```
+Insert Coins → Choose "Save to NFC Card" → Tap Card → Set PIN → Balance Saved
+                                                              ↓
+                    ← Tap Same Card → Enter PIN → Withdraw → Arc Bridge → USDC on any chain
 ```
 
 ### Festival Payment Flow
@@ -301,7 +350,7 @@ ENS names (e.g. `yourname.eth`) are resolved server-side via viem on Ethereum ma
 | Arc Bridge | `@circle-fin/bridge-kit` + `@circle-fin/adapter-viem-v2` (CCTP) |
 | Circle Gateway | EIP-712 BurnIntent, Gateway API, GatewayMinter contract |
 | ENS | viem `getEnsAddress` + `normalize` on Ethereum mainnet |
-| NFC | `nfc-pcsc` (PC/SC smart card interface) |
+| NFC | `nfc-pcsc` (PC/SC smart card interface), Web NFC API (Android) |
 | QR Code | html5-qrcode (scanner), qrcode.react (display) |
 | Serial | serialport + @serialport/parser-readline |
 | Font | Press Start 2P (Google Fonts) |
@@ -324,16 +373,24 @@ ki0xk-payment-kiosk/
 │   │   │   └── gateway/                  # Gateway balance + deposit
 │   │   ├── hardware/
 │   │   │   ├── coin/                     # Arduino serial
-│   │   │   └── nfc/                      # NFC PC/SC
+│   │   │   ├── nfc/                      # NFC PC/SC + NDEF
+│   │   │   └── status/route.ts           # Lightweight hw status
 │   │   ├── faucet/route.ts               # Balance + faucet
 │   │   └── status/route.ts               # System status
 │   └── app/
-│       ├── kiosk/                        # ATM mode pages
-│       └── festival/                     # Festival mode pages
+│       ├── kiosk/
+│       │   ├── page.tsx                  # Kiosk home (Buy / NFC Wallet / PIN)
+│       │   ├── buy/page.tsx              # ATM buy flow + NFC save
+│       │   ├── wallet/page.tsx           # NFC wallet (balance + withdraw)
+│       │   └── claim/page.tsx            # PIN wallet claim
+│       └── festival/
+│           ├── admin/page.tsx            # Admin top-up + gateway + stats
+│           └── public/page.tsx           # Self-service top-up + payments
 ├── components/ki0xk/                     # Custom kiosk components
 ├── hooks/
 │   ├── use-coin-events.ts                # SSE hook for Arduino
-│   └── use-nfc-events.ts                 # SSE hook for NFC taps
+│   ├── use-nfc-events.ts                 # NFC hook (PC/SC SSE + Web NFC)
+│   └── use-serial-status.ts              # Hardware status polling
 ├── lib/
 │   ├── api-client.ts                     # Client-side API wrappers
 │   ├── constants.ts                      # Chains, products, fees
@@ -349,7 +406,7 @@ ki0xk-payment-kiosk/
 │       ├── nfc.ts                        # NFC PC/SC manager
 │       ├── serial.ts                     # Arduino serial reader
 │       ├── ens.ts                        # ENS resolution
-│       ├── faucet.ts                     # Auto-fund + faucet claims
+│       ├── faucet.ts                     # Auto-fund + recurring faucet
 │       ├── gateway/
 │       │   ├── index.ts                  # Gateway deposit/transfer/mint
 │       │   └── chains.ts                 # Gateway chain definitions

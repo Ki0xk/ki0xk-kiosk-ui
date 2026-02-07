@@ -17,26 +17,38 @@ export default function KioskPage() {
         <p className="text-[8px] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
           Cash to Crypto ATM
         </p>
+        <p className="text-[7px] mt-1" style={{ color: '#7a7a9a' }}>
+          Any NFC card becomes a crypto wallet
+        </p>
       </div>
 
       {/* Options */}
-      <div className="flex flex-col gap-6 w-full max-w-xs">
+      <div className="flex flex-col gap-5 w-full max-w-xs">
         <Link href="/app/kiosk/buy" className="w-full">
           <ArcadeButton size="lg" variant="primary" className="w-full">
             Buy Crypto
           </ArcadeButton>
+          <p className="text-[7px] text-center mt-1" style={{ color: '#7a7a9a' }}>
+            Insert coins → send to wallet, ENS, NFC card, or PIN
+          </p>
         </Link>
 
         <Link href="/app/kiosk/wallet" className="w-full">
           <ArcadeButton size="lg" variant="secondary" className="w-full">
             NFC Wallet
           </ArcadeButton>
+          <p className="text-[7px] text-center mt-1" style={{ color: '#7a7a9a' }}>
+            Tap any NFC card to check balance or withdraw
+          </p>
         </Link>
 
         <Link href="/app/kiosk/claim" className="w-full">
           <ArcadeButton size="lg" variant="secondary" className="w-full">
             I Have a PIN
           </ArcadeButton>
+          <p className="text-[7px] text-center mt-1" style={{ color: '#7a7a9a' }}>
+            Claim balance using wallet ID + PIN receipt
+          </p>
         </Link>
       </div>
 

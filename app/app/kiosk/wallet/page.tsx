@@ -99,6 +99,10 @@ export default function NfcWalletPage() {
             {nfcConnected ? 'Ready — tap your card' : 'Waiting for NFC...'}
           </p>
 
+          <p className="text-[8px] text-center" style={{ color: '#78ffd6' }}>
+            Metro card, wristband, sticker, badge — any NFC chip
+          </p>
+
           {error && (
             <p className="text-[9px] text-center px-4" style={{ color: '#ef4444' }}>
               {error}

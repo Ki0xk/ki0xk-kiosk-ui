@@ -445,7 +445,7 @@ export default function BuyPage() {
             }}
             className="w-full"
           >
-            Tap NFC Card
+            Save to NFC Card
           </ArcadeButton>
 
           <ArcadeButton
@@ -891,8 +891,11 @@ export default function BuyPage() {
             <p className="text-[10px] uppercase tracking-wider" style={{ color: '#667eea' }}>
               {nfcProcessing ? 'Processing...' : nfcConnected ? 'Ready — tap your card' : 'Waiting for NFC...'}
             </p>
-            <p className="text-[8px]" style={{ color: '#7a7a9a' }}>
-              Any NFC card works: subway, ID badge, sticker, phone
+            <p className="text-[8px]" style={{ color: '#78ffd6' }}>
+              Any NFC chip works — metro card, wristband, sticker, badge, phone
+            </p>
+            <p className="text-[7px]" style={{ color: '#7a7a9a' }}>
+              Your card becomes a crypto wallet instantly
             </p>
           </div>
 
@@ -1159,14 +1162,17 @@ export default function BuyPage() {
             }}
           >
             <p className="text-[8px] uppercase tracking-widest" style={{ color: '#f093fb' }}>
-              How to use your balance:
+              Your NFC card is now a crypto wallet!
             </p>
             <p className="text-[8px] leading-relaxed" style={{ color: '#7a7a9a' }}>
-              At any Ki0xk kiosk or festival, tap this same card and enter your PIN to spend or withdraw your USDC balance.
+              Tap this same card at any Ki0xk kiosk or festival to check balance, add more, or withdraw USDC to any blockchain.
+            </p>
+            <p className="text-[8px] leading-relaxed" style={{ color: '#7a7a9a' }}>
+              Works with metro cards, ETHGlobal wristbands, NFC stickers, badges — any NFC chip.
             </p>
             {nfcIsNewCard && (
               <p className="text-[8px] leading-relaxed" style={{ color: '#ffd700' }}>
-                Remember your PIN! You need it to spend your balance.
+                Remember your PIN! You need it to spend or withdraw.
               </p>
             )}
           </div>
