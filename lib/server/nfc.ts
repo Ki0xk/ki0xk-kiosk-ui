@@ -60,12 +60,39 @@ export class NfcManager {
       this._connected = true
       logger.info('NFC reader attached', { name: reader.name })
 
+      // Disable auto-processing to avoid ISO 14443-4 AID errors
+      // This lets ALL card types work (MIFARE, DESFire, SIM, YubiKey, etc.)
+      reader.autoProcessing = false
+
       reader.on('card', async (card: any) => {
         this.currentCard = card
-        const uid = card.uid || ''
-        logger.debug('NFC card detected', { uid })
 
-        // Try to read NDEF data (works on NTAG/Ultralight, fails on MIFARE Classic)
+        // Get UID: try card.uid first, then manual GET DATA APDU
+        let uid = card.uid || ''
+        if (!uid) {
+          try {
+            // GET DATA command: FF CA 00 00 00 — reads UID from any card
+            const response = await reader.transmit(Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]), 40)
+            if (response.length >= 2) {
+              const sw1 = response[response.length - 2]
+              const sw2 = response[response.length - 1]
+              if (sw1 === 0x90 && sw2 === 0x00) {
+                uid = response.slice(0, -2).toString('hex').toUpperCase()
+              }
+            }
+          } catch (err) {
+            logger.debug('GET DATA failed, trying ATR parse', { error: err instanceof Error ? err.message : String(err) })
+          }
+        }
+
+        if (!uid) {
+          logger.debug('NFC card detected but could not read UID')
+          return
+        }
+
+        logger.info('NFC card detected', { uid })
+
+        // Try to read NDEF data (works on NTAG/Ultralight, fails on most other cards)
         let data: { walletId: string } | undefined
         try {
           data = await this.readNdefFromCard(reader)
@@ -73,9 +100,8 @@ export class NfcManager {
           // No NDEF or read error — use UID as walletId fallback
         }
 
-        // If no NDEF data, use UID directly as the walletId
-        // This makes any NFC card/tag work (MIFARE Classic, NTAG, DESFire, etc.)
-        if (!data && uid) {
+        // Use UID directly as the walletId (universal — works with any card)
+        if (!data) {
           data = { walletId: uid }
         }
 
@@ -92,7 +118,7 @@ export class NfcManager {
           this.eventBuffer.shift()
         }
 
-        logger.debug('NFC tap event', { event })
+        logger.info('NFC tap event emitted', { uid, walletId: data.walletId })
         for (const listener of this.listeners) {
           try {
             listener(event)
@@ -106,6 +132,11 @@ export class NfcManager {
       })
 
       reader.on('error', (err: Error) => {
+        // Suppress known ISO 14443-4 errors (handled by autoProcessing=false)
+        if (err.message?.includes('ISO 14443-4')) {
+          logger.debug('ISO 14443-4 handled via manual UID read')
+          return
+        }
         logger.error('NFC reader error', { error: err.message })
       })
 

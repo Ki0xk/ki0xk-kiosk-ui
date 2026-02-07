@@ -206,20 +206,39 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'show-balance') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Done | Title | Withdraw */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => {
+              dispatch(actions.reset())
+              router.push('/app/kiosk')
+            }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Done
+          </button>
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
             NFC Wallet
           </h1>
+          <button
+            onClick={() => setStep('choose-destination')}
+            disabled={parseFloat(balance) <= 0}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: parseFloat(balance) > 0 ? '#78ffd6' : '#3a3a5a', borderColor: parseFloat(balance) > 0 ? '#78ffd6' : '#3a3a5a' }}
+          >
+            Send ›
+          </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-0">
           {/* Balance */}
           <div
-            className="w-full max-w-xs p-6 text-center"
+            className="w-full max-w-xs p-4 text-center"
             style={{
               backgroundColor: '#0f0f24',
               border: '3px solid transparent',
@@ -227,11 +246,11 @@ export default function NfcWalletPage() {
               boxShadow: '0 0 16px rgba(102, 126, 234, 0.2)',
             }}
           >
-            <p className="text-[11px] uppercase tracking-widest mb-2" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
               Available Balance
             </p>
             <p
-              className="text-2xl"
+              className="text-xl"
               style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
             >
               ${balance} USDC
@@ -239,26 +258,26 @@ export default function NfcWalletPage() {
           </div>
 
           {/* Stats */}
-          <div className="w-full max-w-xs flex gap-3">
+          <div className="w-full max-w-xs flex gap-2">
             <div
-              className="flex-1 p-3 border-2 text-center"
+              className="flex-1 p-2 border-2 text-center"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
               <p className="text-[10px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
-                Total Loaded
+                Loaded
               </p>
-              <p className="text-[15px]" style={{ color: '#78ffd6' }}>
+              <p className="text-[13px]" style={{ color: '#78ffd6' }}>
                 ${totalLoaded}
               </p>
             </div>
             <div
-              className="flex-1 p-3 border-2 text-center"
+              className="flex-1 p-2 border-2 text-center"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
               <p className="text-[10px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
-                Total Spent
+                Spent
               </p>
-              <p className="text-[15px]" style={{ color: '#f093fb' }}>
+              <p className="text-[13px]" style={{ color: '#f093fb' }}>
                 ${totalSpent}
               </p>
             </div>
@@ -266,7 +285,7 @@ export default function NfcWalletPage() {
 
           {/* Card ID */}
           <div
-            className="p-2 border-2 text-center w-full max-w-xs"
+            className="p-1.5 border-2 text-center w-full max-w-xs"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
             <span className="text-[11px] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>
@@ -276,30 +295,6 @@ export default function NfcWalletPage() {
               {cardId}
             </span>
           </div>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('choose-destination')}
-            disabled={parseFloat(balance) <= 0}
-            className="w-full"
-          >
-            Withdraw to Wallet
-          </ArcadeButton>
-
-          <ArcadeButton
-            size="sm"
-            variant="secondary"
-            onClick={() => {
-              dispatch(actions.reset())
-              router.push('/app/kiosk')
-            }}
-            className="w-full"
-          >
-            Done
-          </ArcadeButton>
         </div>
       </div>
     )
@@ -534,28 +529,34 @@ export default function NfcWalletPage() {
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'done') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header */}
+        <div className="flex items-center justify-between px-1">
+          <span className="w-12" />
           <h1
-            className="text-lg"
+            className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
-            Withdrawal Complete
+            Withdrawn
           </h1>
-          <div
-            className="w-24 h-1 mx-auto mt-2"
-            style={{
-              background: 'linear-gradient(90deg, #78ffd6, #667eea, #764ba2, #f093fb, #ffd700)',
+          <button
+            onClick={() => {
+              dispatch(actions.reset())
+              router.push('/app/kiosk')
             }}
-          />
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Done ›
+          </button>
         </div>
 
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-1 flex flex-col gap-1.5 min-h-0">
           <div
-            className="flex items-center justify-between p-3 border-2"
+            className="flex items-center justify-between p-2 border-2"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Amount
             </span>
             <span
@@ -567,23 +568,23 @@ export default function NfcWalletPage() {
           </div>
 
           <div
-            className="flex items-center justify-between p-3 border-2"
+            className="flex items-center justify-between p-2 border-2"
             style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
           >
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
               Chain
             </span>
-            <span className="text-[13px] uppercase tracking-wider" style={{ color: '#e0e8f0' }}>
+            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#e0e8f0' }}>
               {SUPPORTED_CHAINS[selectedChain].name}
             </span>
           </div>
 
           {claimResult?.txHash && (
             <div
-              className="flex items-center justify-between p-3 border-2"
+              className="flex items-center justify-between p-2 border-2"
               style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}
             >
-              <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                 TX Hash
               </span>
               <span className="text-[11px] font-mono" style={{ color: '#ffd700' }}>
@@ -593,30 +594,18 @@ export default function NfcWalletPage() {
           )}
 
           {claimResult?.explorerUrl && (
-            <div className="flex flex-col items-center gap-2 p-3 border-2" style={{
+            <div className="flex flex-col items-center gap-1 p-2 border-2" style={{
               backgroundColor: '#0f0f24', borderColor: '#2a2a4a',
             }}>
-              <span className="text-[13px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+              <span className="text-[11px] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
                 Scan to verify
               </span>
-              <div className="bg-white p-2 rounded">
-                <QRCodeSVG value={claimResult.explorerUrl} size={120} />
+              <div className="bg-white p-1.5">
+                <QRCodeSVG value={claimResult.explorerUrl} size={80} />
               </div>
             </div>
           )}
         </div>
-
-        <ArcadeButton
-          size="md"
-          variant="primary"
-          onClick={() => {
-            dispatch(actions.reset())
-            router.push('/app/kiosk')
-          }}
-          className="w-full"
-        >
-          Done
-        </ArcadeButton>
       </div>
     )
   }

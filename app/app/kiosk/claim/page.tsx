@@ -147,29 +147,49 @@ export default function ClaimPage() {
   // ── show-balance ───────────────────────────────────────────────────────
   if (step === 'show-balance') {
     return (
-      <div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
-        {/* Title area */}
-        <div className="text-center">
+      <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        {/* iOS-style header: Back | Title | Claim */}
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={() => {
+              setPin('')
+              setWalletId('')
+              setWalletAmount('')
+              setError('')
+              setStep('enter-wallet-id')
+            }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+          >
+            ‹ Back
+          </button>
           <h1
             className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
-            PIN Wallet Found
+            Wallet Found
           </h1>
+          <button
+            onClick={() => setStep('choose-destination')}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Claim ›
+          </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-0">
           {/* Wallet ID display */}
           <div>
-            <p className="text-[11px] uppercase tracking-widest text-center mb-2" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase tracking-widest text-center mb-1" style={{ color: '#7a7a9a' }}>
               Wallet ID
             </p>
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center gap-1.5">
               {walletId.split('').map((char, i) => (
                 <div
                   key={i}
-                  className="w-10 h-12 flex items-center justify-center text-lg"
+                  className="w-8 h-10 flex items-center justify-center text-base"
                   style={{
                     backgroundColor: '#141430',
                     border: '2px solid #667eea',
@@ -186,7 +206,7 @@ export default function ClaimPage() {
 
           {/* Amount display — holographic border */}
           <div
-            className="w-full max-w-xs p-6 text-center"
+            className="w-full max-w-xs p-4 text-center"
             style={{
               backgroundColor: '#0f0f24',
               border: '3px solid transparent',
@@ -194,42 +214,16 @@ export default function ClaimPage() {
               boxShadow: '0 0 16px rgba(102, 126, 234, 0.2)',
             }}
           >
-            <p className="text-[11px] uppercase tracking-widest mb-2" style={{ color: '#7a7a9a' }}>
+            <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: '#7a7a9a' }}>
               Available Balance
             </p>
             <p
-              className="text-2xl"
+              className="text-xl"
               style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
             >
               ${walletAmount} USDC
             </p>
           </div>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={() => setStep('choose-destination')}
-            className="w-full"
-          >
-            Claim Now
-          </ArcadeButton>
-
-          <button
-            onClick={() => {
-              setPin('')
-              setWalletId('')
-              setWalletAmount('')
-              setError('')
-              setStep('enter-wallet-id')
-            }}
-            className="text-center text-[11px] uppercase tracking-wider px-2 py-0.5 border transition-colors"
-            style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
-          >
-            ‹ Back
-          </button>
         </div>
       </div>
     )
@@ -515,14 +509,25 @@ export default function ClaimPage() {
 
     return (
       <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
-        {/* Title */}
-        <div className="text-center">
+        {/* iOS-style header */}
+        <div className="flex items-center justify-between px-1">
+          <span className="w-12" />
           <h1
             className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
-            USDC Claimed!
+            Claimed!
           </h1>
+          <button
+            onClick={() => {
+              dispatch(actions.reset())
+              router.push('/app/kiosk')
+            }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Done ›
+          </button>
         </div>
 
         {/* Receipt — two-column layout */}
@@ -565,19 +570,6 @@ export default function ClaimPage() {
             </div>
           )}
         </div>
-
-        {/* Button */}
-        <ArcadeButton
-          size="md"
-          variant="primary"
-          onClick={() => {
-            dispatch(actions.reset())
-            router.push('/app/kiosk')
-          }}
-          className="w-full"
-        >
-          Done
-        </ArcadeButton>
       </div>
     )
   }

@@ -676,14 +676,25 @@ export default function BuyPage() {
 
     return (
       <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
-        {/* Title */}
-        <div className="text-center">
+        {/* iOS-style header */}
+        <div className="flex items-center justify-between px-1">
+          <span className="w-12" />
           <h1
             className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
-            Transaction Complete
+            Complete
           </h1>
+          <button
+            onClick={() => {
+              dispatch(actions.reset())
+              router.push('/app/kiosk')
+            }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Done ›
+          </button>
         </div>
 
         {/* Receipt — two-column layout */}
@@ -727,19 +738,6 @@ export default function BuyPage() {
             </div>
           )}
         </div>
-
-        {/* Button */}
-        <ArcadeButton
-          size="md"
-          variant="primary"
-          onClick={() => {
-            dispatch(actions.reset())
-            router.push('/app/kiosk')
-          }}
-          className="w-full"
-        >
-          New Transaction
-        </ArcadeButton>
       </div>
     )
   }
@@ -955,19 +953,31 @@ export default function BuyPage() {
   if (step === 'nfc-done') {
     return (
       <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
-        <div className="text-center">
+        {/* iOS-style header */}
+        <div className="flex items-center justify-between px-1">
+          <span className="w-12" />
           <h1
             className="text-sm"
             style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
           >
-            {nfcIsNewCard ? 'NFC Wallet Created!' : 'Balance Added'}
+            {nfcIsNewCard ? 'Card Created' : 'Added'}
           </h1>
-          {nfcIsNewCard && (
-            <p className="text-[11px] uppercase tracking-widest mt-1" style={{ color: '#ffd700' }}>
-              Take a photo of this screen!
-            </p>
-          )}
+          <button
+            onClick={() => {
+              dispatch(actions.reset())
+              router.push('/app/kiosk')
+            }}
+            className="text-[11px] uppercase tracking-wider px-2 py-0.5 border"
+            style={{ color: '#78ffd6', borderColor: '#78ffd6' }}
+          >
+            Done ›
+          </button>
         </div>
+        {nfcIsNewCard && (
+          <p className="text-[11px] uppercase tracking-widest text-center" style={{ color: '#ffd700' }}>
+            Take a photo of this screen!
+          </p>
+        )}
 
         <div className="flex-1 flex flex-col gap-1.5 min-h-0">
           {/* Card ID */}
@@ -1029,18 +1039,6 @@ export default function BuyPage() {
             )}
           </div>
         </div>
-
-        <ArcadeButton
-          size="md"
-          variant="primary"
-          onClick={() => {
-            dispatch(actions.reset())
-            router.push('/app/kiosk')
-          }}
-          className="w-full"
-        >
-          New Transaction
-        </ArcadeButton>
       </div>
     )
   }
