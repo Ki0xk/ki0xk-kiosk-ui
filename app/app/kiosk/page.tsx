@@ -27,6 +27,12 @@ export default function KioskPage() {
           </ArcadeButton>
         </Link>
 
+        <Link href="/app/kiosk/wallet" className="w-full">
+          <ArcadeButton size="lg" variant="secondary" className="w-full">
+            NFC Wallet
+          </ArcadeButton>
+        </Link>
+
         <Link href="/app/kiosk/claim" className="w-full">
           <ArcadeButton size="lg" variant="secondary" className="w-full">
             I Have a PIN

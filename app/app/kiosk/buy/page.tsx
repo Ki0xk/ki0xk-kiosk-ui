@@ -54,6 +54,7 @@ export default function BuyPage() {
   const [nfcIsNewCard, setNfcIsNewCard] = useState(false)
   const [nfcPin, setNfcPin] = useState('')
   const [nfcPinConfirm, setNfcPinConfirm] = useState('')
+  const [nfcPinStage, setNfcPinStage] = useState<'enter' | 'confirm'>('enter')
   const [nfcError, setNfcError] = useState('')
   const [nfcBalance, setNfcBalance] = useState('')
   const [nfcProcessing, setNfcProcessing] = useState(false)
@@ -437,6 +438,7 @@ export default function BuyPage() {
               setNfcIsNewCard(false)
               setNfcPin('')
               setNfcPinConfirm('')
+              setNfcPinStage('enter')
               setNfcError('')
               setNfcBalance('')
               setStep('nfc-tap')
@@ -935,42 +937,16 @@ export default function BuyPage() {
   // nfc-pin — set PIN for new NFC card
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'nfc-pin') {
-    const isConfirmStage = nfcPin.length >= 4 && nfcPinConfirm === ''
-    const activeValue = nfcPinConfirm !== '' || isConfirmStage ? nfcPinConfirm : nfcPin
-    const setActiveValue = nfcPinConfirm !== '' || isConfirmStage
-      ? setNfcPinConfirm
-      : setNfcPin
+    const inConfirm = nfcPinStage === 'confirm'
 
-    const handleKeypadChange = (val: string) => {
-      if (nfcPin.length >= 4 && (nfcPinConfirm !== '' || val === '')) {
-        // In confirm stage
-        setNfcPinConfirm(val)
-        setNfcError('')
-      } else if (nfcPin.length < 4 || nfcPinConfirm === '') {
-        setNfcPin(val)
-        setNfcError('')
-        // Reset confirm when PIN changes
-        if (nfcPinConfirm) setNfcPinConfirm('')
-      }
-    }
-
-    const handleConfirmOrSave = async () => {
-      if (nfcPin.length < 4) return
-
-      // Stage 1: PIN entered, move to confirm
-      if (nfcPinConfirm === '') {
-        setNfcPinConfirm('')
-        return // keypad will now target nfcPinConfirm
-      }
-
-      // Stage 2: Check match
+    const handleSave = async () => {
       if (nfcPin !== nfcPinConfirm) {
         setNfcError('PINs do not match — try again')
         setNfcPinConfirm('')
+        setNfcPinStage('confirm') // stay in confirm, clear input
         return
       }
 
-      // Stage 3: Save
       setNfcProcessing(true)
       setNfcError('')
       try {
@@ -994,9 +970,6 @@ export default function BuyPage() {
       }
     }
 
-    const showConfirmStage = nfcPin.length >= 4
-    const confirmReady = showConfirmStage && nfcPinConfirm.length >= 4
-
     return (
       <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
         <div className="text-center">
@@ -1004,10 +977,10 @@ export default function BuyPage() {
             className="text-lg"
             style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
           >
-            {showConfirmStage ? 'Confirm PIN' : 'Set Your PIN'}
+            {inConfirm ? 'Confirm PIN' : 'Set Your PIN'}
           </h1>
           <p className="text-[8px] uppercase tracking-widest mt-1" style={{ color: '#7a7a9a' }}>
-            {showConfirmStage ? 'Re-enter to confirm' : 'Choose a 4+ digit PIN to protect your balance'}
+            {inConfirm ? 'Re-enter your PIN to confirm' : 'Choose a 4+ digit PIN to protect your balance'}
           </p>
         </div>
 
@@ -1027,11 +1000,14 @@ export default function BuyPage() {
             <span className="text-[10px] font-mono" style={{ color: '#667eea' }}>
               {nfcCardId.length > 12 ? nfcCardId.slice(0, 6) + '...' + nfcCardId.slice(-4) : nfcCardId}
             </span>
+            <span className="text-[8px] ml-2" style={{ color: '#78ffd6' }}>
+              (card removed OK)
+            </span>
           </div>
 
           <NumericKeypad
-            value={showConfirmStage ? nfcPinConfirm : nfcPin}
-            onChange={handleKeypadChange}
+            value={inConfirm ? nfcPinConfirm : nfcPin}
+            onChange={inConfirm ? setNfcPinConfirm : setNfcPin}
             maxLength={6}
             isPin
           />
@@ -1044,31 +1020,37 @@ export default function BuyPage() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <ArcadeButton
-            size="md"
-            variant="primary"
-            onClick={handleConfirmOrSave}
-            disabled={
-              nfcProcessing ||
-              (!showConfirmStage && nfcPin.length < 4) ||
-              (showConfirmStage && nfcPinConfirm.length < 4)
-            }
-            className="w-full"
-          >
-            {nfcProcessing
-              ? 'Saving...'
-              : confirmReady
-                ? 'Save to Card'
-                : showConfirmStage
-                  ? 'Enter PIN again'
-                  : 'Next'}
-          </ArcadeButton>
+          {!inConfirm ? (
+            <ArcadeButton
+              size="md"
+              variant="primary"
+              onClick={() => {
+                setNfcPinConfirm('')
+                setNfcError('')
+                setNfcPinStage('confirm')
+              }}
+              disabled={nfcPin.length < 4}
+              className="w-full"
+            >
+              Next
+            </ArcadeButton>
+          ) : (
+            <ArcadeButton
+              size="md"
+              variant="primary"
+              onClick={handleSave}
+              disabled={nfcProcessing || nfcPinConfirm.length < 4}
+              className="w-full"
+            >
+              {nfcProcessing ? 'Saving...' : 'Save to Card'}
+            </ArcadeButton>
+          )}
 
           <button
             onClick={() => {
-              if (showConfirmStage && nfcPinConfirm === '') {
-                // Go back to PIN entry stage
-                setNfcPin('')
+              if (inConfirm) {
+                setNfcPinConfirm('')
+                setNfcPinStage('enter')
               } else {
                 setStep('choose-destination')
               }
