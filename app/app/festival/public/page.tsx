@@ -7,14 +7,20 @@ import { NFCIndicator } from '@/components/ki0xk/NFCIndicator'
 import { ProgressBar } from '@/components/ki0xk/ProgressBar'
 import { NumericKeypad } from '@/components/ki0xk/NumericKeypad'
 import { CoinAnimation } from '@/components/ki0xk/CoinAnimation'
+import { CoinSlotSimulator } from '@/components/ki0xk/CoinSlotSimulator'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
 import { useCoinEvents } from '@/hooks/use-coin-events'
-import { MERCHANT_PRODUCTS, type Product } from '@/lib/constants'
+import { MERCHANT_PRODUCTS, DEMO_PIN, WALLET_ID_CHARS, WALLET_ID_LENGTH, ONLINE_MAX_USDC, type Product } from '@/lib/constants'
+import { getMode, getModeFeatures } from '@/lib/mode'
+import { QRCodeSVG } from 'qrcode.react'
 import {
   apiGetCardBalance,
   apiGetMerchants,
   apiFestivalPay,
   apiTopUpCard,
+  apiCreateCardWithId,
+  apiSetCardPin,
+  apiGetCardInfo,
 } from '@/lib/api-client'
 
 type Flow = 'idle' | 'payment' | 'topup' | 'balance'
@@ -52,8 +58,32 @@ interface MerchantInfo {
   preferredChain: string
 }
 
+function generateWalletId(): string {
+  let id = ''
+  for (let i = 0; i < WALLET_ID_LENGTH; i++) {
+    id += WALLET_ID_CHARS[Math.floor(Math.random() * WALLET_ID_CHARS.length)]
+  }
+  return id
+}
+
 export default function FestivalPublicPage() {
+  const isOnlineDemo = getMode() === 'demo_online'
+
   const [flow, setFlow] = useState<Flow>('idle')
+
+  // Online demo: wallet ID input for payment tap-card
+  const [manualWalletId, setManualWalletId] = useState('')
+
+  // Online demo: simulated coin total for top-up
+  const [simTopUpPesos, setSimTopUpPesos] = useState(0)
+  const [simTopUpUsdc, setSimTopUpUsdc] = useState(0)
+
+  // Online demo: created wallet info for top-up tap-card
+  const [createdWalletId, setCreatedWalletId] = useState('')
+  const [topUpCreating, setTopUpCreating] = useState(false)
+
+  // Online demo: balance check via wallet ID
+  const [balanceWalletInput, setBalanceWalletInput] = useState('')
 
   // Payment state
   const [payStep, setPayStep] = useState<PayStep>('select-merchant')
@@ -196,6 +226,7 @@ export default function FestivalPublicPage() {
     setCart([])
     setSelectedMerchant(null)
     setWalletId('')
+    setManualWalletId('')
     setPin('')
     setPayResult(null)
     setPayError('')
@@ -210,6 +241,9 @@ export default function FestivalPublicPage() {
     setFlow('topup')
     setTopUpStep('insert-coins')
     setCoinTotal(0)
+    setSimTopUpPesos(0)
+    setSimTopUpUsdc(0)
+    setCreatedWalletId('')
     setTopUpWalletId('')
     setTopUpNewBalance('')
     setTopUpError('')
@@ -221,6 +255,7 @@ export default function FestivalPublicPage() {
     setBalanceChecking(true)
     setCheckedBalance(null)
     setBalanceError('')
+    setBalanceWalletInput('')
   }
 
   const goHome = () => {
@@ -477,6 +512,12 @@ export default function FestivalPublicPage() {
 
     // Tap card
     if (payStep === 'tap-card') {
+      const handleManualWalletSubmit = async () => {
+        if (!manualWalletId) return
+        // Simulate the NFC tap with the manual wallet ID
+        handlePayNfcTap('manual', { walletId: manualWalletId })
+      }
+
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
           <div className="flex items-center justify-between px-1">
@@ -491,18 +532,53 @@ export default function FestivalPublicPage() {
               className="text-sm"
               style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
             >
-              Tap Wristband
+              {isOnlineDemo ? 'Enter Wallet ID' : 'Tap Wristband'}
             </h1>
-            <span className="w-12" />
+            {isOnlineDemo ? (
+              <button
+                onClick={handleManualWalletSubmit}
+                disabled={!manualWalletId}
+                className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                style={{ color: manualWalletId ? '#ffd700' : '#3a3a5a', borderColor: manualWalletId ? '#ffd700' : '#3a3a5a' }}
+              >
+                Submit ›
+              </button>
+            ) : (
+              <span className="w-12" />
+            )}
           </div>
 
           <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
-            {'Hold near reader to pay $'}{cartTotal.toFixed(2)}
+            {isOnlineDemo ? `Enter wallet ID to pay $${cartTotal.toFixed(2)}` : `Hold near reader to pay $${cartTotal.toFixed(2)}`}
           </p>
 
-          <div className="flex-1 flex items-center justify-center">
-            <NFCIndicator status="scanning" />
-          </div>
+          {isOnlineDemo ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3">
+              <div className="w-full max-w-xs">
+                <input
+                  type="text"
+                  value={manualWalletId}
+                  onChange={(e) => setManualWalletId(e.target.value.toUpperCase())}
+                  placeholder="e.g. A1B2C3"
+                  maxLength={WALLET_ID_LENGTH}
+                  className="w-full p-3 text-center text-sm font-mono tracking-wider uppercase border-2"
+                  style={{
+                    backgroundColor: '#0f0f24',
+                    borderColor: '#667eea',
+                    color: '#e0e8f0',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <p className="text-[0.625rem] uppercase text-center" style={{ color: '#7a7a9a' }}>
+                Enter the wallet ID from your top-up receipt
+              </p>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <NFCIndicator status="scanning" />
+            </div>
+          )}
         </div>
       )
     }
@@ -677,15 +753,20 @@ export default function FestivalPublicPage() {
             )}
 
             {payResult.explorerUrl && (
-              <a
-                href={payResult.explorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[0.6875rem] uppercase underline block text-center"
-                style={{ color: '#667eea' }}
-              >
-                View on Explorer
-              </a>
+              <div className="flex flex-col items-center gap-2">
+                <div className="bg-white p-1.5">
+                  <QRCodeSVG value={payResult.explorerUrl} size={80} />
+                </div>
+                <a
+                  href={payResult.explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[0.6875rem] uppercase underline block text-center"
+                  style={{ color: '#667eea' }}
+                >
+                  View on Explorer
+                </a>
+              </div>
             )}
           </div>
         </div>
@@ -727,6 +808,8 @@ export default function FestivalPublicPage() {
   if (flow === 'topup') {
     // Insert coins
     if (topUpStep === 'insert-coins') {
+      const effectiveTotal = isOnlineDemo ? simTopUpUsdc : coinTotal
+
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
           <div className="flex items-center justify-between px-1">
@@ -744,43 +827,87 @@ export default function FestivalPublicPage() {
               Insert Coins
             </h1>
             <button
-              onClick={() => setTopUpStep('tap-card')}
-              disabled={coinTotal <= 0}
+              onClick={() => {
+                if (isOnlineDemo) setCoinTotal(simTopUpUsdc)
+                setTopUpStep('tap-card')
+              }}
+              disabled={effectiveTotal <= 0}
               className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
-              style={{ color: coinTotal > 0 ? '#ffd700' : '#3a3a5a', borderColor: coinTotal > 0 ? '#ffd700' : '#3a3a5a' }}
+              style={{ color: effectiveTotal > 0 ? '#ffd700' : '#3a3a5a', borderColor: effectiveTotal > 0 ? '#ffd700' : '#3a3a5a' }}
             >
               Next ›
             </button>
           </div>
 
           <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
-            Insert coins into the slot
+            {isOnlineDemo ? 'Tap a coin to simulate insertion' : 'Insert coins into the slot'}
           </p>
 
-          <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <CoinAnimation isAnimating={showCoinAnim} amount={coinTotal} />
-
-            <div
-              className="p-3 border-2 text-center w-full max-w-xs"
-              style={{
-                backgroundColor: '#0f0f24',
-                borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
-                borderStyle: 'solid',
-                borderWidth: '2px',
-              }}
-            >
-              <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Inserted</p>
-              <p className="text-xl" style={{ color: '#ffd700' }}>
-                ${coinTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
-              </p>
+          {isOnlineDemo ? (
+            <div className="flex-1 min-h-0">
+              <CoinSlotSimulator
+                onCoinInserted={(pesos, usdc) => {
+                  if (simTopUpUsdc + usdc > ONLINE_MAX_USDC) return
+                  setSimTopUpPesos((p) => p + pesos)
+                  setSimTopUpUsdc((p) => parseFloat((p + usdc).toFixed(2)))
+                  setCoinTotal(parseFloat((simTopUpUsdc + usdc).toFixed(2)))
+                }}
+                totalPesos={simTopUpPesos}
+                totalUSDC={simTopUpUsdc}
+                disabled={simTopUpUsdc >= ONLINE_MAX_USDC}
+              />
             </div>
-          </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3">
+              <CoinAnimation isAnimating={showCoinAnim} amount={coinTotal} />
+
+              <div
+                className="p-3 border-2 text-center w-full max-w-xs"
+                style={{
+                  backgroundColor: '#0f0f24',
+                  borderImage: 'linear-gradient(135deg, #78ffd6, #667eea, #ffd700) 1',
+                  borderStyle: 'solid',
+                  borderWidth: '2px',
+                }}
+              >
+                <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Total Inserted</p>
+                <p className="text-xl" style={{ color: '#ffd700' }}>
+                  ${coinTotal.toFixed(2)} <span className="text-xs" style={{ color: '#7a7a9a' }}>USDC</span>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )
     }
 
     // Tap card for top-up
     if (topUpStep === 'tap-card') {
+      const handleOnlineCreateAndTopUp = async () => {
+        setTopUpCreating(true)
+        try {
+          const wid = generateWalletId()
+          await apiCreateCardWithId(wid)
+          await apiSetCardPin(wid, DEMO_PIN)
+          setTopUpWalletId(wid)
+          setCreatedWalletId(wid)
+          setTopUpStep('processing')
+          const result = await apiTopUpCard(wid, coinTotal.toFixed(2))
+          if (result.success) {
+            setTopUpNewBalance(result.newBalance)
+            setTopUpStep('success')
+          } else {
+            setTopUpError(result.message)
+            setTopUpStep('error')
+          }
+        } catch (err) {
+          setTopUpError(err instanceof Error ? err.message : 'Failed to create wallet')
+          setTopUpStep('error')
+        } finally {
+          setTopUpCreating(false)
+        }
+      }
+
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
           <div className="flex items-center justify-between px-1">
@@ -795,18 +922,35 @@ export default function FestivalPublicPage() {
               className="text-sm"
               style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
             >
-              Tap Wristband
+              {isOnlineDemo ? 'Create Wallet' : 'Tap Wristband'}
             </h1>
             <span className="w-12" />
           </div>
 
           <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
-            {'Hold near reader to add $'}{coinTotal.toFixed(2)}
+            {isOnlineDemo ? `Creating wallet with $${coinTotal.toFixed(2)} USDC` : `Hold near reader to add $${coinTotal.toFixed(2)}`}
           </p>
 
-          <div className="flex-1 flex items-center justify-center">
-            <NFCIndicator status="scanning" />
-          </div>
+          {isOnlineDemo ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3">
+              <ArcadeButton
+                size="lg"
+                variant="primary"
+                onClick={handleOnlineCreateAndTopUp}
+                disabled={topUpCreating}
+                className="w-full max-w-xs"
+              >
+                {topUpCreating ? 'Creating...' : 'Create Wallet & Top Up'}
+              </ArcadeButton>
+              <p className="text-[0.625rem] uppercase text-center" style={{ color: '#7a7a9a' }}>
+                Auto-generates wallet ID with PIN: {DEMO_PIN}
+              </p>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <NFCIndicator status="scanning" />
+            </div>
+          )}
         </div>
       )
     }
@@ -870,6 +1014,22 @@ export default function FestivalPublicPage() {
             <p className="text-lg" style={{ color: '#ffd700' }}>
               New Balance: ${topUpNewBalance} USDC
             </p>
+
+            {isOnlineDemo && createdWalletId && (
+              <div className="w-full max-w-xs space-y-2">
+                <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#667eea' }}>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Wallet ID</p>
+                  <p className="text-sm font-mono tracking-wider" style={{ color: '#667eea' }}>{createdWalletId}</p>
+                </div>
+                <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#ffd700' }}>
+                  <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>PIN</p>
+                  <p className="text-sm font-mono tracking-[0.3em]" style={{ color: '#ffd700' }}>{DEMO_PIN}</p>
+                </div>
+                <p className="text-[0.625rem] uppercase text-center" style={{ color: '#f093fb' }}>
+                  Save this wallet ID & PIN to use for payments
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )
@@ -908,6 +1068,28 @@ export default function FestivalPublicPage() {
   // BALANCE CHECK FLOW
   // ============================================================
   if (flow === 'balance') {
+    const handleOnlineBalanceCheck = async () => {
+      if (!balanceWalletInput) return
+      setBalanceChecking(false)
+      setBalanceError('')
+      try {
+        const info = await apiGetCardBalance(balanceWalletInput)
+        if (info.exists) {
+          const full = await apiGetCardInfo(balanceWalletInput).catch(() => null)
+          setCheckedBalance({
+            walletId: balanceWalletInput,
+            balance: info.balance,
+            totalLoaded: full?.totalLoaded || '—',
+            totalSpent: full?.totalSpent || '—',
+          })
+        } else {
+          setBalanceError('Wallet not found')
+        }
+      } catch (err) {
+        setBalanceError(err instanceof Error ? err.message : 'Check failed')
+      }
+    }
+
     if (balanceChecking && !checkedBalance) {
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
@@ -925,15 +1107,47 @@ export default function FestivalPublicPage() {
             >
               Check Balance
             </h1>
-            <span className="w-12" />
+            {isOnlineDemo ? (
+              <button
+                onClick={handleOnlineBalanceCheck}
+                disabled={!balanceWalletInput}
+                className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                style={{ color: balanceWalletInput ? '#ffd700' : '#3a3a5a', borderColor: balanceWalletInput ? '#ffd700' : '#3a3a5a' }}
+              >
+                Check ›
+              </button>
+            ) : (
+              <span className="w-12" />
+            )}
           </div>
 
           <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
-            Tap your wristband to view balance
+            {isOnlineDemo ? 'Enter wallet ID to view balance' : 'Tap your wristband to view balance'}
           </p>
 
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <NFCIndicator status="scanning" />
+            {isOnlineDemo ? (
+              <>
+                <div className="w-full max-w-xs">
+                  <input
+                    type="text"
+                    value={balanceWalletInput}
+                    onChange={(e) => setBalanceWalletInput(e.target.value.toUpperCase())}
+                    placeholder="e.g. A1B2C3"
+                    maxLength={WALLET_ID_LENGTH}
+                    className="w-full p-3 text-center text-sm font-mono tracking-wider uppercase border-2"
+                    style={{
+                      backgroundColor: '#0f0f24',
+                      borderColor: '#667eea',
+                      color: '#e0e8f0',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <NFCIndicator status="scanning" />
+            )}
             {balanceError && (
               <p className="text-sm text-center" style={{ color: '#ef4444' }}>{balanceError}</p>
             )}

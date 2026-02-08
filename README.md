@@ -168,9 +168,33 @@ NFC Card (UID)  →  Festival Card (server)  →  Circle Gateway (burn)  →  Me
 
 **Merchant payouts:** Real USDC delivered via Circle Gateway to merchant's preferred chain. Merchants configured via env vars (`MERCHANT_BEERS_ADDRESS`, etc.).
 
-### Online Demo Mode
+### Online Demo Mode — Try It Without Hardware
 
-Same features as kiosk mode but with simulated coin insertion (UI buttons instead of Arduino serial). Web NFC API enables phone-based NFC on Android Chrome. Deployable to Vercel or any host.
+Full-featured demo deployable to Vercel or any host. No Arduino, no USB NFC reader required. All transfers use **real USDC** on testnet.
+
+**What's simulated vs real:**
+
+| Feature | Online Demo | Hardware Mode |
+|---------|-------------|---------------|
+| Coin insertion | UI buttons (tap to insert) | Arduino pulse-based coin acceptor |
+| NFC card wallets | Auto-generated wallet IDs + PIN `1234` | Physical NFC card tap (any NFC chip) |
+| USDC transfers | Real — Yellow off-chain + Arc Bridge CCTP | Same |
+| Festival payments | Wallet ID text input instead of NFC tap | Physical NFC wristband tap |
+| Cross-chain bridging | Real — ~15s settlement to 7 chains | Same |
+
+**Online demo features:**
+
+- **Coin cap**: $0.10 USDC max per session (preserves testnet funds)
+- **NFC fallback**: "Print PIN & Wallet ID" button when Web NFC isn't available (non-Android browsers)
+- **Wallet ID input**: Festival payment and balance check accept typed wallet IDs instead of NFC taps
+- **Auto wallet creation**: Festival top-up generates a wallet ID + sets PIN to `1234` automatically
+- **Gas check**: Chain selector disables destination chains where the operator has no native gas
+- **Explorer links**: Done screens include clickable "View on Explorer" links and QR codes
+- **Admin PIN hint**: Festival admin login shows "Demo PIN: 1234"
+
+**Web NFC note**: The Web NFC API only works on **Android Chrome**. Desktop browsers and iOS Safari do not support it. For non-Android users, all NFC-dependent flows have fallback alternatives (wallet ID input or PIN wallet generation).
+
+**Gas on destination chains**: The operator wallet needs native gas (ETH, AVAX, POL, etc.) on each destination chain for Bridge Kit / Gateway mints. The `/api/chains/gas` endpoint checks all chains and the UI disables chains with insufficient gas. Fund chains via testnet faucets.
 
 ---
 
@@ -425,11 +449,11 @@ No tablet apps. No cloud dependencies. No hardcoded users. USB-only, offline-fri
 
 | Mode | Coin Input | NFC | Transfers | Gateway | Deploy Target |
 |------|-----------|-----|-----------|---------|---------------|
-| `demo_online` | UI buttons | Phone (Web NFC) | Real USDC via Arc Bridge | No | Vercel / any host |
+| `demo_online` | UI buttons ($0.10 cap) | Wallet ID input + Web NFC (Android) | Real USDC via Arc Bridge | No | Vercel / any host |
 | `demo_kiosk` | Arduino serial | USB reader (PC/SC) | Real USDC via Arc Bridge | No | Local PC + tablet |
 | `demo_festival` | Arduino serial | USB reader (PC/SC) | Real USDC via Gateway | Yes | Local PC + tablet |
 
-All modes perform **real USDC transfers**. All modes support **NFC card wallets**.
+All modes perform **real USDC transfers**. All modes support **NFC card wallets** (physical or virtual).
 
 ---
 
@@ -475,6 +499,7 @@ All modes perform **real USDC transfers**. All modes support **NFC card wallets*
 |-------|--------|---------|
 | `/api/status` | GET | System status + auto-fund on startup |
 | `/api/faucet` | GET/POST | Balance check / faucet claim |
+| `/api/chains/gas` | GET | Check native gas balances on all destination chains |
 
 ---
 

@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKi0xk, actions } from '@/lib/state'
-import { SUPPORTED_ASSETS, SUPPORTED_CHAINS, calculateFee, type ChainKey, DEFAULT_CHAIN } from '@/lib/constants'
+import { SUPPORTED_ASSETS, SUPPORTED_CHAINS, calculateFee, type ChainKey, DEFAULT_CHAIN, ONLINE_MAX_USDC } from '@/lib/constants'
 import {
   apiStartSession, apiDepositToSession, apiEndSession, apiSessionToPin,
   apiCreateCardWithId, apiSetCardPin, apiTopUpCard, apiGetCardInfo,
 } from '@/lib/api-client'
-import { getModeFeatures } from '@/lib/mode'
+import { getMode, getModeFeatures } from '@/lib/mode'
 import { useCoinEvents } from '@/hooks/use-coin-events'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
 import { QRCodeSVG } from 'qrcode.react'
@@ -48,6 +48,17 @@ export default function BuyPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const sessionStarting = useRef(false)
   const settlingStarted = useRef(false)
+
+  const isOnlineDemo = getMode() === 'demo_online'
+
+  // Gas status for chain selector
+  const [gasStatus, setGasStatus] = useState<Record<string, { hasGas: boolean }>>({})
+  useEffect(() => {
+    fetch('/api/chains/gas')
+      .then((r) => r.json())
+      .then((data) => { if (!data.error) setGasStatus(data) })
+      .catch(() => {})
+  }, [])
 
   // NFC card destination state
   const [nfcCardId, setNfcCardId] = useState('')
@@ -211,7 +222,10 @@ export default function BuyPage() {
   // insert-coins — session already exists at this point
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'insert-coins') {
+    const atCap = isOnlineDemo && state.totalDepositedUSDC >= ONLINE_MAX_USDC
+
     const handleCoinInserted = (pesos: number, usdc: number) => {
+      if (isOnlineDemo && state.totalDepositedUSDC + usdc > ONLINE_MAX_USDC) return
       dispatch(actions.insertCoin(pesos, usdc))
       // Fire-and-forget deposit to session (only if session exists)
       if (state.sessionId) {
@@ -250,12 +264,19 @@ export default function BuyPage() {
           {getModeFeatures().useSimulatedCoins ? 'Tap a coin to simulate insertion' : 'Insert coins into the slot'}
         </p>
 
+        {isOnlineDemo && (
+          <p className="text-[0.625rem] uppercase tracking-wider text-center" style={{ color: atCap ? '#ef4444' : '#f093fb' }}>
+            {atCap ? `Demo limit reached ($${ONLINE_MAX_USDC} USDC)` : `Online demo limit: $${ONLINE_MAX_USDC} USDC`}
+          </p>
+        )}
+
         {/* Content */}
         <div className="flex-1 min-h-0">
           <CoinSlotSimulator
             onCoinInserted={handleCoinInserted}
             totalPesos={state.totalDepositedPesos}
             totalUSDC={state.totalDepositedUSDC}
+            disabled={atCap}
           />
         </div>
       </div>
@@ -358,29 +379,29 @@ export default function BuyPage() {
     )
   }
 
+  const handlePrintPin = async () => {
+    setIsProcessing(true)
+    try {
+      const result = await apiSessionToPin(
+        state.sessionId ?? ''
+      )
+      dispatch(actions.setPinData({
+        pin: result.pin,
+        walletId: result.walletId,
+        amount: result.amount,
+      }))
+      setStep('pin-generated')
+    } catch {
+      // stay here
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   // choose-destination
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'choose-destination') {
-    const handlePrintPin = async () => {
-      setIsProcessing(true)
-      try {
-        const result = await apiSessionToPin(
-          state.sessionId ?? ''
-        )
-        dispatch(actions.setPinData({
-          pin: result.pin,
-          walletId: result.walletId,
-          amount: result.amount,
-        }))
-        setStep('pin-generated')
-      } catch {
-        // stay here
-      } finally {
-        setIsProcessing(false)
-      }
-    }
-
     return (
       <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
         {/* iOS-style header: Back | Title | spacer */}
@@ -584,6 +605,7 @@ export default function BuyPage() {
           <ChainSelector
             selectedChain={selectedChain}
             onSelect={setSelectedChain}
+            gasStatus={gasStatus}
           />
         </div>
       </div>
@@ -706,7 +728,7 @@ export default function BuyPage() {
             ))}
           </div>
 
-          {/* Right: QR code */}
+          {/* Right: QR code + link */}
           {result?.explorerUrl && (
             <div
               className="flex flex-col items-center justify-center gap-1 px-3 border"
@@ -718,6 +740,15 @@ export default function BuyPage() {
               <div className="bg-white p-1.5">
                 <QRCodeSVG value={result.explorerUrl} size={80} />
               </div>
+              <a
+                href={result.explorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[0.5625rem] uppercase underline"
+                style={{ color: '#667eea' }}
+              >
+                View on Explorer
+              </a>
             </div>
           )}
         </div>
@@ -782,6 +813,25 @@ export default function BuyPage() {
               Your card becomes a crypto wallet instantly
             </p>
           </div>
+
+          {isOnlineDemo && (
+            <div
+              className="p-2 border-2 text-center w-full"
+              style={{ backgroundColor: '#0f0f24', borderColor: '#ffd700' }}
+            >
+              <p className="text-[0.6875rem] uppercase" style={{ color: '#ffd700' }}>
+                Web NFC requires Android Chrome
+              </p>
+              <button
+                onClick={handlePrintPin}
+                disabled={isProcessing}
+                className="mt-1 text-[0.625rem] uppercase tracking-wider px-3 py-1 border"
+                style={{ color: '#f093fb', borderColor: '#f093fb' }}
+              >
+                {isProcessing ? 'Generating...' : 'No Android? Print PIN & Wallet ID instead'}
+              </button>
+            </div>
+          )}
 
           {nfcError && (
             <p className="text-[0.8125rem] text-center px-4" style={{ color: '#ef4444' }}>

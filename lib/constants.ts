@@ -10,6 +10,9 @@ export const COIN_DENOMINATIONS = [
 // 1 peso = $0.01 USDC
 export const PESO_TO_USDC_RATE = 0.01
 
+// Online demo mode cap (testnet funds are limited)
+export const ONLINE_MAX_USDC = 0.10
+
 // ============================================================================
 // Supported chains (from kiosk/src/arc/chains.ts)
 // ============================================================================

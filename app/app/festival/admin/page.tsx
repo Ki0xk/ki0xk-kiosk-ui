@@ -7,6 +7,8 @@ import { NumericKeypad } from '@/components/ki0xk/NumericKeypad'
 import { NFCIndicator } from '@/components/ki0xk/NFCIndicator'
 import { ProgressBar } from '@/components/ki0xk/ProgressBar'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
+import { getMode } from '@/lib/mode'
+import { DEMO_PIN, WALLET_ID_CHARS, WALLET_ID_LENGTH } from '@/lib/constants'
 import {
   apiVerifyAdminPin,
   apiCreateCardWithId,
@@ -34,7 +36,17 @@ type Tab = 'topup' | 'balance' | 'gateway' | 'stats'
 
 const TOPUP_PRESETS = ['0.10', '0.50', '1.00']
 
+function generateWalletId(): string {
+  let id = ''
+  for (let i = 0; i < WALLET_ID_LENGTH; i++) {
+    id += WALLET_ID_CHARS[Math.floor(Math.random() * WALLET_ID_CHARS.length)]
+  }
+  return id
+}
+
 export default function FestivalAdminPage() {
+  const isOnlineDemo = getMode() === 'demo_online'
+
   // Admin auth
   const [adminStep, setAdminStep] = useState<AdminStep>('pin-entry')
   const [adminPin, setAdminPin] = useState('')
@@ -65,6 +77,10 @@ export default function FestivalAdminPage() {
   const [depositAmount, setDepositAmount] = useState('')
   const [depositLoading, setDepositLoading] = useState(false)
   const [depositResult, setDepositResult] = useState('')
+
+  // Online demo: manual wallet ID inputs
+  const [manualTopUpWalletId, setManualTopUpWalletId] = useState('')
+  const [manualBalanceWalletId, setManualBalanceWalletId] = useState('')
 
   // Stats
   const [stats, setStats] = useState<any>(null)
@@ -216,6 +232,7 @@ export default function FestivalAdminPage() {
     setIsNewCard(false)
     setTopUpResult(null)
     setTopUpError('')
+    setManualTopUpWalletId('')
   }
 
   // PIN Entry screen
@@ -250,6 +267,12 @@ export default function FestivalAdminPage() {
         <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
           Enter admin PIN to continue
         </p>
+
+        {isOnlineDemo && (
+          <p className="text-[0.625rem] uppercase tracking-wider text-center" style={{ color: '#ffd700' }}>
+            Demo PIN: {DEMO_PIN}
+          </p>
+        )}
 
         <div className="flex-1 flex items-center justify-center min-h-0">
           <NumericKeypad value={adminPin} onChange={setAdminPin} maxLength={6} isPin />
@@ -349,13 +372,83 @@ export default function FestivalAdminPage() {
                   className="text-sm"
                   style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
                 >
-                  Tap Card
+                  {isOnlineDemo ? 'Enter Wallet ID' : 'Tap Card'}
                 </h2>
                 <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                  {'Hold card near reader to load $'}{topUpAmount}
+                  {isOnlineDemo ? `Enter wallet ID to load $${topUpAmount}` : `Hold card near reader to load $${topUpAmount}`}
                 </p>
               </div>
-              <NFCIndicator status="scanning" />
+              {isOnlineDemo ? (
+                <>
+                  <div className="w-full max-w-xs">
+                    <input
+                      type="text"
+                      value={manualTopUpWalletId}
+                      onChange={(e) => setManualTopUpWalletId(e.target.value.toUpperCase())}
+                      placeholder="e.g. A1B2C3"
+                      maxLength={WALLET_ID_LENGTH}
+                      className="w-full p-3 text-center text-sm font-mono tracking-wider uppercase border-2"
+                      style={{
+                        backgroundColor: '#0f0f24',
+                        borderColor: '#667eea',
+                        color: '#e0e8f0',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <ArcadeButton
+                    size="sm"
+                    variant="primary"
+                    onClick={() => {
+                      if (manualTopUpWalletId) handleNfcTap('manual', { walletId: manualTopUpWalletId })
+                    }}
+                    disabled={!manualTopUpWalletId}
+                    className="w-full max-w-xs"
+                  >
+                    Top Up Existing
+                  </ArcadeButton>
+
+                  <div className="w-full max-w-xs border-t-2 pt-2" style={{ borderColor: '#2a2a4a' }}>
+                    <p className="text-[0.625rem] uppercase tracking-wider text-center mb-2" style={{ color: '#7a7a9a' }}>
+                      Or create a new wallet
+                    </p>
+                    <ArcadeButton
+                      size="sm"
+                      variant="accent"
+                      onClick={async () => {
+                        const wid = generateWalletId()
+                        setManualTopUpWalletId(wid)
+                        setCardWalletId(wid)
+                        setIsNewCard(true)
+                        setTopUpStep('processing')
+                        try {
+                          await apiCreateCardWithId(wid)
+                          await apiSetCardPin(wid, DEMO_PIN)
+                          const result = await apiTopUpCard(wid, topUpAmount)
+                          if (result.success) {
+                            setTopUpResult({ walletId: wid, balance: result.newBalance })
+                            setTopUpStep('success')
+                          } else {
+                            setTopUpError(result.message)
+                            setTopUpStep('error')
+                          }
+                        } catch (err) {
+                          setTopUpError(err instanceof Error ? err.message : 'Failed')
+                          setTopUpStep('error')
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      Create New Wallet & Load ${topUpAmount}
+                    </ArcadeButton>
+                    <p className="text-[0.625rem] uppercase text-center mt-1" style={{ color: '#ffd700' }}>
+                      PIN will be set to: {DEMO_PIN}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <NFCIndicator status="scanning" />
+              )}
               <ArcadeButton size="sm" variant="secondary" onClick={resetTopUp}>
                 Cancel
               </ArcadeButton>
@@ -427,7 +520,13 @@ export default function FestivalAdminPage() {
                   Balance: ${topUpResult.balance} USDC
                 </p>
 
-                {isNewCard && (
+                {isNewCard && isOnlineDemo && (
+                  <div className="p-2 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#ffd700' }}>
+                    <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>PIN</p>
+                    <p className="text-sm font-mono tracking-[0.3em]" style={{ color: '#ffd700' }}>{DEMO_PIN}</p>
+                  </div>
+                )}
+                {isNewCard && !isOnlineDemo && (
                   <p className="text-[0.6875rem] uppercase" style={{ color: '#ef4444' }}>
                     Remind attendant to REMEMBER their PIN
                   </p>
@@ -465,10 +564,42 @@ export default function FestivalAdminPage() {
                   Check Balance
                 </h2>
                 <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                  Tap a card to view its balance
+                  {isOnlineDemo ? 'Enter wallet ID to view balance' : 'Tap a card to view its balance'}
                 </p>
               </div>
-              <NFCIndicator status="scanning" />
+              {isOnlineDemo ? (
+                <>
+                  <div className="w-full max-w-xs">
+                    <input
+                      type="text"
+                      value={manualBalanceWalletId}
+                      onChange={(e) => setManualBalanceWalletId(e.target.value.toUpperCase())}
+                      placeholder="e.g. A1B2C3"
+                      maxLength={WALLET_ID_LENGTH}
+                      className="w-full p-3 text-center text-sm font-mono tracking-wider uppercase border-2"
+                      style={{
+                        backgroundColor: '#0f0f24',
+                        borderColor: '#667eea',
+                        color: '#e0e8f0',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <ArcadeButton
+                    size="sm"
+                    variant="primary"
+                    onClick={() => {
+                      if (manualBalanceWalletId) handleNfcTap('manual', { walletId: manualBalanceWalletId })
+                    }}
+                    disabled={!manualBalanceWalletId}
+                    className="w-full max-w-xs"
+                  >
+                    Check Balance
+                  </ArcadeButton>
+                </>
+              ) : (
+                <NFCIndicator status="scanning" />
+              )}
             </>
           )}
 
