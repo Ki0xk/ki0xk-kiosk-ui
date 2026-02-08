@@ -416,7 +416,7 @@ export default function FestivalPublicPage() {
     if (payStep === 'build-cart' && selectedMerchant) {
       const products = MERCHANT_PRODUCTS[selectedMerchant.id] || []
       return (
-        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
           <div className="flex items-center justify-between px-1">
             <button
               onClick={() => setPayStep('select-merchant')}
@@ -573,6 +573,9 @@ export default function FestivalPublicPage() {
               <p className="text-[0.625rem] uppercase text-center" style={{ color: '#7a7a9a' }}>
                 Enter the wallet ID from your top-up receipt
               </p>
+              <p className="text-[0.625rem] uppercase text-center" style={{ color: '#667eea' }}>
+                Or tap NFC tag if available (Android Chrome)
+              </p>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -630,7 +633,7 @@ export default function FestivalPublicPage() {
     // Confirm
     if (payStep === 'confirm') {
       return (
-        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
           <div className="flex items-center justify-between px-1">
             <button
               onClick={() => setPayStep('enter-pin')}
@@ -721,7 +724,7 @@ export default function FestivalPublicPage() {
     // Success
     if (payStep === 'success' && payResult) {
       return (
-        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
           <div className="flex items-center justify-between px-1">
             <span className="w-12" />
             <h1
@@ -778,7 +781,13 @@ export default function FestivalPublicPage() {
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
           <div className="flex items-center justify-between px-1">
-            <span className="w-12" />
+            <button
+              onClick={() => { setPayStep('tap-card'); setPin('') }}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Retry
+            </button>
             <h1
               className="text-sm"
               style={{ color: '#ef4444' }}
@@ -790,7 +799,7 @@ export default function FestivalPublicPage() {
               className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
               style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
             >
-              Retry ›
+              Home ›
             </button>
           </div>
 
@@ -909,7 +918,7 @@ export default function FestivalPublicPage() {
       }
 
       return (
-        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
           <div className="flex items-center justify-between px-1">
             <button
               onClick={() => setTopUpStep('insert-coins')}
@@ -982,7 +991,7 @@ export default function FestivalPublicPage() {
     // Success
     if (topUpStep === 'success') {
       return (
-        <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
+        <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
           <div className="flex items-center justify-between px-1">
             <span className="w-12" />
             <h1
@@ -1040,7 +1049,13 @@ export default function FestivalPublicPage() {
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-hidden">
           <div className="flex items-center justify-between px-1">
-            <span className="w-12" />
+            <button
+              onClick={() => setTopUpStep('insert-coins')}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Retry
+            </button>
             <h1
               className="text-sm"
               style={{ color: '#ef4444' }}
@@ -1052,7 +1067,7 @@ export default function FestivalPublicPage() {
               className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
               style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
             >
-              Retry ›
+              Home ›
             </button>
           </div>
 

@@ -287,7 +287,7 @@ export default function FestivalAdminPage() {
 
   // Dashboard
   return (
-    <div className="h-full flex flex-col p-2 gap-1 overflow-hidden">
+    <div className="h-full flex flex-col p-2 gap-1 overflow-y-auto">
       {/* iOS-style header: Back | Title | spacer */}
       <div className="flex items-center justify-between px-1">
         <Link
@@ -334,6 +334,26 @@ export default function FestivalAdminPage() {
         <>
           {topUpStep === 'enter-amount' && (
             <div className="flex flex-col gap-1 flex-1 min-h-0">
+              <div className="flex items-center justify-between px-1">
+                <span className="w-12" />
+                <h2
+                  className="text-sm"
+                  style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+                >
+                  Enter Amount
+                </h2>
+                <button
+                  onClick={() => setTopUpStep('tap-card')}
+                  disabled={!topUpAmount || parseFloat(topUpAmount) <= 0}
+                  className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                  style={{
+                    color: topUpAmount && parseFloat(topUpAmount) > 0 ? '#ffd700' : '#3a3a5a',
+                    borderColor: topUpAmount && parseFloat(topUpAmount) > 0 ? '#ffd700' : '#3a3a5a',
+                  }}
+                >
+                  Next ›
+                </button>
+              </div>
               <div className="grid grid-cols-3 gap-1">
                 {TOPUP_PRESETS.map((preset) => (
                   <button
@@ -366,18 +386,27 @@ export default function FestivalAdminPage() {
           )}
 
           {topUpStep === 'tap-card' && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <div className="text-center space-y-1">
+            <div className="flex-1 flex flex-col gap-2 min-h-0">
+              <div className="flex items-center justify-between px-1">
+                <button
+                  onClick={resetTopUp}
+                  className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                  style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+                >
+                  ‹ Back
+                </button>
                 <h2
                   className="text-sm"
                   style={{ color: '#f093fb', textShadow: '0 0 10px rgba(240, 147, 251, 0.5)' }}
                 >
                   {isOnlineDemo ? 'Enter Wallet ID' : 'Tap Card'}
                 </h2>
-                <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                  {isOnlineDemo ? `Enter wallet ID to load $${topUpAmount}` : `Hold card near reader to load $${topUpAmount}`}
-                </p>
+                <span className="w-12" />
               </div>
+              <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+                {isOnlineDemo ? `Enter wallet ID to load $${topUpAmount}` : `Hold card near reader to load $${topUpAmount}`}
+              </p>
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 overflow-y-auto">
               {isOnlineDemo ? (
                 <>
                   <div className="w-full max-w-xs">
@@ -445,41 +474,51 @@ export default function FestivalAdminPage() {
                       PIN will be set to: {DEMO_PIN}
                     </p>
                   </div>
+                  <p className="text-[0.625rem] uppercase text-center" style={{ color: '#667eea' }}>
+                    Or tap NFC tag if available (Android Chrome)
+                  </p>
                 </>
               ) : (
                 <NFCIndicator status="scanning" />
               )}
-              <ArcadeButton size="sm" variant="secondary" onClick={resetTopUp}>
-                Cancel
-              </ArcadeButton>
+              </div>
             </div>
           )}
 
           {topUpStep === 'new-card-pin' && (
             <div className="flex-1 flex flex-col gap-1 min-h-0">
-              <div className="text-center">
+              <div className="flex items-center justify-between px-1">
+                <button
+                  onClick={resetTopUp}
+                  className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                  style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+                >
+                  ‹ Cancel
+                </button>
                 <h2
                   className="text-sm"
                   style={{ color: '#667eea', textShadow: '0 0 10px rgba(102, 126, 234, 0.5)' }}
                 >
-                  New Card: {cardWalletId}
+                  Set PIN
                 </h2>
-                <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-                  Set a PIN for this card
-                </p>
+                <button
+                  onClick={handleNewCardPinSubmit}
+                  disabled={newCardPin.length < 4}
+                  className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                  style={{
+                    color: newCardPin.length >= 4 ? '#ffd700' : '#3a3a5a',
+                    borderColor: newCardPin.length >= 4 ? '#ffd700' : '#3a3a5a',
+                  }}
+                >
+                  Save ›
+                </button>
               </div>
 
-              <NumericKeypad value={newCardPin} onChange={setNewCardPin} maxLength={6} isPin />
+              <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+                New Card: {cardWalletId}
+              </p>
 
-              <ArcadeButton
-                size="md"
-                variant="primary"
-                onClick={handleNewCardPinSubmit}
-                disabled={newCardPin.length < 4}
-                className="w-full"
-              >
-                Set PIN & Load
-              </ArcadeButton>
+              <NumericKeypad value={newCardPin} onChange={setNewCardPin} maxLength={6} isPin />
 
               <p className="text-[0.6875rem] uppercase text-center" style={{ color: '#ef4444' }}>
                 Remember this PIN — it cannot be recovered
@@ -497,7 +536,25 @@ export default function FestivalAdminPage() {
           )}
 
           {topUpStep === 'success' && topUpResult && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-2">
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="w-12" />
+                <h2
+                  className="text-sm"
+                  style={{ color: '#78ffd6', textShadow: '0 0 10px rgba(120, 255, 214, 0.5)' }}
+                >
+                  Card Updated
+                </h2>
+                <button
+                  onClick={resetTopUp}
+                  className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                  style={{ color: '#ffd700', borderColor: '#ffd700' }}
+                >
+                  Next ›
+                </button>
+              </div>
+
+              <div className="flex-1 flex flex-col items-center justify-center gap-2">
               <div
                 className="w-12 h-12 flex items-center justify-center"
                 style={{
@@ -509,7 +566,6 @@ export default function FestivalAdminPage() {
               </div>
 
               <div className="text-center space-y-2 w-full max-w-xs">
-                <h2 className="text-sm" style={{ color: '#78ffd6' }}>Card Updated</h2>
 
                 <div className="p-2 border-2" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
                   <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Card ID</p>
@@ -532,20 +588,31 @@ export default function FestivalAdminPage() {
                   </p>
                 )}
               </div>
-
-              <ArcadeButton size="md" variant="primary" onClick={resetTopUp} className="w-full max-w-xs">
-                Next Card
-              </ArcadeButton>
+              </div>
             </div>
           )}
 
           {topUpStep === 'error' && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4">
-              <h2 className="text-sm" style={{ color: '#ef4444' }}>Error</h2>
-              <p className="text-sm text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
-              <ArcadeButton size="md" variant="secondary" onClick={resetTopUp}>
-                Try Again
-              </ArcadeButton>
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="flex items-center justify-between px-1">
+                <button
+                  onClick={resetTopUp}
+                  className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+                  style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+                >
+                  ‹ Retry
+                </button>
+                <h2
+                  className="text-sm"
+                  style={{ color: '#ef4444' }}
+                >
+                  Error
+                </h2>
+                <span className="w-12" />
+              </div>
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-sm text-center" style={{ color: '#ef4444' }}>{topUpError}</p>
+              </div>
             </div>
           )}
         </>
