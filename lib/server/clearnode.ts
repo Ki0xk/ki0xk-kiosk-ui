@@ -20,9 +20,13 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import { getServerConfig } from './config'
 import { logger } from './logger'
 import { getKioskAddress, getWalletClient } from './wallet'
+import { isMainnet } from '../network'
 
 const APP_NAME = 'ki0xk'
 const APP_SCOPE = 'kiosk'
+
+/** Yellow asset name: 'usdc' on mainnet, 'ytest.usd' on sandbox */
+const YELLOW_ASSET = isMainnet() ? 'usdc' : 'ytest.usd'
 
 export class ClearNodeClient {
   private client: Client | null = null
@@ -103,7 +107,7 @@ export class ClearNodeClient {
       address: kioskAddress as `0x${string}`,
       session_key: this.sessionAddress as `0x${string}`,
       application: APP_NAME,
-      allowances: [{ asset: 'ytest.usd', amount: '1000000000' }],
+      allowances: [{ asset: YELLOW_ASSET, amount: '1000000000' }],
       expires_at: BigInt(Math.floor(Date.now() / 1000) + 86400),
       scope: APP_SCOPE,
     }
@@ -200,7 +204,7 @@ export class ClearNodeClient {
     }
   }
 
-  async createChannel(tokenAddress: string, chainId: number = 84532): Promise<string> {
+  async createChannel(tokenAddress: string, chainId: number = isMainnet() ? 8453 : 84532): Promise<string> {
     if (!this.authenticated) throw new Error('Not authenticated')
     logger.debug('Creating channel...', { chainId })
 
@@ -292,10 +296,10 @@ export class ClearNodeClient {
       throw new Error(`Invalid amount: ${amountUsd}`)
     }
 
-    logger.info('Ki0xk Transfer', { destination: destinationWallet, amount: `${amountUsd} ytest.usd` })
+    logger.info('Ki0xk Transfer', { destination: destinationWallet, amount: `${amountUsd} ${YELLOW_ASSET}` })
 
     try {
-      const result = await this.transfer(destinationWallet, 'ytest.usd', amountUsd)
+      const result = await this.transfer(destinationWallet, YELLOW_ASSET, amountUsd)
       logger.info('Transfer complete!', { destination: destinationWallet, amount: amountUsd })
       return result
     } catch (error) {

@@ -5,22 +5,27 @@ import { getServerConfig } from '../config'
 import { getKioskAddress } from '../wallet'
 import { logger } from '../logger'
 import { calculateFee, type FeeBreakdown } from './fees'
-import { SUPPORTED_CHAINS, type ChainInfo } from './chains'
+import { SUPPORTED_CHAINS, SOURCE_CHAIN_KEY, type ChainInfo } from './chains'
+import { isMainnet } from '../../network'
 
-const ARC_USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as const
+// USDC address on the source chain
+// Testnet: Arc Testnet precompile — Mainnet: Base native USDC
+const SOURCE_USDC_ADDRESS = isMainnet()
+  ? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const
+  : '0x3600000000000000000000000000000000000000' as const
 
 let _arcClient: PublicClient | null = null
 
-function getArcPublicClient(): PublicClient {
+function getSourcePublicClient(): PublicClient {
   if (!_arcClient) {
-    const arc = SUPPORTED_CHAINS['arc']
+    const source = SUPPORTED_CHAINS[SOURCE_CHAIN_KEY]
     const chain: Chain = {
-      id: arc.chainId,
-      name: arc.name,
+      id: source.chainId,
+      name: source.name,
       nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-      rpcUrls: { default: { http: [arc.rpcUrl] } },
+      rpcUrls: { default: { http: [source.rpcUrl] } },
     }
-    _arcClient = createPublicClient({ chain, transport: http(arc.rpcUrl) })
+    _arcClient = createPublicClient({ chain, transport: http(source.rpcUrl) })
   }
   return _arcClient
 }
@@ -59,10 +64,10 @@ export interface ArcBalance {
 export async function getArcBalance(): Promise<ArcBalance> {
   try {
     logger.debug('Checking Arc USDC balance...')
-    const client = getArcPublicClient()
+    const client = getSourcePublicClient()
     const address = getKioskAddress() as `0x${string}`
     const raw = await client.readContract({
-      address: ARC_USDC_ADDRESS,
+      address: SOURCE_USDC_ADDRESS,
       abi: erc20Abi,
       functionName: 'balanceOf',
       args: [address],
@@ -103,7 +108,7 @@ export async function bridgeToChain(
     })
 
     const bridgeConfig: any = {
-      from: { adapter, chain: 'Arc_Testnet' },
+      from: { adapter, chain: SUPPORTED_CHAINS[SOURCE_CHAIN_KEY].bridgeKitName },
       to: {
         adapter,
         chain: chainInfo.bridgeKitName,
@@ -144,7 +149,7 @@ export async function bridgeToChain(
       return {
         success: true,
         txStatus: 'pending',
-        sourceChain: 'Arc_Testnet',
+        sourceChain: SUPPORTED_CHAINS[SOURCE_CHAIN_KEY].bridgeKitName,
         destinationChain: chainInfo.name,
         amount: feeBreakdown.netAmount.toString(),
         fee: feeBreakdown,
@@ -163,7 +168,7 @@ export async function bridgeToChain(
       txHash,
       txStatus: txStatus as 'success' | 'reverted' | 'pending',
       explorerUrl: explorerUrl || undefined,
-      sourceChain: 'Arc_Testnet',
+      sourceChain: SUPPORTED_CHAINS[SOURCE_CHAIN_KEY].bridgeKitName,
       destinationChain: chainInfo.name,
       amount: feeBreakdown.netAmount.toString(),
       fee: feeBreakdown,
@@ -173,7 +178,7 @@ export async function bridgeToChain(
     logger.error('Bridge failed', { error: errorMsg, chain: chainInfo.name })
     return {
       success: false,
-      sourceChain: 'Arc_Testnet',
+      sourceChain: SUPPORTED_CHAINS[SOURCE_CHAIN_KEY].bridgeKitName,
       destinationChain: chainInfo.name,
       amount: feeBreakdown.netAmount.toString(),
       fee: feeBreakdown,

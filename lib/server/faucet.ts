@@ -4,6 +4,7 @@ import { getKioskAddress } from './wallet'
 import { getArcBalance } from './arc/bridge'
 import { getClearNode } from './clearnode'
 import { getMode } from '../mode'
+import { isMainnet } from '../network'
 
 // ============================================================================
 // Types
@@ -30,15 +31,16 @@ export interface FaucetClaimResult {
  * Exact logic from kiosk/src/settlement.ts lines 93-107.
  */
 function parseYellowBalance(response: unknown): { asset: string; amount: string; raw: string } {
-  const fallback = { asset: 'ytest.usd', amount: '0.00', raw: '0' }
+  const assetName = isMainnet() ? 'usdc' : 'ytest.usd'
+  const fallback = { asset: assetName, amount: '0.00', raw: '0' }
   try {
     const data = response as any
     const entries = data?.params?.ledgerBalances || data?.params?.balances || []
     for (const entry of entries) {
-      if (entry?.asset === 'ytest.usd') {
+      if (entry?.asset === assetName) {
         const rawAmount = entry?.amount || '0'
         return {
-          asset: 'ytest.usd',
+          asset: assetName,
           amount: (Number(rawAmount) / 1_000_000).toFixed(2),
           raw: rawAmount,
         }
@@ -58,7 +60,7 @@ export async function getAllBalances(): Promise<FaucetBalances> {
 
   const arcBalance = await getArcBalance()
 
-  let yellowBalance = { asset: 'ytest.usd', amount: '0.00', raw: '0' }
+  let yellowBalance = { asset: isMainnet() ? 'usdc' : 'ytest.usd', amount: '0.00', raw: '0' }
   try {
     const clearNode = getClearNode()
     await clearNode.ensureConnected()
@@ -87,6 +89,7 @@ export async function getAllBalances(): Promise<FaucetBalances> {
  * No API key needed.
  */
 async function claimYellowFaucet(address: string): Promise<{ success: boolean; message: string }> {
+  if (isMainnet()) return { success: false, message: 'Faucets not available on mainnet' }
   try {
     logger.info('Requesting Yellow faucet...', { address })
     const res = await fetch('https://clearnet-sandbox.yellow.com/faucet/requestTokens', {
@@ -117,6 +120,7 @@ async function claimYellowFaucet(address: string): Promise<{ success: boolean; m
  * Skips if CIRCLE_API_KEY is not set.
  */
 async function claimCircleFaucet(address: string): Promise<{ success: boolean; message: string }> {
+  if (isMainnet()) return { success: false, message: 'Faucets not available on mainnet' }
   const config = getServerConfig()
   if (!config.CIRCLE_API_KEY) {
     return { success: false, message: 'CIRCLE_API_KEY not set, skipping Arc faucet' }

@@ -1,19 +1,22 @@
 import { z } from 'zod'
+import { isMainnet } from '../network'
+
+const _mainnet = isMainnet()
 
 const envSchema = z.object({
-  CHAIN_ID: z.coerce.number().default(84532),
-  RPC_URL: z.string().url().default('https://sepolia.base.org'),
+  CHAIN_ID: z.coerce.number().default(_mainnet ? 8453 : 84532),
+  RPC_URL: z.string().url().default(_mainnet ? 'https://mainnet.base.org' : 'https://sepolia.base.org'),
   PRIVATE_KEY: z
     .string()
     .regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid private key format'),
   CLEARNODE_WS_URL: z
     .string()
     .url()
-    .default('wss://clearnet-sandbox.yellow.com/ws'),
+    .default(_mainnet ? 'wss://clearnet.yellow.com/ws' : 'wss://clearnet-sandbox.yellow.com/ws'),
   USDC_ADDRESS: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid address format')
-    .default('0x036CbD53842c5426634e7929541eC2318f3dCF7e'),
+    .default(_mainnet ? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' : '0x036CbD53842c5426634e7929541eC2318f3dCF7e'),
   FEE_RECIPIENT_ADDRESS: z
     .string()
     .transform((v) => (v === '' ? undefined : v))
@@ -29,26 +32,28 @@ const envSchema = z.object({
     .optional(),
   // Festival config
   FESTIVAL_ADMIN_PIN: z.string().min(4).default('1234'),
-  GATEWAY_API_URL: z.string().url().default('https://gateway-api-testnet.circle.com/v1'),
+  GATEWAY_API_URL: z.string().url().default(
+    _mainnet ? 'https://gateway-api.circle.com/v1' : 'https://gateway-api-testnet.circle.com/v1'
+  ),
   // Merchants (env-based)
   MERCHANT_BEERS_ADDRESS: z
     .string()
     .transform((v) => (v === '' ? undefined : v))
     .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional())
     .optional(),
-  MERCHANT_BEERS_CHAIN: z.string().default('base_sepolia'),
+  MERCHANT_BEERS_CHAIN: z.string().default(_mainnet ? 'base' : 'base_sepolia'),
   MERCHANT_FOOD_ADDRESS: z
     .string()
     .transform((v) => (v === '' ? undefined : v))
     .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional())
     .optional(),
-  MERCHANT_FOOD_CHAIN: z.string().default('base_sepolia'),
+  MERCHANT_FOOD_CHAIN: z.string().default(_mainnet ? 'base' : 'base_sepolia'),
   MERCHANT_MERCH_ADDRESS: z
     .string()
     .transform((v) => (v === '' ? undefined : v))
     .pipe(z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional())
     .optional(),
-  MERCHANT_MERCH_CHAIN: z.string().default('base_sepolia'),
+  MERCHANT_MERCH_CHAIN: z.string().default(_mainnet ? 'base' : 'base_sepolia'),
 })
 
 export type ServerConfig = z.infer<typeof envSchema>

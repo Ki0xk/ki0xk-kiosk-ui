@@ -1,3 +1,5 @@
+import { isMainnet } from './network'
+
 // ============================================================================
 // Coin denominations from Coinslot (Arduino pulse-to-peso mapping)
 // ============================================================================
@@ -11,12 +13,12 @@ export const COIN_DENOMINATIONS = [
 export const PESO_TO_USDC_RATE = 0.01
 
 // Online demo mode cap (testnet funds are limited)
-export const ONLINE_MAX_USDC = 0.10
+export const ONLINE_MAX_USDC = isMainnet() ? 1.00 : 0.10
 
 // ============================================================================
-// Supported chains (from kiosk/src/arc/chains.ts)
+// Supported chains (client-side — for chain selector UI)
 // ============================================================================
-export const SUPPORTED_CHAINS = {
+const TESTNET_SUPPORTED_CHAINS = {
   base:      { name: 'Base Sepolia',      chainId: 84532,    key: 'base' },
   ethereum:  { name: 'Ethereum Sepolia',  chainId: 11155111, key: 'ethereum' },
   arbitrum:  { name: 'Arbitrum Sepolia',  chainId: 421614,   key: 'arbitrum' },
@@ -26,7 +28,19 @@ export const SUPPORTED_CHAINS = {
   linea:     { name: 'Linea Sepolia',     chainId: 59141,    key: 'linea' },
 } as const
 
-export type ChainKey = keyof typeof SUPPORTED_CHAINS
+const MAINNET_SUPPORTED_CHAINS = {
+  ethereum:  { name: 'Ethereum',   chainId: 1,     key: 'ethereum' },
+  base:      { name: 'Base',       chainId: 8453,  key: 'base' },
+  arbitrum:  { name: 'Arbitrum',   chainId: 42161, key: 'arbitrum' },
+  polygon:   { name: 'Polygon',    chainId: 137,   key: 'polygon' },
+  optimism:  { name: 'Optimism',   chainId: 10,    key: 'optimism' },
+  avalanche: { name: 'Avalanche',  chainId: 43114, key: 'avalanche' },
+  linea:     { name: 'Linea',      chainId: 59144, key: 'linea' },
+} as const
+
+export const SUPPORTED_CHAINS = isMainnet() ? MAINNET_SUPPORTED_CHAINS : TESTNET_SUPPORTED_CHAINS
+
+export type ChainKey = keyof typeof TESTNET_SUPPORTED_CHAINS | keyof typeof MAINNET_SUPPORTED_CHAINS
 export const CHAIN_OPTIONS = Object.keys(SUPPORTED_CHAINS) as ChainKey[]
 export const DEFAULT_CHAIN: ChainKey = 'base'
 
@@ -83,9 +97,9 @@ export const DEMO_ENS_NAMES = [
 export const ADDRESS_PREFIX = '0x'
 
 // ============================================================================
-// Gateway chain options (Circle Gateway — testnet)
+// Gateway chain options (Circle Gateway — for festival mode chain selector)
 // ============================================================================
-export const GATEWAY_CHAIN_OPTIONS = [
+const TESTNET_GATEWAY_CHAIN_OPTIONS = [
   { key: 'base_sepolia', name: 'Base Sepolia' },
   { key: 'ethereum_sepolia', name: 'Ethereum Sepolia' },
   { key: 'avalanche_fuji', name: 'Avalanche Fuji' },
@@ -93,6 +107,20 @@ export const GATEWAY_CHAIN_OPTIONS = [
   { key: 'sei_atlantic', name: 'Sei Atlantic' },
   { key: 'hyperevm_testnet', name: 'HyperEVM Testnet' },
 ] as const
+
+const MAINNET_GATEWAY_CHAIN_OPTIONS = [
+  { key: 'base', name: 'Base' },
+  { key: 'ethereum', name: 'Ethereum' },
+  { key: 'arbitrum', name: 'Arbitrum' },
+  { key: 'polygon', name: 'Polygon' },
+  { key: 'optimism', name: 'Optimism' },
+  { key: 'avalanche', name: 'Avalanche' },
+  { key: 'sonic', name: 'Sonic' },
+] as const
+
+export const GATEWAY_CHAIN_OPTIONS = isMainnet()
+  ? MAINNET_GATEWAY_CHAIN_OPTIONS
+  : TESTNET_GATEWAY_CHAIN_OPTIONS
 
 // ============================================================================
 // Festival merchant products (preset items per merchant)

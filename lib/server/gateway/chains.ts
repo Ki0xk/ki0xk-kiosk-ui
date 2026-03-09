@@ -1,3 +1,5 @@
+import { isMainnet } from '../../network'
+
 export interface GatewayChainInfo {
   name: string
   domainId: number
@@ -7,7 +9,10 @@ export interface GatewayChainInfo {
   rpcUrl: string
 }
 
-export const GATEWAY_CHAINS: Record<string, GatewayChainInfo> = {
+// ============================================================================
+// Testnet gateway chains
+// ============================================================================
+const TESTNET_GATEWAY_CHAINS: Record<string, GatewayChainInfo> = {
   arc: {
     name: 'Arc Testnet',
     domainId: 26,
@@ -66,5 +71,79 @@ export const GATEWAY_CHAINS: Record<string, GatewayChainInfo> = {
   },
 }
 
+// ============================================================================
+// Mainnet gateway chains
+// CCTP domain IDs are protocol-level and shared between testnet/mainnet.
+// ============================================================================
+const MAINNET_GATEWAY_CHAINS: Record<string, GatewayChainInfo> = {
+  base: {
+    name: 'Base',
+    domainId: 6,
+    chainId: 8453,
+    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    explorerUrl: 'https://basescan.org',
+    rpcUrl: 'https://mainnet.base.org',
+  },
+  ethereum: {
+    name: 'Ethereum',
+    domainId: 0,
+    chainId: 1,
+    usdcAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    explorerUrl: 'https://etherscan.io',
+    rpcUrl: 'https://eth.drpc.org',
+  },
+  arbitrum: {
+    name: 'Arbitrum',
+    domainId: 3,
+    chainId: 42161,
+    usdcAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+    explorerUrl: 'https://arbiscan.io',
+    rpcUrl: 'https://arb1.arbitrum.io/rpc',
+  },
+  polygon: {
+    name: 'Polygon',
+    domainId: 7,
+    chainId: 137,
+    usdcAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+    explorerUrl: 'https://polygonscan.com',
+    rpcUrl: 'https://polygon-rpc.com',
+  },
+  optimism: {
+    name: 'Optimism',
+    domainId: 2,
+    chainId: 10,
+    usdcAddress: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+    explorerUrl: 'https://optimistic.etherscan.io',
+    rpcUrl: 'https://mainnet.optimism.io',
+  },
+  avalanche: {
+    name: 'Avalanche',
+    domainId: 1,
+    chainId: 43114,
+    usdcAddress: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+    explorerUrl: 'https://snowtrace.io',
+    rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
+  },
+  sonic: {
+    name: 'Sonic',
+    domainId: 13,
+    chainId: 146,
+    usdcAddress: '0x29219dd400f2Bf60E5a23d13Be72B486D4038894',
+    explorerUrl: 'https://sonicscan.org',
+    rpcUrl: 'https://rpc.soniclabs.com',
+  },
+}
+
+export const GATEWAY_CHAINS: Record<string, GatewayChainInfo> = isMainnet()
+  ? MAINNET_GATEWAY_CHAINS
+  : TESTNET_GATEWAY_CHAINS
+
+// Gateway contract addresses — same on all chains (testnet and mainnet)
 export const GATEWAY_WALLET_ADDRESS = '0x0077777d7EBA4688BDeF3E311b846F25870A19B9' as const
 export const GATEWAY_MINTER_ADDRESS = '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B' as const
+
+/**
+ * Source chain key for Gateway operations.
+ * Testnet: 'arc' — Mainnet: 'base'
+ */
+export const GATEWAY_SOURCE_KEY = isMainnet() ? 'base' : 'arc'

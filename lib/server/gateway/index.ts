@@ -13,7 +13,7 @@ import {
 import { privateKeyToAccount } from 'viem/accounts'
 import { logger } from '../logger'
 import { getServerConfig } from '../config'
-import { GATEWAY_CHAINS, GATEWAY_WALLET_ADDRESS, GATEWAY_MINTER_ADDRESS } from './chains'
+import { GATEWAY_CHAINS, GATEWAY_WALLET_ADDRESS, GATEWAY_MINTER_ADDRESS, GATEWAY_SOURCE_KEY } from './chains'
 
 // ABI fragments
 const erc20Abi = [
@@ -105,7 +105,7 @@ function randomSalt(): Hex {
 }
 
 function getArcChain() {
-  const arc = GATEWAY_CHAINS.arc
+  const arc = GATEWAY_CHAINS[GATEWAY_SOURCE_KEY]
   return {
     id: arc.chainId,
     name: arc.name,
@@ -135,18 +135,18 @@ export async function depositToGateway(amountUsdc: string): Promise<{
     const config = getServerConfig()
     const account = privateKeyToAccount(config.PRIVATE_KEY as Hex)
     const arcChain = getArcChain()
-    const arcUsdc = GATEWAY_CHAINS.arc.usdcAddress as Address
+    const arcUsdc = GATEWAY_CHAINS[GATEWAY_SOURCE_KEY].usdcAddress as Address
     const amount = parseUnits(amountUsdc, 6)
 
     const walletClient = createWalletClient({
       account,
       chain: arcChain,
-      transport: http(GATEWAY_CHAINS.arc.rpcUrl),
+      transport: http(GATEWAY_CHAINS[GATEWAY_SOURCE_KEY].rpcUrl),
     })
 
     const publicClient = createPublicClient({
       chain: arcChain,
-      transport: http(GATEWAY_CHAINS.arc.rpcUrl),
+      transport: http(GATEWAY_CHAINS[GATEWAY_SOURCE_KEY].rpcUrl),
     })
 
     logger.info('Gateway deposit: approving...', { amount: amountUsdc })
@@ -198,7 +198,7 @@ export async function gatewayTransfer(
     if (!destChain) throw new Error(`Unknown destination chain: ${destChainKey}`)
 
     const amount = parseUnits(amountUsdc, 6)
-    const arcInfo = GATEWAY_CHAINS.arc
+    const arcInfo = GATEWAY_CHAINS[GATEWAY_SOURCE_KEY]
 
     // Calculate fee: 0.005% + gas estimate (~0.01 USDC on L2)
     const feePercent = (Number(amount) * 0.00005)
@@ -343,7 +343,7 @@ export async function getGatewayBalance(): Promise<{
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: 'USDC',
-        sources: [{ domain: GATEWAY_CHAINS.arc.domainId, depositor: account.address }],
+        sources: [{ domain: GATEWAY_CHAINS[GATEWAY_SOURCE_KEY].domainId, depositor: account.address }],
       }),
     })
 
