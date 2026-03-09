@@ -10,11 +10,19 @@ import {
   createResizeChannelMessage,
   createCloseChannelMessage,
   createTransferMessage,
+  createAppSessionMessage,
+  createSubmitAppStateMessage,
+  createCloseAppSessionMessage,
+  createGetAppSessionsMessageV2,
   createECDSAMessageSigner,
   createEIP712AuthMessageSigner,
   type MessageSigner,
   type RPCResponse,
   RPCMethod,
+  RPCProtocolVersion,
+  RPCAppStateIntent,
+  type RPCAppDefinition,
+  type RPCAppSessionAllocation,
 } from '@erc7824/nitrolite'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import { getServerConfig } from './config'
@@ -312,6 +320,124 @@ export class ClearNodeClient {
       }
       throw error
     }
+  }
+
+  // ========================================================================
+  // App Sessions — multi-party off-chain state channels
+  // ========================================================================
+
+  /**
+   * Create an App Session between the kiosk operator and another participant.
+   * Used for festival payment tracking and kiosk session accounting.
+   */
+  async createAppSession(
+    participantAddress: string,
+    initialAmount: string,
+    applicationName: string = 'ki0xk-kiosk'
+  ): Promise<string> {
+    if (!this.authenticated) throw new Error('Not authenticated')
+    const kioskAddress = getKioskAddress() as `0x${string}`
+
+    const definition: RPCAppDefinition = {
+      protocol: RPCProtocolVersion.NitroRPC_0_4,
+      participants: [kioskAddress, participantAddress as `0x${string}`],
+      weights: [100, 0], // Kiosk operator has full control (trusted judge pattern)
+      quorum: 100,
+      challenge: 0,
+      nonce: Date.now(),
+      application: applicationName,
+    }
+
+    const allocations: RPCAppSessionAllocation[] = [
+      { participant: kioskAddress, asset: YELLOW_ASSET, amount: initialAmount },
+      { participant: participantAddress as `0x${string}`, asset: YELLOW_ASSET, amount: '0' },
+    ]
+
+    logger.info('Creating App Session', {
+      participant: participantAddress,
+      amount: initialAmount,
+      application: applicationName,
+    })
+
+    const message = await createAppSessionMessage(
+      this.sessionSigner!,
+      { definition, allocations }
+    )
+    const response = await this.client!.sendMessage(JSON.parse(message))
+    const responseData = response as any
+    if (responseData?.method === 'error' || responseData?.params?.error) {
+      throw new Error(responseData?.params?.error || 'App session creation failed')
+    }
+
+    const sessionId = responseData?.params?.appSessionId || responseData?.params?.app_session_id
+    logger.info('App Session created', { sessionId })
+    return sessionId
+  }
+
+  /**
+   * Update App Session state — redistribute allocations between participants.
+   * Used to record payments within a session (operate intent).
+   */
+  async submitAppState(
+    sessionId: string,
+    allocations: RPCAppSessionAllocation[],
+    version: number,
+    intent: RPCAppStateIntent = RPCAppStateIntent.Operate
+  ): Promise<unknown> {
+    if (!this.authenticated) throw new Error('Not authenticated')
+
+    logger.info('Submitting app state', { sessionId, intent, version })
+
+    const message = await createSubmitAppStateMessage<typeof RPCProtocolVersion.NitroRPC_0_4>(
+      this.sessionSigner!,
+      {
+        app_session_id: sessionId as `0x${string}`,
+        intent,
+        version,
+        allocations,
+      }
+    )
+    const response = await this.client!.sendMessage(JSON.parse(message))
+    const responseData = response as any
+    if (responseData?.method === 'error' || responseData?.params?.error) {
+      throw new Error(responseData?.params?.error || 'App state update failed')
+    }
+    return response
+  }
+
+  /**
+   * Close an App Session — finalize allocations and release funds.
+   */
+  async closeAppSession(
+    sessionId: string,
+    finalAllocations: RPCAppSessionAllocation[]
+  ): Promise<unknown> {
+    if (!this.authenticated) throw new Error('Not authenticated')
+
+    logger.info('Closing App Session', { sessionId })
+
+    const message = await createCloseAppSessionMessage(
+      this.sessionSigner!,
+      { app_session_id: sessionId as `0x${string}`, allocations: finalAllocations }
+    )
+    const response = await this.client!.sendMessage(JSON.parse(message))
+    const responseData = response as any
+    if (responseData?.method === 'error' || responseData?.params?.error) {
+      throw new Error(responseData?.params?.error || 'App session close failed')
+    }
+
+    logger.info('App Session closed', { sessionId })
+    return response
+  }
+
+  /**
+   * List active App Sessions for the kiosk operator.
+   */
+  async getAppSessions(): Promise<unknown> {
+    const kioskAddress = getKioskAddress() as `0x${string}`
+    const message = createGetAppSessionsMessageV2(kioskAddress, undefined, this.nextRequestId())
+    const response = await this.client!.sendMessage(JSON.parse(message))
+    return response
   }
 
   async disconnect(): Promise<void> {

@@ -1,16 +1,31 @@
 import { logger } from './logger'
 import { verifyPin, deduct, topUp, getBalance } from './festival-cards'
 import { getMerchantById } from './merchants'
-import { gatewayTransfer, gatewayMint, ensureGatewayBalance } from './gateway'
 
 export interface FestivalPaymentResult {
   success: boolean
   txHash?: string
   explorerUrl?: string
   newBalance?: string
+  method?: 'yellow' | 'gateway'
   error?: string
 }
 
+/**
+ * Get the configured payment method for festival mode.
+ * 'yellow' = instant off-chain via Yellow Network transfer (recommended)
+ * 'gateway' = on-chain via Circle Gateway burn+mint (legacy)
+ */
+function getPaymentMethod(): 'yellow' | 'gateway' {
+  const method = process.env.FESTIVAL_PAYMENT_METHOD || 'yellow'
+  return method === 'gateway' ? 'gateway' : 'yellow'
+}
+
+/**
+ * Process a festival payment: verify PIN → deduct card → pay merchant.
+ * Uses Yellow Network transfer (instant, gasless) by default.
+ * Falls back to Circle Gateway if FESTIVAL_PAYMENT_METHOD=gateway.
+ */
 export async function processPayment(
   walletId: string,
   pin: string,
@@ -43,79 +58,129 @@ export async function processPayment(
     return { success: false, error: deductResult.message }
   }
 
-  logger.info('Festival payment: card deducted, ensuring Gateway balance', {
+  const method = getPaymentMethod()
+
+  if (method === 'yellow') {
+    return processYellowPayment(walletId, merchantId, merchant.walletAddress, amountUsdc, deductResult.newBalance)
+  } else {
+    return processGatewayPayment(walletId, merchantId, merchant.walletAddress, merchant.preferredChain, amountUsdc, deductResult.newBalance)
+  }
+}
+
+/**
+ * Pay merchant via Yellow Network off-chain transfer.
+ * Instant, gasless. Merchant receives USDC in their Yellow unified balance.
+ */
+async function processYellowPayment(
+  walletId: string,
+  merchantId: string,
+  merchantAddress: string,
+  amountUsdc: string,
+  newBalance?: string
+): Promise<FestivalPaymentResult> {
+  logger.info('Festival payment via Yellow transfer', {
     walletId,
     merchantId,
+    merchantAddress,
     amount: amountUsdc,
-    merchantAddress: merchant.walletAddress,
-    chain: merchant.preferredChain,
   })
 
-  // 5. Ensure Gateway has enough balance (just-in-time deposit)
-  const feeBuffer = 0.01 // covers gas + 0.005% fee on testnet
-  const requiredGateway = (parseFloat(amountUsdc) + feeBuffer).toFixed(6)
-  const fundResult = await ensureGatewayBalance(requiredGateway)
-  if (!fundResult.success) {
-    logger.error('Gateway funding failed, refunding card', {
+  try {
+    const { getClearNode } = await import('./clearnode')
+    const clearNode = getClearNode()
+    await clearNode.ensureConnected()
+    await clearNode.sendToWallet(merchantAddress, amountUsdc)
+
+    logger.info('Festival payment complete (Yellow transfer)', {
+      walletId,
+      merchantId,
+      amount: amountUsdc,
+    })
+
+    return {
+      success: true,
+      newBalance,
+      method: 'yellow',
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    logger.error('Yellow transfer failed, refunding card', {
       walletId,
       amount: amountUsdc,
-      error: fundResult.error,
+      error: errorMsg,
     })
     const refund = topUp(walletId, amountUsdc)
     return {
       success: false,
       newBalance: refund.newBalance,
+      method: 'yellow',
+      error: `Yellow transfer failed: ${errorMsg}`,
+    }
+  }
+}
+
+/**
+ * Pay merchant via Circle Gateway (on-chain burn+mint).
+ * Slower (~30s), requires gas, but delivers real on-chain USDC.
+ */
+async function processGatewayPayment(
+  walletId: string,
+  merchantId: string,
+  merchantAddress: string,
+  preferredChain: string,
+  amountUsdc: string,
+  newBalance?: string
+): Promise<FestivalPaymentResult> {
+  const { gatewayTransfer, gatewayMint, ensureGatewayBalance } = await import('./gateway')
+
+  logger.info('Festival payment via Gateway', {
+    walletId,
+    merchantId,
+    merchantAddress,
+    chain: preferredChain,
+    amount: amountUsdc,
+  })
+
+  // Ensure Gateway has enough balance (just-in-time deposit)
+  const feeBuffer = 0.01
+  const requiredGateway = (parseFloat(amountUsdc) + feeBuffer).toFixed(6)
+  const fundResult = await ensureGatewayBalance(requiredGateway)
+  if (!fundResult.success) {
+    logger.error('Gateway funding failed, refunding card', { walletId, error: fundResult.error })
+    const refund = topUp(walletId, amountUsdc)
+    return {
+      success: false,
+      newBalance: refund.newBalance,
+      method: 'gateway',
       error: `Gateway funding failed: ${fundResult.error}`,
     }
   }
 
-  // 6. Gateway transfer (burn on Arc)
-  const transferResult = await gatewayTransfer(
-    merchant.walletAddress,
-    amountUsdc,
-    merchant.preferredChain
-  )
-
+  // Gateway transfer (burn on Arc/Base)
+  const transferResult = await gatewayTransfer(merchantAddress, amountUsdc, preferredChain)
   if (!transferResult.success) {
-    logger.error('Gateway transfer failed, refunding card', {
-      walletId,
-      amount: amountUsdc,
-      error: transferResult.error,
-    })
-    // Auto-refund the card
+    logger.error('Gateway transfer failed, refunding card', { walletId, error: transferResult.error })
     const refund = topUp(walletId, amountUsdc)
-    logger.info('Card refunded after Gateway failure', {
-      walletId,
-      refundedAmount: amountUsdc,
-      newBalance: refund.newBalance,
-    })
     return {
       success: false,
       newBalance: refund.newBalance,
+      method: 'gateway',
       error: `Gateway transfer failed: ${transferResult.error}`,
     }
   }
 
-  // 7. Gateway mint (on destination chain)
-  const mintResult = await gatewayMint(
-    transferResult.attestation!,
-    transferResult.signature!,
-    merchant.preferredChain
-  )
-
+  // Gateway mint (on destination chain)
+  const mintResult = await gatewayMint(transferResult.attestation!, transferResult.signature!, preferredChain)
   if (!mintResult.success) {
-    logger.error('Gateway mint failed after transfer', {
-      walletId,
-      error: mintResult.error,
-    })
     return {
       success: false,
-      newBalance: deductResult.newBalance,
+      newBalance,
+      method: 'gateway',
       error: `Gateway mint failed: ${mintResult.error}. Transfer was submitted — may complete later.`,
     }
   }
 
-  logger.info('Festival payment complete', {
+  logger.info('Festival payment complete (Gateway)', {
     walletId,
     merchantId,
     txHash: mintResult.txHash,
@@ -125,6 +190,7 @@ export async function processPayment(
     success: true,
     txHash: mintResult.txHash,
     explorerUrl: mintResult.explorerUrl,
-    newBalance: deductResult.newBalance,
+    newBalance,
+    method: 'gateway',
   }
 }

@@ -30,3 +30,6 @@ next-env.d.ts
 # runtime data
 sessions.json
 pin-wallets.json
+
+# LLM context files
+llms-full.txt
