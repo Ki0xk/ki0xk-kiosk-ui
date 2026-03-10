@@ -47,6 +47,8 @@ export default function NfcWalletPage() {
   const [destinationAddress, setDestinationAddress] = useState('')
   const [selectedChain, setSelectedChain] = useState<ChainKey>(DEFAULT_CHAIN)
   const [error, setError] = useState('')
+  const [settleError, setSettleError] = useState('')
+  const [settleStatus, setSettleStatus] = useState('Sending via Yellow Network...')
   const [isProcessing, setIsProcessing] = useState(false)
   const claimingStarted = useRef(false)
 
@@ -489,7 +491,7 @@ export default function NfcWalletPage() {
             Select Chain
           </h1>
           <button
-            onClick={() => setStep('settling')}
+            onClick={() => { setSettleError(''); claimingStarted.current = false; setStep('settling') }}
             className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
             style={{ color: '#ffd700', borderColor: '#ffd700' }}
           >
@@ -522,29 +524,27 @@ export default function NfcWalletPage() {
   // settling — claim NFC card balance to external wallet
   // ──────────────────────────────────────────────────────────────────────────
   if (step === 'settling') {
-    const handleSettleComplete = async () => {
-      if (claimingStarted.current) return
+    // Fire the claim immediately on mount
+    if (!claimingStarted.current) {
       claimingStarted.current = true
-      try {
-        // Use the PIN wallet claim flow — same backend, NFC card walletId acts like walletId
-        const result = await apiClaimNfcCard(cardId, pin, destinationAddress, selectedChain)
-        if (result.success) {
-          setClaimResult({
-            amount: result.amount,
-            txHash: result.bridgeResult?.txHash || '',
-            explorerUrl: result.bridgeResult?.explorerUrl,
-          })
-          setStep('done')
-        } else {
-          setError(result.message)
-          claimingStarted.current = false
-          setStep('show-balance')
+      ;(async () => {
+        try {
+          setSettleStatus('Connecting to Yellow Network...')
+          const result = await apiClaimNfcCard(cardId, pin, destinationAddress, selectedChain)
+          if (result.success) {
+            setClaimResult({
+              amount: result.amount,
+              txHash: '',
+              explorerUrl: undefined,
+            })
+            setStep('done')
+          } else {
+            setSettleError(result.message)
+          }
+        } catch (err) {
+          setSettleError(err instanceof Error ? err.message : 'Claim failed. Please try again.')
         }
-      } catch {
-        setError('Claim failed. Please try again.')
-        claimingStarted.current = false
-        setStep('show-balance')
-      }
+      })()
     }
 
     return (
@@ -562,12 +562,35 @@ export default function NfcWalletPage() {
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          <div className="w-full max-w-xs">
-            <ProgressBar progress={0} isAnimating onComplete={handleSettleComplete} />
-          </div>
-          <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
-            Bridging ${balance} USDC to {SUPPORTED_CHAINS[selectedChain].name}...
-          </p>
+          {settleError ? (
+            <>
+              <p className="text-[0.8125rem] text-center px-4" style={{ color: '#ef4444' }}>
+                {settleError}
+              </p>
+              <button
+                onClick={() => {
+                  claimingStarted.current = false
+                  setStep('show-balance')
+                }}
+                className="text-[0.6875rem] uppercase tracking-wider px-4 py-2 border-2"
+                style={{ color: '#ffd700', borderColor: '#ffd700' }}
+              >
+                ‹ Back to Balance
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-full max-w-xs">
+                <ProgressBar progress={0} isAnimating />
+              </div>
+              <p className="text-[0.6875rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
+                {settleStatus}
+              </p>
+              <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#667eea' }}>
+                Sending ${balance} USDC to {SUPPORTED_CHAINS[selectedChain].name}
+              </p>
+            </>
+          )}
         </div>
       </div>
     )
