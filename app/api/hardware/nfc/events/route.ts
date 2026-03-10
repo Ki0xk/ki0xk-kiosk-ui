@@ -6,9 +6,9 @@ import { getNfcManager } from '@/lib/server/nfc'
 
 export async function GET() {
   const mode = getMode()
-  if (mode === 'demo_online') {
+  if (mode === 'online') {
     return NextResponse.json(
-      { success: false, message: 'NFC not available in demo_online mode' },
+      { success: false, message: 'NFC not available in online mode' },
       { status: 501 }
     )
   }

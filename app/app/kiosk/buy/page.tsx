@@ -49,7 +49,7 @@ export default function BuyPage() {
   const sessionStarting = useRef(false)
   const settlingStarted = useRef(false)
 
-  const isOnlineDemo = getMode() === 'demo_online'
+  const isOnlineDemo = getMode() === 'online'
 
   // Gas status for chain selector
   const [gasStatus, setGasStatus] = useState<Record<string, { hasGas: boolean }>>({})

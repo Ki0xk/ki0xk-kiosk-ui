@@ -68,7 +68,7 @@ function generateWalletId(): string {
 }
 
 export default function FestivalPublicPage() {
-  const isOnlineDemo = getMode() === 'demo_online'
+  const isOnlineDemo = getMode() === 'online'
 
   const [flow, setFlow] = useState<Flow>('idle')
 

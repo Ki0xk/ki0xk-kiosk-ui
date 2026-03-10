@@ -91,9 +91,9 @@ function StatusIndicator() {
 function ModeLabel() {
   const mode = getMode()
   const labels: Record<string, string> = {
-    demo_online: 'Online',
-    demo_kiosk: 'Kiosk',
-    demo_festival: 'Festival',
+    online: 'Online',
+    kiosk: 'Kiosk',
+    festival: 'Festival',
   }
   return (
     <span className="text-[0.625rem] uppercase tracking-widest" style={{ color: '#7a7a9a' }}>

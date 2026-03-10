@@ -6,9 +6,9 @@ import { getSerialManager } from '@/lib/server/serial'
 
 export async function POST() {
   const mode = getMode()
-  if (mode === 'demo_online') {
+  if (mode === 'online') {
     return NextResponse.json(
-      { success: false, message: 'Serial not available in demo_online mode' },
+      { success: false, message: 'Serial not available in online mode' },
       { status: 501 }
     )
   }

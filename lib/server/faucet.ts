@@ -218,7 +218,7 @@ async function runFaucetCheck(): Promise<void> {
     }
 
     // Auto-fund Gateway for festival mode (deposit 1 USDC if empty)
-    if (getMode() === 'demo_festival') {
+    if (getMode() === 'festival') {
       try {
         const { ensureGatewayBalance } = await import('./gateway')
         await ensureGatewayBalance('1')

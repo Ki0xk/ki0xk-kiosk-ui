@@ -45,7 +45,7 @@ function generateWalletId(): string {
 }
 
 export default function FestivalAdminPage() {
-  const isOnlineDemo = getMode() === 'demo_online'
+  const isOnlineDemo = getMode() === 'online'
 
   // Admin auth
   const [adminStep, setAdminStep] = useState<AdminStep>('pin-entry')

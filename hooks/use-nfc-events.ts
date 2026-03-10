@@ -91,7 +91,7 @@ export function useNfcEvents({ onCardTapped, enabled = true }: UseNfcEventsOptio
     if (typeof window === 'undefined') return
     if (!('NDEFReader' in window)) return
     // Only use Web NFC in online demo mode (no USB hardware)
-    if (mode !== 'demo_online') return
+    if (mode !== 'online') return
     if (source === 'pcsc') return
 
     const timer = setTimeout(async () => {

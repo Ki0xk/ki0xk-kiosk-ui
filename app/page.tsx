@@ -6,7 +6,7 @@ import { getMode } from '@/lib/mode'
 import { ONLINE_MAX_USDC } from '@/lib/constants'
 
 export default function LandingPage() {
-  const isOnlineDemo = getMode() === 'demo_online'
+  const isOnlineDemo = getMode() === 'online'
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pixel-grid">

@@ -130,7 +130,7 @@ export function CoinSlotSimulator({ onCoinInserted, totalPesos, totalUSDC, disab
     )
   }
 
-  // Simulated coin mode (demo_online)
+  // Simulated coin mode (online)
   return (
     <div className="w-full">
       {/* Running total */}

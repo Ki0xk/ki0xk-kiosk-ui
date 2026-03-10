@@ -1,4 +1,4 @@
-export type AppMode = 'demo_online' | 'demo_kiosk' | 'demo_festival'
+export type AppMode = 'online' | 'kiosk' | 'festival'
 
 export interface ModeFeatures {
   useSimulatedCoins: boolean
@@ -10,19 +10,19 @@ export interface ModeFeatures {
 }
 
 export function getMode(): AppMode {
-  const raw = process.env.NEXT_PUBLIC_MODE || 'demo_online'
-  if (raw === 'demo_kiosk' || raw === 'demo_festival') return raw
-  return 'demo_online'
+  const raw = process.env.NEXT_PUBLIC_MODE || 'online'
+  if (raw === 'kiosk' || raw === 'festival') return raw
+  return 'online'
 }
 
 export function getModeFeatures(): ModeFeatures {
   const mode = getMode()
   return {
-    useSimulatedCoins: mode === 'demo_online',
-    useArduinoSerial: mode === 'demo_kiosk' || mode === 'demo_festival',
+    useSimulatedCoins: mode === 'online',
+    useArduinoSerial: mode === 'kiosk' || mode === 'festival',
     useRealTransfers: true, // always true — all modes do real ClearNode transfers
-    serialEnabled: mode === 'demo_kiosk' || mode === 'demo_festival',
-    useRealNFC: mode === 'demo_festival' || mode === 'demo_kiosk',
-    useRealGateway: mode === 'demo_festival',
+    serialEnabled: mode === 'kiosk' || mode === 'festival',
+    useRealNFC: mode === 'festival' || mode === 'kiosk',
+    useRealGateway: mode === 'festival',
   }
 }
