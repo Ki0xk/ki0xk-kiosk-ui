@@ -181,16 +181,6 @@ export default function LandingPage() {
           </p>
         )}
 
-        {/* Mainnet support indicator */}
-        <div
-          className="px-3 py-1.5 border text-center"
-          style={{ backgroundColor: '#0f0f2408', borderColor: '#78ffd640' }}
-        >
-          <p className="text-[0.5rem] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
-            Mainnet USDC supported on physical kiosk hardware
-          </p>
-        </div>
-
         {/* Footer */}
         <div className="space-y-2 mt-2">
           <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#667eea' }}>
@@ -199,6 +189,47 @@ export default function LandingPage() {
           <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Built for tienditas, festivals & events
           </p>
+        </div>
+      </div>
+
+      {/* LED Marquee — mainnet announcement */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden"
+        style={{
+          backgroundColor: '#0a0a1a',
+          borderTop: '2px solid #78ffd640',
+          boxShadow: '0 -4px 20px rgba(120, 255, 214, 0.15)',
+        }}
+      >
+        {/* Pulsing dot */}
+        <div
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full z-10"
+          style={{
+            backgroundColor: '#78ffd6',
+            boxShadow: '0 0 6px #78ffd6, 0 0 12px rgba(120, 255, 214, 0.5)',
+            animation: 'pulse-dot 2s ease-in-out infinite',
+          }}
+        />
+        <div className="marquee-track py-2 pl-8">
+          {[0, 1].map((i) => (
+            <span
+              key={i}
+              className="marquee-content text-[0.5625rem] uppercase tracking-[0.25em] whitespace-nowrap"
+              style={{ color: '#78ffd6' }}
+              aria-hidden={i === 1}
+            >
+              MAINNET USDC LIVE ON PHYSICAL KIOSK &amp; FESTIVAL HARDWARE
+              <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
+              REAL TOKENS ON BASE, ETHEREUM, ARBITRUM, POLYGON, OPTIMISM, AVALANCHE, LINEA
+              <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
+              KIOSK MODE: CASH TO MAINNET USDC
+              <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
+              FESTIVAL MODE: NFC WRISTBAND PAYMENTS WITH MAINNET SETTLEMENT
+              <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
+              POWERED BY YELLOW NETWORK + CIRCLE ARC
+              <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
+            </span>
+          ))}
         </div>
       </div>
     </div>

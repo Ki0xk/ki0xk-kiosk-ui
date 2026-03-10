@@ -328,3 +328,25 @@
   background-size: 200% 100%;
   animation: holo-sweep 3s ease-in-out infinite;
 }
+
+/* LED Marquee ticker */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px #78ffd6, 0 0 12px rgba(120, 255, 214, 0.5); }
+  50% { opacity: 0.4; box-shadow: 0 0 3px #78ffd6; }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.marquee-content {
+  display: inline-block;
+  flex-shrink: 0;
+}
