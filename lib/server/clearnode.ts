@@ -173,6 +173,15 @@ export class ClearNodeClient {
     }
   }
 
+  /**
+   * Force re-authentication (e.g. after WS reconnect drops session).
+   */
+  async forceReconnect(): Promise<void> {
+    this.authenticated = false
+    this._connectingPromise = null
+    await this.ensureConnected()
+  }
+
   async getLedgerBalances(): Promise<unknown> {
     if (!this.authenticated) throw new Error('Not authenticated')
     logger.info('Fetching ledger balances...')
@@ -312,6 +321,16 @@ export class ClearNodeClient {
       return result
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
+
+      // Auto-retry on auth failure (WS reconnected but session expired)
+      if (errorMsg.includes('authentication required') || errorMsg.includes('Disconnected')) {
+        logger.warn('Auth lost, forcing reconnect and retrying transfer...')
+        await this.forceReconnect()
+        const result = await this.transfer(destinationWallet, YELLOW_ASSET, amountUsd)
+        logger.info('Transfer complete after reconnect!', { destination: destinationWallet, amount: amountUsd })
+        return result
+      }
+
       if (errorMsg.includes('non-zero allocation') || errorMsg.includes('non-zero amount')) {
         logger.error('Transfer blocked by channel balance!', {
           error: errorMsg,
