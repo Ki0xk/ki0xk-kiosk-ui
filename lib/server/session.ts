@@ -1,9 +1,8 @@
-import { bridgeToChain } from './arc/bridge'
 import { calculateFee, type FeeBreakdown } from './arc/fees'
 import { getChainByKey } from './arc/chains'
 import { createPinWallet } from './settlement'
 import { logger } from './logger'
-import { getServerConfig } from './config'
+import { getClearNode } from './clearnode'
 import { resolveAddress } from './ens'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
@@ -87,9 +86,8 @@ function generateSessionId(): string {
 /**
  * Start a new kiosk session.
  *
- * For ATM operation we do NOT create Yellow channels.
- * Settlement uses Arc Bridge (Circle CCTP) to deliver real USDC on-chain.
- * We just create a local session record.
+ * For ATM operation we create a local session record.
+ * Settlement uses Yellow Network sendToWallet() for instant USDC delivery.
  */
 export async function startSession(userIdentifier?: string): Promise<SessionStartResult> {
   const sessionId = generateSessionId()
@@ -120,7 +118,7 @@ export async function startSession(userIdentifier?: string): Promise<SessionStar
  * Add funds to an active session (user inserted cash).
  *
  * This is purely local balance tracking.
- * The kiosk operator has pre-funded USDC on Arc Testnet.
+ * The kiosk operator has pre-funded USDC on Yellow Network.
  */
 export async function depositToSession(
   sessionId: string,
@@ -153,12 +151,11 @@ export async function depositToSession(
 }
 
 /**
- * End session and bridge real USDC to destination via Arc (Circle CCTP).
+ * End session and send USDC to destination via Yellow Network.
  *
- * This is the original kiosk flow:
+ * Flow:
  * 1. Resolve ENS name to hex address (if needed)
- * 2. Bridge USDC from Arc Testnet to user's chosen chain
- * 3. Return explorer URL + txHash for verification
+ * 2. Send USDC via Yellow Network sendToWallet() (instant, gasless)
  */
 export async function endSession(
   sessionId: string,
@@ -196,45 +193,21 @@ export async function endSession(
   saveSessions(sessions)
 
   try {
-    // Bridge real USDC via Arc (Circle CCTP) — matches original kiosk flow
-    const config = getServerConfig()
-    const feeRecipient = config.FEE_RECIPIENT_ADDRESS || undefined
-    const bridgeResult = await bridgeToChain(
-      resolvedAddress,
-      targetChainKey,
-      session.currentBalance,
-      feeRecipient
-    )
+    // Send USDC via Yellow Network — instant, gasless
+    const clearNode = getClearNode()
+    await clearNode.ensureConnected()
+    await clearNode.sendToWallet(resolvedAddress, feeBreakdown.netAmount.toString())
 
-    if (bridgeResult.success) {
-      session.status = 'SETTLED'
-      session.bridgeTxHash = bridgeResult.txHash
-      session.explorerUrl = bridgeResult.explorerUrl
-      session.endedAt = Date.now()
-      saveSessions(sessions)
+    session.status = 'SETTLED'
+    session.endedAt = Date.now()
+    saveSessions(sessions)
 
-      return {
-        success: true,
-        settledAmount: feeBreakdown.netAmount.toString(),
-        fee: feeBreakdown,
-        bridgeTxHash: bridgeResult.txHash,
-        explorerUrl: bridgeResult.explorerUrl,
-        destinationChain: chainInfo.name,
-        message: `Session settled! ${feeBreakdown.netAmount} USDC sent to ${chainInfo.name}`,
-      }
-    } else {
-      session.status = 'FAILED'
-      session.error = bridgeResult.error
-      session.endedAt = Date.now()
-      saveSessions(sessions)
-
-      return {
-        success: false,
-        settledAmount: '0',
-        fee: feeBreakdown,
-        destinationChain: chainInfo.name,
-        message: `Bridge failed: ${bridgeResult.error}`,
-      }
+    return {
+      success: true,
+      settledAmount: feeBreakdown.netAmount.toString(),
+      fee: feeBreakdown,
+      destinationChain: chainInfo.name,
+      message: `Session settled! ${feeBreakdown.netAmount} USDC sent via Yellow Network`,
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
@@ -248,7 +221,7 @@ export async function endSession(
       settledAmount: '0',
       fee: feeBreakdown,
       destinationChain: chainInfo.name,
-      message: `Settlement failed: ${errorMsg}`,
+      message: `Transfer failed: ${errorMsg}`,
     }
   }
 }

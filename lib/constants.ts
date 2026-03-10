@@ -97,32 +97,6 @@ export const DEMO_ENS_NAMES = [
 export const ADDRESS_PREFIX = '0x'
 
 // ============================================================================
-// Gateway chain options (Circle Gateway — for festival mode chain selector)
-// ============================================================================
-const TESTNET_GATEWAY_CHAIN_OPTIONS = [
-  { key: 'base_sepolia', name: 'Base Sepolia' },
-  { key: 'ethereum_sepolia', name: 'Ethereum Sepolia' },
-  { key: 'avalanche_fuji', name: 'Avalanche Fuji' },
-  { key: 'sonic_testnet', name: 'Sonic Testnet' },
-  { key: 'sei_atlantic', name: 'Sei Atlantic' },
-  { key: 'hyperevm_testnet', name: 'HyperEVM Testnet' },
-] as const
-
-const MAINNET_GATEWAY_CHAIN_OPTIONS = [
-  { key: 'base', name: 'Base' },
-  { key: 'ethereum', name: 'Ethereum' },
-  { key: 'arbitrum', name: 'Arbitrum' },
-  { key: 'polygon', name: 'Polygon' },
-  { key: 'optimism', name: 'Optimism' },
-  { key: 'avalanche', name: 'Avalanche' },
-  { key: 'sonic', name: 'Sonic' },
-] as const
-
-export const GATEWAY_CHAIN_OPTIONS = isMainnet()
-  ? MAINNET_GATEWAY_CHAIN_OPTIONS
-  : TESTNET_GATEWAY_CHAIN_OPTIONS
-
-// ============================================================================
 // Festival merchant products (preset items per merchant)
 // ============================================================================
 export interface Product {

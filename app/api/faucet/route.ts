@@ -3,7 +3,7 @@ export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 import { getAllBalances, claimFaucets } from '@/lib/server/faucet'
 
-// GET /api/faucet — check Arc + Yellow balances
+// GET /api/faucet — check Yellow Network balance
 export async function GET() {
   try {
     const balances = await getAllBalances()

@@ -1,11 +1,10 @@
 export const runtime = 'nodejs'
 
 import { NextResponse } from 'next/server'
-import { verifyPin, deduct, getCard } from '@/lib/server/festival-cards'
-import { bridgeToChain } from '@/lib/server/arc/bridge'
+import { verifyPin, deduct, getCard, topUp } from '@/lib/server/festival-cards'
 import { getChainByKey } from '@/lib/server/arc/chains'
 import { resolveAddress } from '@/lib/server/ens'
-import { getServerConfig } from '@/lib/server/config'
+import { getClearNode } from '@/lib/server/clearnode'
 import { logger } from '@/lib/server/logger'
 
 export async function POST(request: Request) {
@@ -59,50 +58,34 @@ export async function POST(request: Request) {
       )
     }
 
-    logger.info('Claiming NFC card via Arc Bridge', {
+    logger.info('Claiming NFC card via Yellow Network', {
       walletId,
       destination: resolvedDestination,
       chain: chainInfo.name,
       amount,
     })
 
-    // Bridge real USDC via Arc (Circle CCTP)
-    const config = getServerConfig()
-    const feeRecipient = config.FEE_RECIPIENT_ADDRESS || undefined
-    const bridgeResult = await bridgeToChain(
-      resolvedDestination,
-      targetChainKey,
-      amount,
-      feeRecipient
-    )
+    try {
+      // Send USDC via Yellow Network
+      const clearNode = getClearNode()
+      await clearNode.ensureConnected()
+      await clearNode.sendToWallet(resolvedDestination, amount)
 
-    if (bridgeResult.success) {
       return NextResponse.json({
         success: true,
         amount,
-        bridgeResult: {
-          success: true,
-          txHash: bridgeResult.txHash,
-          txStatus: bridgeResult.txStatus,
-          explorerUrl: bridgeResult.explorerUrl,
-        },
-        message: `Withdrawal complete! ${amount} USDC sent to ${chainInfo.name}`,
+        message: `Withdrawal complete! ${amount} USDC sent via Yellow Network`,
       })
-    } else {
-      // Bridge failed — refund the card
-      const { topUp } = await import('@/lib/server/festival-cards')
+    } catch (transferError) {
+      // Transfer failed — refund the card
       topUp(walletId, amount)
-      logger.error('Bridge failed, refunded card', { walletId, amount, error: bridgeResult.error })
+      const errMsg = transferError instanceof Error ? transferError.message : String(transferError)
+      logger.error('Yellow transfer failed, refunded card', { walletId, amount, error: errMsg })
 
       return NextResponse.json({
         success: false,
         amount: '0',
-        bridgeResult: {
-          success: false,
-          txHash: bridgeResult.txHash,
-          txStatus: bridgeResult.txStatus,
-        },
-        message: `Bridge failed: ${bridgeResult.error}. Balance refunded.`,
+        message: `Transfer failed: ${errMsg}. Balance refunded.`,
       })
     }
   } catch (error) {

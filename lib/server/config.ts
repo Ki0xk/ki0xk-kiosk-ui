@@ -25,16 +25,8 @@ const envSchema = z.object({
   SERIAL_PORT: z.string().default('/dev/ttyUSB0'),
   SERIAL_BAUD: z.coerce.number().default(115200),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  CIRCLE_API_KEY: z
-    .string()
-    .transform((v) => (v === '' ? undefined : v))
-    .pipe(z.string().optional())
-    .optional(),
   // Festival config
   FESTIVAL_ADMIN_PIN: z.string().min(4).default('1234'),
-  GATEWAY_API_URL: z.string().url().default(
-    _mainnet ? 'https://gateway-api.circle.com/v1' : 'https://gateway-api-testnet.circle.com/v1'
-  ),
   // Merchants (env-based)
   MERCHANT_BEERS_ADDRESS: z
     .string()

@@ -1,9 +1,6 @@
 import { logger } from './logger'
-import { getServerConfig } from './config'
 import { getKioskAddress } from './wallet'
-import { getArcBalance } from './arc/bridge'
 import { getClearNode } from './clearnode'
-import { getMode } from '../mode'
 import { isMainnet } from '../network'
 
 // ============================================================================
@@ -11,7 +8,6 @@ import { isMainnet } from '../network'
 // ============================================================================
 
 export interface FaucetBalances {
-  arc: { usdc: string; usdcRaw: string }
   yellow: { asset: string; amount: string; raw: string }
   wallet: string
   timestamp: number
@@ -19,7 +15,6 @@ export interface FaucetBalances {
 
 export interface FaucetClaimResult {
   yellow: { success: boolean; message: string }
-  circle: { success: boolean; message: string }
 }
 
 // ============================================================================
@@ -27,8 +22,7 @@ export interface FaucetClaimResult {
 // ============================================================================
 
 /**
- * Parse Yellow ytest.usd balance from ClearNode getLedgerBalances() response.
- * Exact logic from kiosk/src/settlement.ts lines 93-107.
+ * Parse Yellow balance from ClearNode getLedgerBalances() response.
  */
 function parseYellowBalance(response: unknown): { asset: string; amount: string; raw: string } {
   const assetName = isMainnet() ? 'usdc' : 'ytest.usd'
@@ -53,12 +47,10 @@ function parseYellowBalance(response: unknown): { asset: string; amount: string;
 }
 
 /**
- * Get all balances: Arc USDC + Yellow ytest.usd.
+ * Get Yellow Network balance.
  */
 export async function getAllBalances(): Promise<FaucetBalances> {
   const address = getKioskAddress()
-
-  const arcBalance = await getArcBalance()
 
   let yellowBalance = { asset: isMainnet() ? 'usdc' : 'ytest.usd', amount: '0.00', raw: '0' }
   try {
@@ -73,7 +65,6 @@ export async function getAllBalances(): Promise<FaucetBalances> {
   }
 
   return {
-    arc: { usdc: arcBalance.usdc, usdcRaw: arcBalance.usdcRaw.toString() },
     yellow: yellowBalance,
     wallet: address,
     timestamp: Date.now(),
@@ -86,7 +77,6 @@ export async function getAllBalances(): Promise<FaucetBalances> {
 
 /**
  * Claim Yellow testnet faucet (ytest.usd).
- * No API key needed.
  */
 async function claimYellowFaucet(address: string): Promise<{ success: boolean; message: string }> {
   if (isMainnet()) return { success: false, message: 'Faucets not available on mainnet' }
@@ -115,68 +105,19 @@ async function claimYellowFaucet(address: string): Promise<{ success: boolean; m
 }
 
 /**
- * Claim Circle/Arc testnet faucet (USDC on Arc Testnet).
- * Uses POST /v1/faucet/drips with TEST_API_KEY auth.
- * Skips if CIRCLE_API_KEY is not set.
- */
-async function claimCircleFaucet(address: string): Promise<{ success: boolean; message: string }> {
-  if (isMainnet()) return { success: false, message: 'Faucets not available on mainnet' }
-  const config = getServerConfig()
-  if (!config.CIRCLE_API_KEY) {
-    return { success: false, message: 'CIRCLE_API_KEY not set, skipping Arc faucet' }
-  }
-
-  try {
-    logger.info('Requesting Circle faucet (Arc USDC)...', { address })
-    const res = await fetch('https://api.circle.com/v1/faucet/drips', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${config.CIRCLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        address,
-        blockchain: 'ARC-TESTNET',
-        native: false,
-        usdc: true,
-      }),
-    })
-    const data = await res.json().catch(() => ({}))
-
-    if (res.ok) {
-      logger.info('Circle faucet claimed', { address, data: data as object })
-      return { success: true, message: 'Circle faucet USDC requested on Arc Testnet' }
-    }
-
-    const errMsg = (data as any)?.message || (data as any)?.error || `HTTP ${res.status}`
-    logger.warn('Circle faucet failed', { status: res.status, error: errMsg })
-    return { success: false, message: errMsg }
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    logger.error('Circle faucet error', { error: msg })
-    return { success: false, message: msg }
-  }
-}
-
-/**
- * Try to claim both faucets in parallel. Never throws.
+ * Try to claim faucets. Never throws.
  */
 export async function claimFaucets(): Promise<FaucetClaimResult> {
   const address = getKioskAddress()
-  const [yellow, circle] = await Promise.all([
-    claimYellowFaucet(address),
-    claimCircleFaucet(address),
-  ])
-  return { yellow, circle }
+  const yellow = await claimYellowFaucet(address)
+  return { yellow }
 }
 
 /**
- * Auto-fund if balances are below thresholds.
+ * Auto-fund if Yellow balance is below threshold.
  * Runs on startup, then repeats every 2.5 hours (faucet cooldown).
- * Silent — never throws.
  */
-const FAUCET_INTERVAL_MS = 2.5 * 60 * 60 * 1000 // 2.5 hours
+const FAUCET_INTERVAL_MS = 2.5 * 60 * 60 * 1000
 
 const globalForFaucet = globalThis as unknown as {
   __autoFundStarted?: boolean
@@ -186,7 +127,6 @@ export async function autoFundIfNeeded(): Promise<void> {
   if (globalForFaucet.__autoFundStarted) return
   globalForFaucet.__autoFundStarted = true
 
-  // Run immediately, then schedule recurring
   await runFaucetCheck()
   setInterval(() => {
     runFaucetCheck().catch(() => {})
@@ -196,37 +136,18 @@ export async function autoFundIfNeeded(): Promise<void> {
 async function runFaucetCheck(): Promise<void> {
   try {
     const balances = await getAllBalances()
-    const arcAmount = parseFloat(balances.arc.usdc)
     const yellowAmount = parseFloat(balances.yellow.amount)
 
-    if (arcAmount >= 1.0 && yellowAmount >= 1.0) {
-      logger.info('Balances OK, skipping faucet', {
-        arc: balances.arc.usdc,
+    if (yellowAmount >= 1.0) {
+      logger.info('Yellow balance OK, skipping faucet', {
         yellow: balances.yellow.amount,
       })
     } else {
-      logger.info('Low balance detected, attempting faucet claims', {
-        arc: balances.arc.usdc,
+      logger.info('Low Yellow balance, attempting faucet claim', {
         yellow: balances.yellow.amount,
       })
-
       const address = getKioskAddress()
-      const promises: Promise<unknown>[] = []
-      if (yellowAmount < 1.0) promises.push(claimYellowFaucet(address))
-      if (arcAmount < 1.0) promises.push(claimCircleFaucet(address))
-      await Promise.allSettled(promises)
-    }
-
-    // Auto-fund Gateway for festival mode (deposit 1 USDC if empty)
-    if (getMode() === 'festival') {
-      try {
-        const { ensureGatewayBalance } = await import('./gateway')
-        await ensureGatewayBalance('1')
-      } catch (gwErr) {
-        logger.warn('Gateway auto-fund failed (non-fatal)', {
-          error: gwErr instanceof Error ? gwErr.message : String(gwErr),
-        })
-      }
+      await claimYellowFaucet(address)
     }
   } catch (error) {
     logger.warn('Auto-fund check failed (non-fatal)', {

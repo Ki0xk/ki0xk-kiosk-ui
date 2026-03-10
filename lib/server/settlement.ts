@@ -1,8 +1,7 @@
-import { bridgeToChain, type BridgeResult } from './arc/bridge'
 import { calculateFee, type FeeBreakdown } from './arc/fees'
 import { getChainByKey } from './arc/chains'
 import { logger } from './logger'
-import { getServerConfig } from './config'
+import { getClearNode } from './clearnode'
 import { resolveAddress } from './ens'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
@@ -17,18 +16,13 @@ export interface PinWallet {
   createdAt: number
   destination?: string
   targetChain?: string
-  status: 'PENDING' | 'PENDING_BRIDGE' | 'SETTLED' | 'FAILED'
-  bridgeAttempts: number
-  lastBridgeError?: string
-  lastBridgeAttempt?: number
-  bridgeTxHash?: string
+  status: 'PENDING' | 'SETTLED' | 'FAILED'
+  lastError?: string
   settledAt?: number
 }
 
 export interface SettlementResult {
   success: boolean
-  yellowRecorded: boolean
-  bridgeResult?: BridgeResult
   message: string
 }
 
@@ -81,7 +75,6 @@ export function createPinWallet(amount: string): PinWallet & { pin: string } {
     amount,
     createdAt: Date.now(),
     status: 'PENDING',
-    bridgeAttempts: 0,
   }
 
   const wallets = loadPinWallets()
@@ -98,7 +91,7 @@ export function lookupPinWallet(
 ): { success: boolean; amount: string; message: string } {
   const wallets = loadPinWallets()
   const wallet = wallets.find(
-    (w) => w.id === walletId && (w.status === 'PENDING' || w.status === 'PENDING_BRIDGE')
+    (w) => w.id === walletId && w.status === 'PENDING'
   )
 
   if (!wallet) {
@@ -113,8 +106,7 @@ export function lookupPinWallet(
 }
 
 /**
- * Claim PIN wallet — verify PIN and bridge real USDC via Arc (Circle CCTP).
- * Matches original kiosk settlement flow.
+ * Claim PIN wallet — verify PIN and send USDC via Yellow Network.
  */
 export async function claimPinWallet(
   walletId: string,
@@ -124,7 +116,7 @@ export async function claimPinWallet(
 ): Promise<SettlementResult> {
   const wallets = loadPinWallets()
   const wallet = wallets.find(
-    (w) => w.id === walletId && (w.status === 'PENDING' || w.status === 'PENDING_BRIDGE')
+    (w) => w.id === walletId && w.status === 'PENDING'
   )
 
   if (!wallet) throw new Error('Wallet not found or already claimed')
@@ -142,7 +134,7 @@ export async function claimPinWallet(
 
   const feeBreakdown = calculateFee(parseFloat(wallet.amount))
 
-  logger.info('Claiming PIN wallet via Arc Bridge', {
+  logger.info('Claiming PIN wallet via Yellow Network', {
     walletId,
     destination: resolvedDestination,
     chain: chainInfo.name,
@@ -150,79 +142,47 @@ export async function claimPinWallet(
   })
 
   try {
-    // Bridge real USDC via Arc (Circle CCTP)
-    const config = getServerConfig()
-    const feeRecipient = config.FEE_RECIPIENT_ADDRESS || undefined
-    const bridgeResult = await bridgeToChain(
-      resolvedDestination,
-      targetChainKey,
-      wallet.amount,
-      feeRecipient
-    )
+    const clearNode = getClearNode()
+    await clearNode.ensureConnected()
+    await clearNode.sendToWallet(resolvedDestination, feeBreakdown.netAmount.toString())
 
-    if (bridgeResult.success) {
-      wallet.status = 'SETTLED'
-      wallet.bridgeTxHash = bridgeResult.txHash
-      wallet.settledAt = Date.now()
-      savePinWallets(wallets)
+    wallet.status = 'SETTLED'
+    wallet.settledAt = Date.now()
+    savePinWallets(wallets)
 
-      return {
-        success: true,
-        yellowRecorded: true,
-        bridgeResult,
-        message: `Settlement complete! ${feeBreakdown.netAmount} USDC sent to ${chainInfo.name}`,
-      }
-    } else {
-      wallet.status = 'PENDING_BRIDGE'
-      wallet.bridgeAttempts++
-      wallet.lastBridgeError = bridgeResult.error
-      wallet.lastBridgeAttempt = Date.now()
-      savePinWallets(wallets)
-
-      return {
-        success: false,
-        yellowRecorded: true,
-        bridgeResult,
-        message: `Bridge failed: ${bridgeResult.error}. PIN still valid for retry.`,
-      }
+    return {
+      success: true,
+      message: `Settlement complete! ${feeBreakdown.netAmount} USDC sent via Yellow Network`,
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     logger.error('Settlement failed', { walletId, error: errorMsg })
 
-    wallet.status = 'PENDING_BRIDGE'
-    wallet.bridgeAttempts++
-    wallet.lastBridgeError = errorMsg
-    wallet.lastBridgeAttempt = Date.now()
+    wallet.status = 'FAILED'
+    wallet.lastError = errorMsg
     savePinWallets(wallets)
 
     return {
       success: false,
-      yellowRecorded: false,
-      message: `Settlement failed: ${errorMsg}. PIN still valid for retry.`,
+      message: `Transfer failed: ${errorMsg}`,
     }
   }
 }
 
 export function getPendingWalletsSummary(): {
   pending: number
-  pendingBridge: number
   settled: number
   failed: number
   totalValue: string
 } {
   const wallets = loadPinWallets()
-  const counts = { pending: 0, pendingBridge: 0, settled: 0, failed: 0 }
+  const counts = { pending: 0, settled: 0, failed: 0 }
   let totalPendingValue = 0
 
   for (const w of wallets) {
     switch (w.status) {
       case 'PENDING':
         counts.pending++
-        totalPendingValue += parseFloat(w.amount)
-        break
-      case 'PENDING_BRIDGE':
-        counts.pendingBridge++
         totalPendingValue += parseFloat(w.amount)
         break
       case 'SETTLED':

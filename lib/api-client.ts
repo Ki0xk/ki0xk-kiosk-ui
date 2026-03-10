@@ -11,17 +11,14 @@ async function post<T>(url: string, body?: object): Promise<T> {
   return res.json()
 }
 
-// Drop-in replacement for mockStartSession
 export async function apiStartSession(userIdentifier?: string): Promise<{
   success: boolean
   sessionId: string
-  channelId?: string
   message: string
 }> {
   return post('/api/session/start', { userIdentifier })
 }
 
-// Drop-in replacement for mockDepositToSession
 export async function apiDepositToSession(
   sessionId: string,
   amount: string
@@ -34,8 +31,6 @@ export async function apiDepositToSession(
   return post('/api/session/deposit', { sessionId, amount })
 }
 
-// Drop-in replacement for mockEndSession
-// NOTE: backend reads amount from session, so no amount param needed
 export async function apiEndSession(
   sessionId: string,
   destinationAddress: string,
@@ -44,16 +39,12 @@ export async function apiEndSession(
   success: boolean
   settledAmount: string
   fee: { grossAmount: number; fee: number; netAmount: number; feePercentage: string }
-  bridgeTxHash?: string
-  explorerUrl?: string
   destinationChain: string
   message: string
 }> {
   return post('/api/session/end', { sessionId, destinationAddress, targetChainKey })
 }
 
-// Drop-in replacement for mockSessionToPin
-// NOTE: backend reads amount from session, so no amount param needed
 export async function apiSessionToPin(sessionId: string): Promise<{
   success: boolean
   pin: string
@@ -64,7 +55,6 @@ export async function apiSessionToPin(sessionId: string): Promise<{
   return post('/api/session/pin', { sessionId })
 }
 
-// Drop-in replacement for mockLookupPinWallet
 export async function apiLookupPinWallet(
   walletId: string,
   pin: string
@@ -76,7 +66,6 @@ export async function apiLookupPinWallet(
   return post('/api/pin/lookup', { walletId, pin })
 }
 
-// Drop-in replacement for mockClaimPinWallet
 export async function apiClaimPinWallet(
   walletId: string,
   pin: string,
@@ -84,8 +73,6 @@ export async function apiClaimPinWallet(
   targetChainKey: string
 ): Promise<{
   success: boolean
-  amount: string
-  bridgeResult?: { success: boolean; txHash?: string; txStatus?: string; explorerUrl?: string }
   message: string
 }> {
   return post('/api/pin/claim', { walletId, pin, destination, targetChainKey })
@@ -99,7 +86,6 @@ export async function apiClaimNfcCard(
 ): Promise<{
   success: boolean
   amount: string
-  bridgeResult?: { success: boolean; txHash?: string; txStatus?: string; explorerUrl?: string }
   message: string
 }> {
   return post('/api/festival/claim', { walletId, pin, destination, targetChainKey })
@@ -107,7 +93,6 @@ export async function apiClaimNfcCard(
 
 // Faucet / balance helpers
 export async function apiGetBalances(): Promise<{
-  arc: { usdc: string; usdcRaw: string }
   yellow: { asset: string; amount: string; raw: string }
   wallet: string
   timestamp: number
@@ -120,10 +105,8 @@ export async function apiGetBalances(): Promise<{
 export async function apiClaimFaucet(): Promise<{
   claims: {
     yellow: { success: boolean; message: string }
-    circle: { success: boolean; message: string }
   }
   balances: {
-    arc: { usdc: string; usdcRaw: string }
     yellow: { asset: string; amount: string; raw: string }
     wallet: string
     timestamp: number
@@ -229,31 +212,10 @@ export async function apiFestivalPay(
   amount: string
 ): Promise<{
   success: boolean
-  txHash?: string
-  explorerUrl?: string
   newBalance?: string
   error?: string
 }> {
   return post('/api/festival/pay', { walletId, pin, merchantId, amount })
-}
-
-export async function apiGetGatewayBalance(): Promise<{
-  success: boolean
-  available: string
-  token: string
-}> {
-  const res = await fetch('/api/festival/gateway/balance')
-  if (!res.ok) throw new Error('Failed to fetch gateway balance')
-  return res.json()
-}
-
-export async function apiDepositToGateway(amount: string): Promise<{
-  success: boolean
-  approveTxHash?: string
-  depositTxHash?: string
-  error?: string
-}> {
-  return post('/api/festival/gateway/deposit', { amount })
 }
 
 export async function apiWriteNfc(walletId: string): Promise<{

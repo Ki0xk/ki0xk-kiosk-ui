@@ -6,7 +6,6 @@ export interface ModeFeatures {
   useRealTransfers: boolean
   serialEnabled: boolean
   useRealNFC: boolean
-  useRealGateway: boolean
 }
 
 export function getMode(): AppMode {
@@ -20,9 +19,8 @@ export function getModeFeatures(): ModeFeatures {
   return {
     useSimulatedCoins: mode === 'online',
     useArduinoSerial: mode === 'kiosk' || mode === 'festival',
-    useRealTransfers: true, // always true — all modes do real ClearNode transfers
+    useRealTransfers: true, // always true — all modes do real Yellow Network transfers
     serialEnabled: mode === 'kiosk' || mode === 'festival',
     useRealNFC: mode === 'festival' || mode === 'kiosk',
-    useRealGateway: mode === 'festival',
   }
 }
