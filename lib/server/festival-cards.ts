@@ -29,8 +29,9 @@ export interface DeductResult {
   message: string
 }
 
-// In-memory cache + file persistence
+// In-memory cache + file persistence with write queue
 let _cards: Map<string, FestivalCard> | null = null
+let _savePromise: Promise<void> = Promise.resolve()
 
 function loadCards(): Map<string, FestivalCard> {
   if (_cards) return _cards
@@ -41,17 +42,24 @@ function loadCards(): Map<string, FestivalCard> {
       for (const card of data) {
         _cards.set(card.walletId, card)
       }
+      logger.info('Festival cards loaded from disk', { count: _cards.size })
     }
-  } catch {}
+  } catch (err) {
+    logger.error('Failed to load festival cards from disk', { error: String(err) })
+  }
   return _cards
 }
 
 function saveCards(): void {
   if (!_cards) return
-  try {
-    const arr = Array.from(_cards.values())
-    fs.writeFileSync(CARD_FILE, JSON.stringify(arr, null, 2))
-  } catch {}
+  const data = JSON.stringify(Array.from(_cards.values()), null, 2)
+  _savePromise = _savePromise.then(() => {
+    try {
+      fs.writeFileSync(CARD_FILE, data)
+    } catch (err) {
+      logger.error('Failed to save festival cards to disk', { error: String(err) })
+    }
+  })
 }
 
 function hashPin(pin: string): string {

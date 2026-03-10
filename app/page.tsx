@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { getMode } from '@/lib/mode'
+import { ONLINE_MAX_USDC } from '@/lib/constants'
 
 export default function LandingPage() {
   const isOnlineDemo = getMode() === 'demo_online'
@@ -108,7 +109,7 @@ export default function LandingPage() {
                   Festival Mode
                 </p>
                 <p className="text-[0.5625rem]" style={{ color: '#7a7a9a' }}>
-                  NFC wristband payments with merchant cart + Circle Gateway
+                  NFC wristband payments with merchant cart + Yellow Network
                 </p>
               </div>
             </div>
@@ -176,9 +177,19 @@ export default function LandingPage() {
 
         {isOnlineDemo && (
           <p className="text-[0.5625rem] uppercase tracking-wider" style={{ color: '#f093fb' }}>
-            Testnet USDC — $0.10 max per session — all transfers are real
+            Testnet USDC — ${ONLINE_MAX_USDC.toFixed(2)} max per session — all transfers are real
           </p>
         )}
+
+        {/* Mainnet support indicator */}
+        <div
+          className="px-3 py-1.5 border text-center"
+          style={{ backgroundColor: '#0f0f2408', borderColor: '#78ffd640' }}
+        >
+          <p className="text-[0.5rem] uppercase tracking-wider" style={{ color: '#78ffd6' }}>
+            Mainnet USDC supported on physical kiosk hardware
+          </p>
+        </div>
 
         {/* Footer */}
         <div className="space-y-2 mt-2">

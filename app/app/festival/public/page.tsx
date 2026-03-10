@@ -10,7 +10,7 @@ import { CoinAnimation } from '@/components/ki0xk/CoinAnimation'
 import { CoinSlotSimulator } from '@/components/ki0xk/CoinSlotSimulator'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
 import { useCoinEvents } from '@/hooks/use-coin-events'
-import { MERCHANT_PRODUCTS, DEMO_PIN, WALLET_ID_CHARS, WALLET_ID_LENGTH, ONLINE_MAX_USDC, type Product } from '@/lib/constants'
+import { MERCHANT_PRODUCTS, WALLET_ID_CHARS, WALLET_ID_LENGTH, ONLINE_MAX_USDC, type Product } from '@/lib/constants'
 import { getMode, getModeFeatures } from '@/lib/mode'
 import { QRCodeSVG } from 'qrcode.react'
 import {
@@ -40,6 +40,7 @@ type PayStep =
 type TopUpStep =
   | 'insert-coins'
   | 'tap-card'
+  | 'set-pin'
   | 'processing'
   | 'success'
   | 'error'
@@ -81,6 +82,7 @@ export default function FestivalPublicPage() {
   // Online demo: created wallet info for top-up tap-card
   const [createdWalletId, setCreatedWalletId] = useState('')
   const [topUpCreating, setTopUpCreating] = useState(false)
+  const [topUpPin, setTopUpPin] = useState('')
 
   // Online demo: balance check via wallet ID
   const [balanceWalletInput, setBalanceWalletInput] = useState('')
@@ -890,33 +892,8 @@ export default function FestivalPublicPage() {
       )
     }
 
-    // Tap card for top-up
+    // Tap card for top-up (online demo goes to set-pin step)
     if (topUpStep === 'tap-card') {
-      const handleOnlineCreateAndTopUp = async () => {
-        setTopUpCreating(true)
-        try {
-          const wid = generateWalletId()
-          await apiCreateCardWithId(wid)
-          await apiSetCardPin(wid, DEMO_PIN)
-          setTopUpWalletId(wid)
-          setCreatedWalletId(wid)
-          setTopUpStep('processing')
-          const result = await apiTopUpCard(wid, coinTotal.toFixed(2))
-          if (result.success) {
-            setTopUpNewBalance(result.newBalance)
-            setTopUpStep('success')
-          } else {
-            setTopUpError(result.message)
-            setTopUpStep('error')
-          }
-        } catch (err) {
-          setTopUpError(err instanceof Error ? err.message : 'Failed to create wallet')
-          setTopUpStep('error')
-        } finally {
-          setTopUpCreating(false)
-        }
-      }
-
       return (
         <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
           <div className="flex items-center justify-between px-1">
@@ -945,14 +922,13 @@ export default function FestivalPublicPage() {
               <ArcadeButton
                 size="lg"
                 variant="primary"
-                onClick={handleOnlineCreateAndTopUp}
-                disabled={topUpCreating}
+                onClick={() => { setTopUpPin(''); setTopUpStep('set-pin') }}
                 className="w-full max-w-xs"
               >
-                {topUpCreating ? 'Creating...' : 'Create Wallet & Top Up'}
+                Create Wallet & Top Up
               </ArcadeButton>
               <p className="text-[0.625rem] uppercase text-center" style={{ color: '#7a7a9a' }}>
-                Auto-generates wallet ID with PIN: {DEMO_PIN}
+                You&apos;ll set a PIN in the next step
               </p>
             </div>
           ) : (
@@ -960,6 +936,73 @@ export default function FestivalPublicPage() {
               <NFCIndicator status="scanning" />
             </div>
           )}
+        </div>
+      )
+    }
+
+    // Set PIN for new card (online demo only)
+    if (topUpStep === 'set-pin') {
+      const handleCreateWithPin = async () => {
+        if (topUpPin.length < 4) return
+        setTopUpCreating(true)
+        try {
+          const wid = generateWalletId()
+          await apiCreateCardWithId(wid)
+          await apiSetCardPin(wid, topUpPin)
+          setTopUpWalletId(wid)
+          setCreatedWalletId(wid)
+          setTopUpStep('processing')
+          const result = await apiTopUpCard(wid, coinTotal.toFixed(2))
+          if (result.success) {
+            setTopUpNewBalance(result.newBalance)
+            setTopUpStep('success')
+          } else {
+            setTopUpError(result.message)
+            setTopUpStep('error')
+          }
+        } catch (err) {
+          setTopUpError(err instanceof Error ? err.message : 'Failed to create wallet')
+          setTopUpStep('error')
+        } finally {
+          setTopUpCreating(false)
+        }
+      }
+
+      return (
+        <div className="h-full flex flex-col p-3 gap-2 overflow-y-auto">
+          <div className="flex items-center justify-between px-1">
+            <button
+              onClick={() => setTopUpStep('tap-card')}
+              className="text-[0.6875rem] uppercase tracking-wider px-2 py-0.5 border"
+              style={{ color: '#7a7a9a', borderColor: '#7a7a9a' }}
+            >
+              ‹ Back
+            </button>
+            <h1
+              className="text-sm"
+              style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255, 215, 0, 0.5)' }}
+            >
+              Set Your PIN
+            </h1>
+            <span className="w-12" />
+          </div>
+
+          <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
+            Choose a 4–6 digit PIN for your wallet
+          </p>
+
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <NumericKeypad value={topUpPin} onChange={setTopUpPin} maxLength={6} isPin />
+            <ArcadeButton
+              size="lg"
+              variant="primary"
+              onClick={handleCreateWithPin}
+              disabled={topUpPin.length < 4 || topUpCreating}
+              className="w-full max-w-xs"
+            >
+              {topUpCreating ? 'Creating...' : `Confirm PIN & Create Wallet`}
+            </ArcadeButton>
+          </div>
         </div>
       )
     }
@@ -1032,7 +1075,7 @@ export default function FestivalPublicPage() {
                 </div>
                 <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#ffd700' }}>
                   <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>PIN</p>
-                  <p className="text-sm font-mono tracking-[0.3em]" style={{ color: '#ffd700' }}>{DEMO_PIN}</p>
+                  <p className="text-sm font-mono tracking-[0.3em]" style={{ color: '#ffd700' }}>{topUpPin || '****'}</p>
                 </div>
                 <p className="text-[0.625rem] uppercase text-center" style={{ color: '#f093fb' }}>
                   Save this wallet ID & PIN to use for payments
