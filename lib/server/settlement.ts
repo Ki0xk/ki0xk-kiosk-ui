@@ -26,26 +26,50 @@ export interface SettlementResult {
   message: string
 }
 
-// In-memory cache + file persistence
-let _pinWallets: PinWallet[] | null = null
+// In-memory cache (survives hot reloads via globalThis) + file persistence
+const globalForPinWallets = globalThis as unknown as {
+  __pinWallets?: PinWallet[]
+  __pinWalletSavePromise?: Promise<void>
+}
+
+function getPinWalletsCache(): PinWallet[] | null {
+  return globalForPinWallets.__pinWallets || null
+}
+
+function setPinWalletsCache(wallets: PinWallet[]): void {
+  globalForPinWallets.__pinWallets = wallets
+}
+
+let _pinSavePromise: Promise<void> = globalForPinWallets.__pinWalletSavePromise || Promise.resolve()
 
 function loadPinWallets(): PinWallet[] {
-  if (_pinWallets) return _pinWallets
+  const existing = getPinWalletsCache()
+  if (existing) return existing
+  const wallets: PinWallet[] = []
   try {
     if (fs.existsSync(PIN_WALLET_FILE)) {
-      _pinWallets = JSON.parse(fs.readFileSync(PIN_WALLET_FILE, 'utf-8'))
-      return _pinWallets!
+      const data: PinWallet[] = JSON.parse(fs.readFileSync(PIN_WALLET_FILE, 'utf-8'))
+      wallets.push(...data)
+      logger.info('PIN wallets loaded from disk', { count: wallets.length })
     }
-  } catch {}
-  _pinWallets = []
-  return _pinWallets
+  } catch (err) {
+    logger.error('Failed to load PIN wallets from disk', { error: String(err) })
+  }
+  setPinWalletsCache(wallets)
+  return wallets
 }
 
 function savePinWallets(wallets: PinWallet[]): void {
-  _pinWallets = wallets
-  try {
-    fs.writeFileSync(PIN_WALLET_FILE, JSON.stringify(wallets, null, 2))
-  } catch {}
+  setPinWalletsCache(wallets)
+  const data = JSON.stringify(wallets, null, 2)
+  _pinSavePromise = _pinSavePromise.then(() => {
+    try {
+      fs.writeFileSync(PIN_WALLET_FILE, data)
+    } catch (err) {
+      logger.error('Failed to save PIN wallets to disk', { error: String(err) })
+    }
+  })
+  globalForPinWallets.__pinWalletSavePromise = _pinSavePromise
 }
 
 function hashPin(pin: string): string {

@@ -57,26 +57,50 @@ export interface SessionPinResult {
   message: string
 }
 
-// In-memory cache + file persistence
-let _sessions: KioskSession[] | null = null
+// In-memory cache (survives hot reloads via globalThis) + file persistence
+const globalForSessions = globalThis as unknown as {
+  __kioskSessions?: KioskSession[]
+  __sessionSavePromise?: Promise<void>
+}
+
+function getSessions(): KioskSession[] | null {
+  return globalForSessions.__kioskSessions || null
+}
+
+function setSessions(sessions: KioskSession[]): void {
+  globalForSessions.__kioskSessions = sessions
+}
+
+let _sessionSavePromise: Promise<void> = globalForSessions.__sessionSavePromise || Promise.resolve()
 
 function loadSessions(): KioskSession[] {
-  if (_sessions) return _sessions
+  const existing = getSessions()
+  if (existing) return existing
+  const sessions: KioskSession[] = []
   try {
     if (fs.existsSync(SESSION_FILE)) {
-      _sessions = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'))
-      return _sessions!
+      const data: KioskSession[] = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'))
+      sessions.push(...data)
+      logger.info('Sessions loaded from disk', { count: sessions.length })
     }
-  } catch {}
-  _sessions = []
-  return _sessions
+  } catch (err) {
+    logger.error('Failed to load sessions from disk', { error: String(err) })
+  }
+  setSessions(sessions)
+  return sessions
 }
 
 function saveSessions(sessions: KioskSession[]): void {
-  _sessions = sessions
-  try {
-    fs.writeFileSync(SESSION_FILE, JSON.stringify(sessions, null, 2))
-  } catch {}
+  setSessions(sessions)
+  const data = JSON.stringify(sessions, null, 2)
+  _sessionSavePromise = _sessionSavePromise.then(() => {
+    try {
+      fs.writeFileSync(SESSION_FILE, data)
+    } catch (err) {
+      logger.error('Failed to save sessions to disk', { error: String(err) })
+    }
+  })
+  globalForSessions.__sessionSavePromise = _sessionSavePromise
 }
 
 function generateSessionId(): string {
