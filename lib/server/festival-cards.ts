@@ -29,30 +29,45 @@ export interface DeductResult {
   message: string
 }
 
-// In-memory cache + file persistence with write queue
-let _cards: Map<string, FestivalCard> | null = null
-let _savePromise: Promise<void> = Promise.resolve()
+// In-memory cache (survives hot reloads via globalThis) + file persistence
+const globalForCards = globalThis as unknown as {
+  __festivalCards?: Map<string, FestivalCard>
+  __festivalSavePromise?: Promise<void>
+}
+
+function getCards(): Map<string, FestivalCard> | null {
+  return globalForCards.__festivalCards || null
+}
+
+function setCards(cards: Map<string, FestivalCard>): void {
+  globalForCards.__festivalCards = cards
+}
+
+let _savePromise: Promise<void> = globalForCards.__festivalSavePromise || Promise.resolve()
 
 function loadCards(): Map<string, FestivalCard> {
-  if (_cards) return _cards
-  _cards = new Map()
+  const existing = getCards()
+  if (existing) return existing
+  const cards = new Map<string, FestivalCard>()
   try {
     if (fs.existsSync(CARD_FILE)) {
       const data: FestivalCard[] = JSON.parse(fs.readFileSync(CARD_FILE, 'utf-8'))
       for (const card of data) {
-        _cards.set(card.walletId, card)
+        cards.set(card.walletId, card)
       }
-      logger.info('Festival cards loaded from disk', { count: _cards.size })
+      logger.info('Festival cards loaded from disk', { count: cards.size })
     }
   } catch (err) {
     logger.error('Failed to load festival cards from disk', { error: String(err) })
   }
-  return _cards
+  setCards(cards)
+  return cards
 }
 
 function saveCards(): void {
-  if (!_cards) return
-  const data = JSON.stringify(Array.from(_cards.values()), null, 2)
+  const cards = getCards()
+  if (!cards) return
+  const data = JSON.stringify(Array.from(cards.values()), null, 2)
   _savePromise = _savePromise.then(() => {
     try {
       fs.writeFileSync(CARD_FILE, data)
@@ -60,6 +75,7 @@ function saveCards(): void {
       logger.error('Failed to save festival cards to disk', { error: String(err) })
     }
   })
+  globalForCards.__festivalSavePromise = _savePromise
 }
 
 function hashPin(pin: string): string {

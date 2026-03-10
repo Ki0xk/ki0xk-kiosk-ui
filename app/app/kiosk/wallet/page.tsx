@@ -10,6 +10,8 @@ import {
   apiClaimNfcCard,
 } from '@/lib/api-client'
 import { useNfcEvents } from '@/hooks/use-nfc-events'
+import { getMode } from '@/lib/mode'
+import { WALLET_ID_CHARS, WALLET_ID_LENGTH } from '@/lib/constants'
 import { QRCodeSVG } from 'qrcode.react'
 import { ArcadeButton } from '@/components/ki0xk/ArcadeButton'
 import { NFCIndicator } from '@/components/ki0xk/NFCIndicator'
@@ -33,9 +35,11 @@ type WalletStep =
 export default function NfcWalletPage() {
   const router = useRouter()
   const { dispatch } = useKi0xk()
+  const isOnline = getMode() === 'online'
 
   const [step, setStep] = useState<WalletStep>('nfc-tap')
   const [cardId, setCardId] = useState('')
+  const [manualWalletId, setManualWalletId] = useState('')
   const [pin, setPin] = useState('')
   const [balance, setBalance] = useState('')
   const [totalLoaded, setTotalLoaded] = useState('')
@@ -52,25 +56,29 @@ export default function NfcWalletPage() {
     explorerUrl?: string
   } | null>(null)
 
+  const lookupCard = async (walletId: string) => {
+    setCardId(walletId)
+    setError('')
+    try {
+      const info = await apiGetCardInfo(walletId)
+      if (info.success && info.hasPin) {
+        setBalance(info.balance)
+        setTotalLoaded(info.totalLoaded)
+        setTotalSpent(info.totalSpent)
+        setStep('enter-pin')
+      } else {
+        setError('This card has no PIN set. Use "Buy Crypto" to set up a new card.')
+      }
+    } catch {
+      setError('Card not found. Use "Buy Crypto" to create a new NFC wallet.')
+    }
+  }
+
   const { connected: nfcConnected } = useNfcEvents({
     enabled: step === 'nfc-tap',
     onCardTapped: async (uid) => {
       if (step !== 'nfc-tap') return
-      setCardId(uid)
-      setError('')
-      try {
-        const info = await apiGetCardInfo(uid)
-        if (info.success && info.hasPin) {
-          setBalance(info.balance)
-          setTotalLoaded(info.totalLoaded)
-          setTotalSpent(info.totalSpent)
-          setStep('enter-pin')
-        } else {
-          setError('This card has no PIN set. Use "Buy Crypto" to set up a new card.')
-        }
-      } catch {
-        setError('Card not found. Use "Buy Crypto" to create a new NFC wallet.')
-      }
+      await lookupCard(uid)
     },
   })
 
@@ -112,6 +120,42 @@ export default function NfcWalletPage() {
           <p className="text-[0.6875rem] text-center" style={{ color: '#78ffd6' }}>
             Metro card, wristband, sticker, badge — any NFC chip
           </p>
+
+          {isOnline && (
+            <div className="w-full max-w-xs flex flex-col gap-2 mt-2">
+              <p className="text-[0.625rem] uppercase tracking-widest text-center" style={{ color: '#7a7a9a' }}>
+                Or enter your Wallet ID manually
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={manualWalletId}
+                  onChange={(e) => setManualWalletId(e.target.value.toUpperCase().replace(new RegExp(`[^${WALLET_ID_CHARS}]`, 'g'), '').slice(0, WALLET_ID_LENGTH))}
+                  placeholder="e.g. A1B2C3"
+                  maxLength={WALLET_ID_LENGTH}
+                  className="flex-1 px-3 py-2 text-sm font-mono text-center uppercase tracking-widest border-2"
+                  style={{
+                    backgroundColor: '#0f0f24',
+                    borderColor: '#667eea',
+                    color: '#e0e8f0',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  onClick={() => manualWalletId.length === WALLET_ID_LENGTH && lookupCard(manualWalletId)}
+                  disabled={manualWalletId.length !== WALLET_ID_LENGTH}
+                  className="px-4 py-2 text-[0.6875rem] uppercase tracking-wider border-2"
+                  style={{
+                    backgroundColor: manualWalletId.length === WALLET_ID_LENGTH ? '#667eea' : '#1a1a3a',
+                    borderColor: manualWalletId.length === WALLET_ID_LENGTH ? '#667eea' : '#3a3a5a',
+                    color: manualWalletId.length === WALLET_ID_LENGTH ? '#fff' : '#5a5a7a',
+                  }}
+                >
+                  Go
+                </button>
+              </div>
+            </div>
+          )}
 
           {error && (
             <p className="text-[0.8125rem] text-center px-4" style={{ color: '#ef4444' }}>
