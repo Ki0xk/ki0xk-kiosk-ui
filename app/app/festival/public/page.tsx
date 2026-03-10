@@ -711,7 +711,7 @@ export default function FestivalPublicPage() {
           </div>
 
           <p className="text-[0.6875rem] uppercase tracking-wider text-center" style={{ color: '#7a7a9a' }}>
-            Gateway burn + mint...
+            Processing payment...
           </p>
 
           <div className="flex-1 flex items-center justify-center">

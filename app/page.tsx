@@ -98,7 +98,7 @@ export default function LandingPage() {
                   ATM Mode
                 </p>
                 <p className="text-[0.5625rem]" style={{ color: '#7a7a9a' }}>
-                  Insert coins, receive USDC on any of 7 chains via Arc Bridge
+                  Insert coins, receive USDC on any of 7 chains via CCTP
                 </p>
               </div>
               <div
@@ -136,7 +136,7 @@ export default function LandingPage() {
             <div className="flex gap-2">
               {[
                 { name: 'Yellow Network', desc: 'Off-chain accounting', color: '#ffd700' },
-                { name: 'Circle Arc', desc: 'CCTP + Gateway', color: '#667eea' },
+                { name: 'CCTP Bridge', desc: 'Cross-chain USDC', color: '#667eea' },
                 { name: 'ENS', desc: 'name.eth support', color: '#78ffd6' },
               ].map((int) => (
                 <div
@@ -184,7 +184,7 @@ export default function LandingPage() {
         {/* Footer */}
         <div className="space-y-2 mt-2">
           <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#667eea' }}>
-            Powered by Yellow Network + Circle Arc
+            Powered by Yellow Network + CCTP
           </p>
           <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: '#7a7a9a' }}>
             Built for tienditas, festivals & events
@@ -226,7 +226,7 @@ export default function LandingPage() {
               <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
               FESTIVAL MODE: NFC WRISTBAND PAYMENTS WITH MAINNET SETTLEMENT
               <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
-              POWERED BY YELLOW NETWORK + CIRCLE ARC
+              POWERED BY YELLOW NETWORK + CCTP BRIDGE
               <span style={{ color: '#ffd700', margin: '0 2em' }}>///</span>
             </span>
           ))}

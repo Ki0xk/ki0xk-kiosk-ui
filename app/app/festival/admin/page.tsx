@@ -14,8 +14,6 @@ import {
   apiCreateCardWithId,
   apiSetCardPin,
   apiTopUpCard,
-  apiGetGatewayBalance,
-  apiDepositToGateway,
   apiGetCardSummary,
   apiGetCardInfo,
 } from '@/lib/api-client'
@@ -32,7 +30,7 @@ type TopUpStep =
   | 'success'
   | 'error'
 
-type Tab = 'topup' | 'balance' | 'gateway' | 'stats'
+type Tab = 'topup' | 'balance' | 'stats'
 
 const TOPUP_PRESETS = ['0.10', '0.50', '1.00']
 
@@ -70,13 +68,6 @@ export default function FestivalAdminPage() {
     walletId: string; balance: string; totalLoaded: string; totalSpent: string
   } | null>(null)
   const [balanceCheckError, setBalanceCheckError] = useState('')
-
-  // Gateway
-  const [gatewayBalance, setGatewayBalance] = useState<string | null>(null)
-  const [gatewayLoading, setGatewayLoading] = useState(false)
-  const [depositAmount, setDepositAmount] = useState('')
-  const [depositLoading, setDepositLoading] = useState(false)
-  const [depositResult, setDepositResult] = useState('')
 
   // Online demo: manual wallet ID inputs
   const [manualTopUpWalletId, setManualTopUpWalletId] = useState('')
@@ -186,36 +177,6 @@ export default function FestivalAdminPage() {
     }
   }
 
-  // Gateway
-  const fetchGatewayBalance = async () => {
-    setGatewayLoading(true)
-    try {
-      const result = await apiGetGatewayBalance()
-      setGatewayBalance(result.available)
-    } catch {
-      setGatewayBalance('Error')
-    }
-    setGatewayLoading(false)
-  }
-
-  const handleDeposit = async () => {
-    if (!depositAmount) return
-    setDepositLoading(true)
-    setDepositResult('')
-    try {
-      const result = await apiDepositToGateway(depositAmount)
-      if (result.success) {
-        setDepositResult(`Deposited! TX: ${result.depositTxHash}`)
-        fetchGatewayBalance()
-      } else {
-        setDepositResult(`Failed: ${result.error}`)
-      }
-    } catch (err) {
-      setDepositResult(err instanceof Error ? err.message : 'Deposit failed')
-    }
-    setDepositLoading(false)
-  }
-
   // Stats
   const fetchStats = async () => {
     try {
@@ -308,13 +269,12 @@ export default function FestivalAdminPage() {
 
       {/* Tabs */}
       <div className="flex gap-1">
-        {(['topup', 'balance', 'gateway', 'stats'] as Tab[]).map((tab) => (
+        {(['topup', 'balance', 'stats'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => {
               setActiveTab(tab)
               if (tab === 'balance') { setBalanceCheckWaiting(true); setCheckedCard(null); setBalanceCheckError('') }
-              if (tab === 'gateway') fetchGatewayBalance()
               if (tab === 'stats') fetchStats()
             }}
             className="flex-1 p-1.5 border-2 text-[0.6875rem] uppercase tracking-wider transition-all"
@@ -324,7 +284,7 @@ export default function FestivalAdminPage() {
               color: activeTab === tab ? '#ffd700' : '#7a7a9a',
             }}
           >
-            {tab === 'topup' ? 'Top-Up' : tab === 'balance' ? 'Balance' : tab === 'gateway' ? 'Gateway' : 'Stats'}
+            {tab === 'topup' ? 'Top-Up' : tab === 'balance' ? 'Balance' : 'Stats'}
           </button>
         ))}
       </div>
@@ -728,63 +688,6 @@ export default function FestivalAdminPage() {
               </ArcadeButton>
             </>
           )}
-        </div>
-      )}
-
-      {/* GATEWAY TAB */}
-      {activeTab === 'gateway' && (
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="p-2 border-2 text-center" style={{ backgroundColor: '#0f0f24', borderColor: '#2a2a4a' }}>
-            <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Gateway Balance</p>
-            <p className="text-xl" style={{ color: '#ffd700' }}>
-              {gatewayLoading ? '...' : gatewayBalance !== null ? `$${gatewayBalance}` : '—'}
-              <span className="text-xs ml-1" style={{ color: '#7a7a9a' }}>USDC</span>
-            </p>
-          </div>
-
-          <ArcadeButton size="sm" variant="secondary" onClick={fetchGatewayBalance} className="w-full">
-            Refresh Balance
-          </ArcadeButton>
-
-          <div className="border-t-2 pt-2" style={{ borderColor: '#2a2a4a' }}>
-            <p className="text-[0.6875rem] uppercase mb-1" style={{ color: '#7a7a9a' }}>Deposit to Gateway</p>
-
-            <div className="grid grid-cols-3 gap-1 mb-2">
-              {['1', '5', '10'].map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => setDepositAmount(preset)}
-                  className="p-2 border-2 text-sm transition-all"
-                  style={{
-                    borderColor: depositAmount === preset ? '#ffd700' : '#2a2a4a',
-                    backgroundColor: depositAmount === preset ? 'rgba(255, 215, 0, 0.1)' : '#0f0f24',
-                    color: depositAmount === preset ? '#ffd700' : '#e0e8f0',
-                  }}
-                >
-                  ${preset}
-                </button>
-              ))}
-            </div>
-
-            <ArcadeButton
-              size="md"
-              variant="accent"
-              onClick={handleDeposit}
-              disabled={!depositAmount || depositLoading}
-              className="w-full"
-            >
-              {depositLoading ? 'Depositing...' : `Deposit $${depositAmount || '0'}`}
-            </ArcadeButton>
-
-            {depositResult && (
-              <p
-                className="text-[0.6875rem] mt-1 break-all"
-                style={{ color: depositResult.startsWith('Failed') ? '#ef4444' : '#78ffd6' }}
-              >
-                {depositResult}
-              </p>
-            )}
-          </div>
         </div>
       )}
 

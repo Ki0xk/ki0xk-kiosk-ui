@@ -12,7 +12,7 @@ Built with Next.js 16, React 19, Tailwind CSS v4, and shadcn/ui. Retro arcade ae
 
 Ki0xk turns physical coins into USDC on any blockchain — and turns **any NFC chip** into a crypto wallet. Metro cards, ETHGlobal wristbands, NFC stickers, ID badges, or even your phone — tap it once, set a PIN, and you have a reusable USDC wallet you can top up and withdraw from at any kiosk.
 
-The operator pre-funds a wallet with USDC, and the system handles everything — coin acceptance, off-chain accounting, cross-chain bridging, NFC card wallets, and festival wristband payments.
+The operator pre-funds a wallet with USDC on Yellow Network, and the system handles everything — coin acceptance, off-chain accounting, instant transfers, NFC card wallets, and festival wristband payments. All powered by **Yellow Network** for instant, gasless USDC delivery.
 
 ```
                     ┌─────────────────────────────────────────────────┐
@@ -26,12 +26,12 @@ The operator pre-funds a wallet with USDC, and the system handles everything —
                │   NFC Card Wallets  │  │   Merchant Cart + Yellow  │
                └──────────┬──────────┘  └───────┬──────────────────┘
                           │                      │
-         ┌────────────────▼──────┐    ┌──────────▼─────────────────┐
-         │  Yellow Network       │    │  Yellow Network (default)   │
-         │  Off-chain accounting │    │  Instant off-chain merchant │
-         │  + Arc Bridge (CCTP)  │    │  transfers via sendToWallet │
-         │  for USDC delivery    │    │  (+ Circle Gateway fallback)│
-         └───────────────────────┘    └────────────────────────────┘
+                    ┌─────▼──────────────────────▼──────────────┐
+                    │         Yellow Network (ClearNode)         │
+                    │  Instant off-chain USDC transfers          │
+                    │  EIP-712 session auth + App Sessions       │
+                    │  Unified balance — gasless, no bridging    │
+                    └───────────────────────────────────────────┘
 ```
 
 ---
@@ -78,31 +78,21 @@ Ki0xk uses the **Yellow SDK** to manage a unified off-chain balance for the kios
 - **App Sessions** (NitroRPC/0.4) — multi-party off-chain channels with intents for advanced settlement
 - **Festival payments** — instant merchant payouts via `sendToWallet()` (default payment method)
 
-The Yellow integration provides the speed of Web2 with Web3 security — users don't wait for blockchain confirmations when inserting coins. Final settlement happens via Arc Bridge when the user withdraws.
+The Yellow integration provides the speed of Web2 with Web3 security — users don't wait for blockchain confirmations when inserting coins. All transfers are instant and gasless via Yellow Network.
 
 **Key files:** `lib/server/clearnode.ts`, `lib/server/session.ts`, `lib/server/settlement.ts`, `lib/server/festival-payment.ts`
 
-### Circle Arc — Cross-Chain USDC Delivery
+### Yellow Network — Unified Payment Layer
 
-Ki0xk uses **Circle's Arc testnet** as the settlement layer and **two different Circle tools** depending on the mode:
+Both ATM and festival modes use **Yellow Network** for all USDC transfers:
 
-**ATM Mode — Arc Bridge (CCTP):**
-- `@circle-fin/bridge-kit` for cross-chain USDC transfers
-- Flow: `approve → burn → fetchAttestation → mint` on 7 destination chains
-- ~15 second end-to-end settlement
-- Users choose their preferred chain (Base, Ethereum, Arbitrum, Polygon, Optimism, Avalanche, Linea)
+- **ATM mode**: `sendToWallet()` delivers USDC instantly to user's wallet address
+- **Festival mode**: `sendToWallet()` delivers USDC instantly to merchant's wallet
+- **NFC withdrawals**: `sendToWallet()` from card balance to user's destination
+- All transfers are gasless, instant, and off-chain via ClearNode
+- Supports `ytest.usd` (testnet) and `usdc` (mainnet) assets
 
-**Festival Mode — Yellow Network (default) or Circle Gateway (fallback):**
-- **Yellow path** (default): instant off-chain `sendToWallet()` to merchant — 1 step, gasless
-- **Gateway path** (fallback): EIP-712 `BurnIntent` → Gateway API attestation → on-chain `gatewayMint()`
-- Configurable via `FESTIVAL_PAYMENT_METHOD=yellow|gateway` env var
-- Gateway includes just-in-time funding (auto-deposits Arc USDC into GatewayWallet)
-
-**Contract addresses (same on all testnet chains):**
-- GatewayWallet: `0x0077777d7EBA4688BDeF3E311b846F25870A19B9`
-- GatewayMinter: `0x0022222ABE238Cc2C7Bb1f21003F0a260052475B`
-
-**Key files:** `lib/server/arc/bridge.ts`, `lib/server/gateway/index.ts`, `lib/server/gateway/chains.ts`
+**Key files:** `lib/server/clearnode.ts`, `lib/server/festival-payment.ts`
 
 ### ENS — Human-Readable Wallet Addresses
 
@@ -112,7 +102,7 @@ Ki0xk resolves **ENS names** (e.g. `yourname.eth`) server-side via viem's `getEn
 - On-screen keyboard with `.eth` shortcut button for quick ENS entry
 - QR scanner accepts both hex addresses and ENS names
 - Server-side resolution via `lib/server/ens.ts` before passing to the bridge
-- Works in both ATM mode (CCTP bridge) and NFC wallet withdrawal
+- Works in both ATM mode and NFC wallet withdrawal
 
 **Key files:** `lib/server/ens.ts`
 
@@ -133,7 +123,7 @@ Users insert physical coins and either receive USDC on their preferred chain or 
 **Path D — "NFC Wallet":** Tap existing NFC card → enter PIN → check balance → optionally withdraw to any chain.
 
 ```
-Arduino Coinslot  →  Yellow Network (off-chain balance)  →  Arc Bridge (CCTP)  →  USDC on destination
+Arduino Coinslot  →  Yellow Network (off-chain balance)  →  sendToWallet()  →  User wallet (instant)
                                                          →  NFC Card (local balance + PIN)
 ```
 
@@ -141,14 +131,13 @@ Arduino Coinslot  →  Yellow Network (off-chain balance)  →  Arc Bridge (CCTP
 
 Cashless payments at events using NFC wristbands/cards. Three flows:
 
-**Admin dashboard (cashier):** PIN-protected with 4 tabs:
+**Admin dashboard (cashier):** PIN-protected with 3 tabs:
 - **Top-Up** — enter amount (presets: $0.10, $0.50, $1.00 or custom) → tap NFC card → new card: set PIN → balance loaded. Existing card: balance added directly
 - **Balance** — tap any card to view balance, total loaded, total spent
-- **Gateway** — view unified Gateway balance, deposit Arc USDC ($1/$5/$10 presets)
 - **Stats** — total cards issued, total balance, total loaded, total spent
 
 **Self-service (public terminal):** Three flows:
-- **Pay** — select merchant → build cart (preset products with qty) → tap NFC card → enter PIN → confirm → Gateway burn+mint → USDC to merchant
+- **Pay** — select merchant → build cart (preset products with qty) → tap NFC card → enter PIN → confirm → Yellow transfer → USDC to merchant
 - **Add Balance** — insert coins (Arduino coinslot) → tap NFC card → balance added
 - **Check Balance** — tap card → view balance, loaded, spent
 
@@ -161,14 +150,13 @@ Cashless payments at events using NFC wristbands/cards. Three flows:
 
 ```
 NFC Card (UID)  →  Festival Card (server)  →  Yellow sendToWallet()  →  Merchant (instant)
-                                            or Circle Gateway (burn)  →  Merchant wallet (mint)
 ```
 
 **NFC card stores:** Only the hardware UID (no NDEF write needed — works with any NFC card/tag including MIFARE Classic).
 
 **Festival cards:** Server-side balance tracking with SHA-256 PIN hashing. Card UID = wallet ID. Persisted to `festival-cards.json` with in-memory cache.
 
-**Merchant payouts:** Real USDC delivered via Circle Gateway to merchant's preferred chain. Merchants configured via env vars (`MERCHANT_BEERS_ADDRESS`, etc.).
+**Merchant payouts:** Real USDC delivered instantly via Yellow Network `sendToWallet()` to merchant's wallet. Merchants configured via env vars (`MERCHANT_BEERS_ADDRESS`, etc.).
 
 ### Online Demo Mode — Try It Without Hardware
 
@@ -180,9 +168,8 @@ Full-featured demo deployable to Vercel or any host. No Arduino, no USB NFC read
 |---------|-------------|---------------|
 | Coin insertion | UI buttons (tap to insert) | Arduino pulse-based coin acceptor |
 | NFC card wallets | Auto-generated wallet IDs + user-chosen PIN | Physical NFC card tap (any NFC chip) |
-| USDC transfers | Real — Yellow off-chain + Arc Bridge CCTP | Same |
+| USDC transfers | Real — Yellow Network off-chain transfers | Same |
 | Festival payments | Wallet ID text input instead of NFC tap | Physical NFC wristband tap |
-| Cross-chain bridging | Real — ~15s settlement to 7 chains | Same |
 
 **Online demo features:**
 
@@ -196,7 +183,7 @@ Full-featured demo deployable to Vercel or any host. No Arduino, no USB NFC read
 
 **Web NFC note**: The Web NFC API only works on **Android Chrome**. Desktop browsers and iOS Safari do not support it. For non-Android users, all NFC-dependent flows have fallback alternatives (wallet ID input or PIN wallet generation).
 
-**Gas on destination chains**: The operator wallet needs native gas (ETH, AVAX, POL, etc.) on each destination chain for Bridge Kit / Gateway mints. The `/api/chains/gas` endpoint checks all chains and the UI disables chains with insufficient gas. Fund chains via testnet faucets.
+**Yellow Network handles all transfers off-chain** — no gas needed on destination chains. The operator only needs USDC in their Yellow unified balance.
 
 ---
 
@@ -208,12 +195,12 @@ pnpm install
 
 # Configure
 cp .env.example .env.local
-# Edit .env.local — add your PRIVATE_KEY (funded on Arc Testnet)
+# Edit .env.local — add your PRIVATE_KEY (funded with USDC)
 
 # Run
 NEXT_PUBLIC_MODE=online pnpm dev     # UI coins, phone NFC
 NEXT_PUBLIC_MODE=kiosk pnpm dev      # Arduino coins + USB NFC reader
-NEXT_PUBLIC_MODE=festival pnpm dev   # Arduino + NFC + Gateway merchants
+NEXT_PUBLIC_MODE=festival pnpm dev   # Arduino + NFC + Yellow merchant payments
 ```
 
 ### Environment Variables
@@ -223,11 +210,8 @@ NEXT_PUBLIC_MODE=festival pnpm dev   # Arduino + NFC + Gateway merchants
 | `NEXT_PUBLIC_MODE` | Client | Yes | `online`, `kiosk`, or `festival` |
 | `NEXT_PUBLIC_NETWORK` | Client | No | `testnet` (default) or `mainnet` — switches all chains, assets, and URLs |
 | `PRIVATE_KEY` | Server | Yes | Kiosk wallet private key (funded with USDC on source chain) |
-| `FESTIVAL_PAYMENT_METHOD` | Server | No | `yellow` (default, instant) or `gateway` (on-chain) |
 | `CLEARNODE_WS_URL` | Server | No | Default: `wss://clearnet-sandbox.yellow.com/ws` |
-| `CIRCLE_API_KEY` | Server | No | Circle API key for Arc faucet auto-funding |
 | `FESTIVAL_ADMIN_PIN` | Server | No | Admin PIN for festival mode (default: `1234`) |
-| `GATEWAY_API_URL` | Server | No | Default: `https://gateway-api-testnet.circle.com/v1` |
 | `MERCHANT_BEERS_ADDRESS` | Server | No | Merchant wallet address for beers vendor |
 | `MERCHANT_BEERS_CHAIN` | Server | No | Default: `base_sepolia` |
 | `MERCHANT_FOOD_ADDRESS` | Server | No | Merchant wallet address for food vendor |
@@ -247,8 +231,6 @@ The system auto-claims faucets on startup and every 2.5 hours if balances are lo
 curl -XPOST https://clearnet-sandbox.yellow.com/faucet/requestTokens \
   -H "Content-Type: application/json" \
   -d '{"userAddress":"YOUR_WALLET_ADDRESS"}'
-
-# Circle Arc faucet (USDC on Arc Testnet) — auto-claimed if CIRCLE_API_KEY is set
 ```
 
 ---
@@ -308,7 +290,7 @@ Linux Mini-PC
  ├─ NFC Reader            → USB PC/SC (pcscd)
  ├─ Coin Acceptor         → Arduino Uno (serial JSON)
  ├─ Off-chain accounting  → Yellow Network
- └─ On-chain settlement   → Circle Arc / Gateway
+ └─ Settlement            → Yellow Network (instant)
 ```
 
 ### Hardware Required
@@ -451,11 +433,11 @@ No tablet apps. No cloud dependencies. No hardcoded users. USB-only, offline-fri
 
 ## Demo Modes
 
-| Mode | Coin Input | NFC | Transfers | Gateway | Deploy Target |
-|------|-----------|-----|-----------|---------|---------------|
-| `online` | UI buttons ($0.10 cap) | Wallet ID input + Web NFC (Android) | Real USDC via Arc Bridge | No | Vercel / any host |
-| `kiosk` | Arduino serial | USB reader (PC/SC) | Real USDC via Arc Bridge | No | Local PC + tablet |
-| `festival` | Arduino serial | USB reader (PC/SC) | Real USDC via Gateway | Yes | Local PC + tablet |
+| Mode | Coin Input | NFC | Transfers | Deploy Target |
+|------|-----------|-----|-----------|---------------|
+| `online` | UI buttons ($0.10 cap) | Wallet ID input + Web NFC (Android) | Real USDC via Yellow Network | Vercel / any host |
+| `kiosk` | Arduino serial | USB reader (PC/SC) | Real USDC via Yellow Network | Local PC + tablet |
+| `festival` | Arduino serial | USB reader (PC/SC) | Real USDC via Yellow Network | Local PC + tablet |
 
 All modes perform **real USDC transfers**. All modes support **NFC card wallets** (physical or virtual).
 
@@ -469,22 +451,20 @@ All modes perform **real USDC transfers**. All modes support **NFC card wallets*
 |-------|--------|---------|
 | `/api/session/start` | POST | Create local session |
 | `/api/session/deposit` | POST | Record coin insertion |
-| `/api/session/end` | POST | Resolve ENS + bridge USDC via Arc CCTP |
+| `/api/session/end` | POST | Resolve ENS + send USDC via Yellow Network |
 | `/api/session/pin` | POST | Create PIN wallet from session balance |
 | `/api/pin/lookup` | POST | Verify PIN + wallet ID, return balance |
-| `/api/pin/claim` | POST | Claim PIN wallet — bridge USDC to destination |
+| `/api/pin/claim` | POST | Claim PIN wallet — send USDC to destination |
 
-### Festival (NFC + Gateway)
+### Festival (NFC + Yellow Network)
 
 | Route | Method | Purpose |
 |-------|--------|---------|
 | `/api/festival/card` | POST | Card CRUD (create, set-pin, verify-pin, balance, topup, info, summary) |
-| `/api/festival/claim` | POST | NFC card withdrawal: verify PIN → deduct → Arc Bridge → USDC to destination |
-| `/api/festival/pay` | POST | Payment: verify PIN → deduct → Gateway burn+mint |
+| `/api/festival/claim` | POST | NFC card withdrawal: verify PIN → deduct → Yellow transfer → USDC to destination |
+| `/api/festival/pay` | POST | Payment: verify PIN → deduct → Yellow transfer → USDC to merchant |
 | `/api/festival/merchants` | GET | List merchants from env config |
 | `/api/festival/admin/verify-pin` | POST | Verify admin PIN |
-| `/api/festival/gateway/balance` | GET | Check Gateway unified balance |
-| `/api/festival/gateway/deposit` | POST | Pre-fund Gateway with Arc USDC |
 
 ### Hardware
 
@@ -512,11 +492,7 @@ All modes perform **real USDC transfers**. All modes support **NFC card wallets*
 ### ATM Settlement Flow
 
 ```
-Coins → Local Session (Yellow off-chain) → Arc Bridge (CCTP) → USDC on destination chain
-                                                │
-                                           approve → burn → attest → mint
-                                                │
-                                           ~15 seconds end-to-end
+Coins → Local Session → Yellow Network sendToWallet() → USDC to user wallet (instant)
 ```
 
 ### NFC Card Wallet Flow
@@ -524,20 +500,18 @@ Coins → Local Session (Yellow off-chain) → Arc Bridge (CCTP) → USDC on des
 ```
 Insert Coins → Choose "Save to NFC Card" → Tap Card → Set PIN → Balance Saved
                                                               ↓
-                    ← Tap Same Card → Enter PIN → Withdraw → Arc Bridge → USDC on any chain
+                    ← Tap Same Card → Enter PIN → Withdraw → Yellow transfer → USDC to wallet
 ```
 
 ### Festival Payment Flow
 
 ```
 NFC Tap → Verify PIN → Deduct Card → Yellow sendToWallet() → Merchant (instant, gasless)
-                                    or
-                                    → Ensure Gateway Balance → Transfer → Mint (on-chain fallback)
 ```
 
 ### ENS Resolution
 
-ENS names (e.g. `yourname.eth`) are resolved server-side via viem on Ethereum mainnet before being passed to the bridge. The QR scanner and on-screen keyboard both accept ENS names and hex addresses.
+ENS names (e.g. `yourname.eth`) are resolved server-side via viem on Ethereum mainnet before being passed to Yellow Network. The QR scanner and on-screen keyboard both accept ENS names and hex addresses.
 
 ---
 
@@ -549,9 +523,7 @@ ENS names (e.g. `yourname.eth`) are resolved server-side via viem on Ethereum ma
 | Styling | Tailwind CSS v4, CSS custom properties, viewport-relative font sizing |
 | UI | shadcn/ui (New York), Radix UI, Lucide icons |
 | State | React Context + `useReducer` |
-| Yellow Network | ClearNode WebSocket, EIP-712 session auth, off-chain transfers |
-| Arc Bridge | `@circle-fin/bridge-kit` + `@circle-fin/adapter-viem-v2` (CCTP) |
-| Circle Gateway | EIP-712 BurnIntent, Gateway API, GatewayMinter contract |
+| Yellow Network | ClearNode WebSocket, EIP-712 session auth, off-chain transfers, App Sessions |
 | ENS | viem `getEnsAddress` + `normalize` on Ethereum mainnet |
 | NFC | `nfc-pcsc` (PC/SC smart card interface), Web NFC API (Android) |
 | QR Code | html5-qrcode (scanner), qrcode.react (display) |
@@ -570,10 +542,9 @@ ki0xk-payment-kiosk/
 │   │   ├── pin/                          # PIN wallet routes
 │   │   ├── festival/
 │   │   │   ├── card/route.ts             # Card CRUD + top-up
-│   │   │   ├── pay/route.ts              # Gateway payment
+│   │   │   ├── pay/route.ts              # Yellow Network payment
 │   │   │   ├── merchants/route.ts        # Merchant list
-│   │   │   ├── admin/verify-pin/route.ts # Admin auth
-│   │   │   └── gateway/                  # Gateway balance + deposit
+│   │   │   └── admin/verify-pin/route.ts # Admin auth
 │   │   ├── hardware/
 │   │   │   ├── coin/                     # Arduino serial
 │   │   │   ├── nfc/                      # NFC PC/SC + NDEF
@@ -587,7 +558,7 @@ ki0xk-payment-kiosk/
 │       │   ├── wallet/page.tsx           # NFC wallet (balance + withdraw)
 │       │   └── claim/page.tsx            # PIN wallet claim
 │       └── festival/
-│           ├── admin/page.tsx            # Admin top-up + gateway + stats
+│           ├── admin/page.tsx            # Admin top-up + balance + stats
 │           └── public/page.tsx           # Self-service top-up + payments
 ├── components/ki0xk/                     # Custom kiosk components
 ├── hooks/
@@ -605,19 +576,12 @@ ki0xk-payment-kiosk/
 │       ├── session.ts                    # Session lifecycle
 │       ├── settlement.ts                 # PIN wallets + claim
 │       ├── festival-cards.ts             # NFC card balance tracking
-│       ├── festival-payment.ts           # Payment orchestrator
+│       ├── festival-payment.ts           # Festival payment via Yellow Network
 │       ├── merchants.ts                  # Env-based merchant config
 │       ├── nfc.ts                        # NFC PC/SC manager
 │       ├── serial.ts                     # Arduino serial reader
 │       ├── ens.ts                        # ENS resolution
-│       ├── faucet.ts                     # Auto-fund + recurring faucet
-│       ├── gateway/
-│       │   ├── index.ts                  # Gateway deposit/transfer/mint
-│       │   └── chains.ts                 # Gateway chain definitions
-│       └── arc/
-│           ├── bridge.ts                 # Circle CCTP bridge
-│           ├── chains.ts                 # Supported chains
-│           └── fees.ts                   # Fee calculation
+│       └── faucet.ts                     # Auto-fund + recurring faucet
 └── .env.example                          # Environment template
 ```
 
@@ -629,8 +593,7 @@ Part of **Ki0xk**, built for [HackMoney](https://hackmoney.ethglobal.com/).
 
 | Sponsor | Integration | How We Use It |
 |---------|-------------|---------------|
-| **Yellow Network** | ClearNode SDK, EIP-712 session auth, off-chain transfers | Off-chain USDC accounting for ATM — instant, gasless session-based transfers that settle on-chain when users withdraw |
-| **Circle / Arc** | Arc Bridge (CCTP), Circle Gateway, Arc Testnet | ATM: cross-chain USDC delivery via CCTP to 7 chains. Festival: merchant payouts via Gateway EIP-712 burn+mint with just-in-time funding |
+| **Yellow Network** | ClearNode SDK, EIP-712 session auth, off-chain transfers, App Sessions | Core payment infrastructure — instant gasless USDC transfers for ATM cash-out, festival merchant payments, NFC wallet withdrawals, and inter-kiosk settlement |
 | **ENS** | viem `getEnsAddress` + `normalize` | Human-readable wallet addresses — users type `name.eth` instead of hex addresses, resolved server-side on Ethereum mainnet |
 
 ---
